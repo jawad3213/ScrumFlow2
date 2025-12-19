@@ -14,7 +14,7 @@ const Table = React.forwardRef(({ className, ...props }, ref) => (
 Table.displayName = "Table"
 
 const TableHeader = React.forwardRef(({ className, ...props }, ref) => (
-    <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+    <thead ref={ref} className={cn("[&_tr]:border-b border-surface-border bg-surface-background/50", className)} {...props} />
 ))
 TableHeader.displayName = "TableHeader"
 
@@ -31,7 +31,7 @@ const TableFooter = React.forwardRef(({ className, ...props }, ref) => (
     <tfoot
         ref={ref}
         className={cn(
-            "border-t bg-neutral-100/50 font-medium [&>tr]:last:border-b-0",
+            "border-t border-surface-border bg-surface-muted/50 font-medium [&>tr]:last:border-b-0",
             className
         )}
         {...props}
@@ -43,7 +43,7 @@ const TableRow = React.forwardRef(({ className, ...props }, ref) => (
     <tr
         ref={ref}
         className={cn(
-            "border-b transition-colors hover:bg-neutral-100/50 data-[state=selected]:bg-neutral-100",
+            "border-b border-surface-border transition-ui duration-default ease-soft hover:bg-surface-muted/50 data-[state=selected]:bg-surface-muted",
             className
         )}
         {...props}
@@ -55,7 +55,7 @@ const TableHead = React.forwardRef(({ className, ...props }, ref) => (
     <th
         ref={ref}
         className={cn(
-            "h-12 px-4 text-left align-middle font-medium text-neutral-500 [&:has([role=checkbox])]:pr-0",
+            "h-12 px-4 text-left align-middle font-bold text-neutral-600 uppercase tracking-wider text-[11px] [&:has([role=checkbox])]:pr-0",
             className
         )}
         {...props}
@@ -66,7 +66,7 @@ TableHead.displayName = "TableHead"
 const TableCell = React.forwardRef(({ className, ...props }, ref) => (
     <td
         ref={ref}
-        className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+        className={cn("p-4 align-middle text-sm text-neutral-700 [&:has([role=checkbox])]:pr-0", className)}
         {...props}
     />
 ))

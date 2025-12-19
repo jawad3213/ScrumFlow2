@@ -16,7 +16,6 @@ import {
     FolderKanban,
     PieChart,
     ListTodo,
-    CreditCard,
     BrainCircuit,
     Folder
 } from 'lucide-react';
@@ -35,6 +34,42 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+const navLinkClass = ({ isActive }) =>
+    cn(
+        "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-ui duration-default ease-soft",
+        isActive
+            ? "bg-brand-primary-50 text-brand-primary-700"
+            : "text-neutral-500 hover:bg-surface-muted hover:text-neutral-900"
+    );
+
+const SidebarItem = ({ to, icon: Icon, label, collapsed, end = false }) => {
+    const content = (
+        <NavLink to={to} end={end} className={navLinkClass}>
+            <Icon className="h-5 w-5 shrink-0" />
+            {!collapsed && <span className="truncate">{label}</span>}
+        </NavLink>
+    );
+
+    if (!collapsed) return content;
+
+    return (
+        <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+                {content}
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={20} className="font-bold border border-white/10 shadow-lg whitespace-nowrap">
+                {label}
+            </TooltipContent>
+        </Tooltip>
+    );
+};
 
 const Sidebar = () => {
     const userRole = localStorage.getItem('user_role');
@@ -42,6 +77,7 @@ const Sidebar = () => {
     const [user, setUser] = useState({ first_name: 'User', last_name: '', role: '' });
     const navigate = useNavigate();
     const location = useLocation();
+    const mouseEnterTimer = React.useRef(null);
 
     // Project Switcher State
     const [open, setOpen] = useState(false);
@@ -57,7 +93,7 @@ const Sidebar = () => {
 
     useEffect(() => {
         const path = location.pathname;
-        const projectMatch = path.match(/\/project\/([^\/]+)/);
+        const projectMatch = path.match(/\/project\/([^/]+)/);
         if (projectMatch && projectMatch[1]) {
             setSelectedProject(projectMatch[1]);
         } else if (!path.includes('/project/')) {
@@ -83,150 +119,145 @@ const Sidebar = () => {
         navigate('/login');
     };
 
-    const navLinkClass = ({ isActive }) =>
-        cn(
-            "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-neutral-100 hover:text-neutral-900 transition-colors",
-            isActive ? "bg-neutral-100 text-neutral-900" : "text-neutral-500"
-        );
-
-    // Dynamic Navigation Content based on Project Selection
     const renderChefNavigation = () => {
         if (selectedProject === "global") {
             return (
                 <>
-                    <div className="px-2 py-1.5 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                    <div className="px-2 py-1.5 text-xs font-semibold text-brand-primary-500 uppercase tracking-wider">
                         {!collapsed && "Main Menu"}
                     </div>
-                    <NavLink to="/dashboard" className={navLinkClass}>
-                        <LayoutDashboard className="h-5 w-5" />
-                        {!collapsed && <span>Overview</span>}
-                    </NavLink>
-                    <NavLink to="/my-tasks" className={navLinkClass}>
-                        <CheckSquare className="h-5 w-5" />
-                        {!collapsed && <span>My Tasks (Global)</span>}
-                    </NavLink>
-                    <NavLink to="/notifications" className={navLinkClass}>
-                        <Bell className="h-5 w-5" />
-                        {!collapsed && <span>Notifications</span>}
-                    </NavLink>
+                    <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Overview" collapsed={collapsed} />
+                    <SidebarItem to="/my-tasks" icon={CheckSquare} label="My Tasks (Global)" collapsed={collapsed} />
+                    <SidebarItem to="/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
 
-                    {/* Management Links kept in global view for creating new things */}
                     <div className="my-2 mx-2 border-t border-neutral-200" />
-                    <div className="px-2 py-1.5 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                    <div className="px-2 py-1.5 text-xs font-semibold text-brand-primary-500 uppercase tracking-wider">
                         {!collapsed && "Management"}
                     </div>
-                    <NavLink to="/projects/new" className={navLinkClass}>
-                        <PlusCircle className="h-5 w-5" />
-                        {!collapsed && <span>New Project</span>}
-                    </NavLink>
-                    <NavLink to="/team-global" className={navLinkClass}>
-                        <Users className="h-5 w-5" />
-                        {!collapsed && <span>Team Global</span>}
-                    </NavLink>
+                    <SidebarItem to="/projects/new" icon={PlusCircle} label="New Project" collapsed={collapsed} />
+                    <SidebarItem to="/team-global" icon={Users} label="Team Global" collapsed={collapsed} />
                 </>
             );
         } else {
-            const projectId = selectedProject; // Use this in to="" paths
+            const projectId = selectedProject;
             return (
                 <>
-                    <div className="px-2 py-1.5 text-xs font-semibold text-brand-primary uppercase tracking-wider">
-                        {!collapsed && "MENU PROJET"}
-                        {collapsed && "PRO"}
+                    <div className="px-2 py-1.5 text-xs font-semibold text-brand-primary-500 uppercase tracking-wider">
+                        {!collapsed && "Menu Projet"}
                     </div>
 
-                    <NavLink to={`/project/${projectId}`} end className={navLinkClass}>
-                        <LayoutDashboard className="h-5 w-5" />
-                        {!collapsed && <span>Tableau de Bord</span>}
-                    </NavLink>
-                    <NavLink to={`/project/${projectId}/board`} className={navLinkClass}>
-                        <FolderKanban className="h-5 w-5" />
-                        {!collapsed && <span>Sprint Actuel (Kanban)</span>}
-                    </NavLink>
-                    <NavLink to={`/project/${projectId}/analysis`} className={navLinkClass}>
-                        <BrainCircuit className="h-5 w-5" />
-                        {!collapsed && <span>Analyse Projet (IA)</span>}
-                    </NavLink>
-                    <NavLink to={`/project/${projectId}/backlog`} className={navLinkClass}>
-                        <ListTodo className="h-5 w-5" />
-                        {!collapsed && <span>Product Backlog</span>}
-                    </NavLink>
-                    <NavLink to={`/project/${projectId}/team`} className={navLinkClass}>
-                        <Users className="h-5 w-5" />
-                        {!collapsed && <span>Gestion Équipe</span>}
-                    </NavLink>
-                    <NavLink to={`/project/${projectId}/financials`} className={navLinkClass}>
-                        <PieChart className="h-5 w-5" />
-                        {!collapsed && <span>Rapports & Budget</span>}
-                    </NavLink>
-                    <NavLink to={`/project/${projectId}/settings`} className={navLinkClass}>
-                        <Settings className="h-5 w-5" />
-                        {!collapsed && <span>Paramètres</span>}
-                    </NavLink>
+                    <SidebarItem to={`/project/${projectId}`} icon={LayoutDashboard} label="Tableau de Bord" collapsed={collapsed} end />
+                    <SidebarItem to={`/project/${projectId}/board`} icon={FolderKanban} label="Sprint Actuel (Kanban)" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/analysis`} icon={BrainCircuit} label="Analyse Projet (IA)" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/backlog`} icon={ListTodo} label="Product Backlog" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/team`} icon={Users} label="Gestion Équipe" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/financials`} icon={PieChart} label="Rapports & Budget" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/settings`} icon={Settings} label="Paramètres" collapsed={collapsed} />
                 </>
             );
         }
     };
 
-
     return (
-        <aside className={cn(
-            "fixed left-0 top-0 z-40 h-screen border-r border-neutral-200 bg-white transition-all duration-300 flex flex-col",
-            collapsed ? "w-[80px]" : "w-[280px]"
-        )}>
-            {/* Header / Logo */}
-            <div className={cn("flex items-center justify-center border-b border-neutral-200 px-4 transition-all duration-300 overflow-hidden", collapsed ? "h-16" : "h-24")}>
-                {collapsed ? (
-                    <div className="h-10 w-10 flex items-center justify-center">
-                        <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview_mini.png" alt="Logo" className="h-8 w-8 object-contain" />
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-center w-full h-full">
-                        <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow" className="h-20 w-auto object-contain transition-transform duration-300 hover:scale-105" />
-                    </div>
-                )}
-            </div>
+        <TooltipProvider>
+            <aside className={cn(
+                "fixed left-0 top-0 z-40 h-screen border-r border-surface-border bg-white transition-ui duration-300 ease-soft flex flex-col",
+                collapsed ? "w-[80px]" : "w-[280px]"
+            )}>
+                {/* Header / Logo */}
+                <div className={cn("flex items-center justify-center border-b border-neutral-200 px-4 transition-all duration-300 overflow-hidden", collapsed ? "h-16" : "h-24")}>
+                    {collapsed ? (
+                        <div className="h-10 w-10 flex items-center justify-center">
+                            <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview_mini.png" alt="Logo" className="h-8 w-8 object-contain" />
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center w-full h-full">
+                            <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow" className="h-20 w-auto object-contain transition-transform duration-300 hover:scale-105" />
+                        </div>
+                    )}
+                </div>
 
-            {/* Chef Project Switcher */}
-            {/* Chef Project Switcher */}
-            {userRole === 'chef' && (
-                <>
-                    <div className={cn("pt-4", collapsed ? "px-2 flex justify-center" : "px-4")}>
-                        {!collapsed && (
-                            <div className="px-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
-                                Workspace
-                            </div>
-                        )}
+                {/* Chef Project Switcher */}
+                {userRole === 'chef' && (
+                    <>
+                        <div className={cn("pt-4", collapsed ? "px-2 flex justify-center" : "px-4")}>
+                            {!collapsed && (
+                                <div className="px-2 text-xs font-semibold text-brand-primary-500 uppercase tracking-wider mb-2">
+                                    Workspace
+                                </div>
+                            )}
 
-                        {collapsed ? (
-                            <div className="h-10 w-10 flex items-center justify-center rounded-md bg-neutral-50 text-neutral-600 border border-neutral-200 shadow-sm">
-                                {selectedProject === "global" ? <Folder className="h-5 w-5" /> : <FolderKanban className="h-5 w-5" />}
-                            </div>
-                        ) : (
                             <Popover open={open} onOpenChange={setOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        aria-expanded={open}
-                                        className="w-full justify-between"
-                                    >
-                                        <div className="flex items-center gap-2 truncate">
-                                            {selectedProject === "global" ? (
-                                                <Folder className="h-4 w-4 shrink-0" />
-                                            ) : (
-                                                <FolderKanban className="h-4 w-4 shrink-0" />
+                                {collapsed ? (
+                                    <Tooltip delayDuration={0}>
+                                        <TooltipTrigger asChild>
+                                            <PopoverTrigger asChild>
+                                                <button
+                                                    className={cn(
+                                                        "h-10 w-10 flex items-center justify-center rounded-lg transition-all cursor-pointer",
+                                                        selectedProject === "global"
+                                                            ? "bg-[#605BFF] text-white"
+                                                            : "bg-transparent text-neutral-900 hover:bg-neutral-100"
+                                                    )}
+                                                    onMouseEnter={() => {
+                                                        clearTimeout(mouseEnterTimer.current);
+                                                        setOpen(true);
+                                                    }}
+                                                    onMouseLeave={() => {
+                                                        mouseEnterTimer.current = setTimeout(() => setOpen(false), 200);
+                                                    }}
+                                                >
+                                                    {selectedProject === "global" ? <Folder className="h-5 w-5" /> : <FolderKanban className="h-5 w-5" />}
+                                                </button>
+                                            </PopoverTrigger>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right" sideOffset={20} className="font-bold border border-white/10 shadow-lg whitespace-nowrap">
+                                            {selectedProject === "global" ? "Vue Globale" : projects.find((p) => p.value === selectedProject)?.label || "Workspace"}
+                                        </TooltipContent>
+                                    </Tooltip>
+                                ) : (
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={open}
+                                            className={cn(
+                                                "w-full justify-between transition-all duration-200 text-neutral-900 font-bold",
+                                                selectedProject === "global"
+                                                    ? "bg-[#605BFF] text-white border-[#605BFF] hover:bg-[#605BFF]/90"
+                                                    : "bg-white border-neutral-200 hover:bg-neutral-50"
                                             )}
-                                            <span className="truncate">
-                                                {selectedProject === "global"
-                                                    ? "Vue Globale"
-                                                    : projects.find((project) => project.value === selectedProject)?.label}
-                                            </span>
-                                        </div>
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
+                                        >
+                                            <div className="flex items-center gap-2 truncate">
+                                                {selectedProject === "global" ? (
+                                                    <Folder className="h-4 w-4 shrink-0" />
+                                                ) : (
+                                                    <FolderKanban className="h-4 w-4 shrink-0" />
+                                                )}
+                                                <span className="truncate">
+                                                    {selectedProject === "global"
+                                                        ? "Vue Globale"
+                                                        : projects.find((project) => project.value === selectedProject)?.label}
+                                                </span>
+                                            </div>
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                )}
 
-                                <PopoverContent className="w-[240px] p-0">
+                                <PopoverContent
+                                    side={collapsed ? "right" : "bottom"}
+                                    align={collapsed ? "start" : "center"}
+                                    sideOffset={collapsed ? 20 : 4}
+                                    className="w-[240px] p-0"
+                                    onMouseEnter={() => {
+                                        clearTimeout(mouseEnterTimer.current);
+                                        setOpen(true);
+                                    }}
+                                    onMouseLeave={() => {
+                                        mouseEnterTimer.current = setTimeout(() => setOpen(false), 200);
+                                    }}
+                                >
                                     <Command>
                                         <CommandInput placeholder="Search workspace..." />
                                         <CommandList>
@@ -234,7 +265,11 @@ const Sidebar = () => {
                                             <CommandGroup>
                                                 <CommandItem
                                                     value="global"
-                                                    className="text-neutral-900 data-[selected=true]:bg-brand-primary data-[selected=true]:text-white cursor-pointer"
+                                                    className={cn(
+                                                        "cursor-pointer rounded-lg m-1 font-bold transition-colors text-black",
+                                                        selectedProject === "global" && "bg-[#605BFF]/10 text-[#605BFF]",
+                                                        "data-[selected=true]:bg-[#605BFF] data-[selected=true]:text-white"
+                                                    )}
                                                     onSelect={() => {
                                                         setSelectedProject("global");
                                                         setOpen(false);
@@ -253,8 +288,12 @@ const Sidebar = () => {
                                                     <CommandItem
                                                         key={project.value}
                                                         value={project.value}
-                                                        className="text-neutral-900 data-[selected=true]:bg-brand-primary data-[selected=true]:text-white cursor-pointer"
-                                                        onSelect={(currentValue) => {
+                                                        className={cn(
+                                                            "cursor-pointer rounded-lg m-1 font-bold transition-colors text-black",
+                                                            selectedProject === project.value && "bg-[#605BFF]/10 text-[#605BFF]",
+                                                            "data-[selected=true]:bg-[#605BFF] data-[selected=true]:text-white"
+                                                        )}
+                                                        onSelect={() => {
                                                             setSelectedProject(project.value);
                                                             setOpen(false);
                                                             navigate(`/project/${project.value}`);
@@ -274,93 +313,105 @@ const Sidebar = () => {
                                     </Command>
                                 </PopoverContent>
                             </Popover>
-                        )}
-                    </div>
-                    {/* Separator between Workspace and Main Menu */}
-                    <div className="my-2 mx-4 border-t border-neutral-200" />
-                </>
-            )}
-
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto py-4">
-                <nav className="grid items-start px-4 text-sm font-medium gap-1">
-                    {userRole === 'chef' ? (
-                        renderChefNavigation()
-                    ) : (
-                        <>
-                            <div className="px-2 py-1.5 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                                {!collapsed && "Menu"}
-                            </div>
-                            <NavLink to="/my-tasks" className={navLinkClass}>
-                                <CheckSquare className="h-5 w-5" />
-                                {!collapsed && <span>My Tasks</span>}
-                            </NavLink>
-                            <NavLink to="/inbox" className={navLinkClass}>
-                                <Inbox className="h-5 w-5" />
-                                {!collapsed && <span>Inbox</span>}
-                            </NavLink>
-                            <NavLink to="/calendar" className={navLinkClass}>
-                                <Calendar className="h-5 w-5" />
-                                {!collapsed && <span>Calendar</span>}
-                            </NavLink>
-                            <NavLink to="/notifications" className={navLinkClass}>
-                                <Bell className="h-5 w-5" />
-                                {!collapsed && <span>Notifications</span>}
-                            </NavLink>
-                            <NavLink to="/settings" className={navLinkClass}>
-                                <Settings className="h-5 w-5" />
-                                {!collapsed && <span>Settings</span>}
-                            </NavLink>
-                        </>
-                    )}
-                </nav>
-            </div>
-
-            {/* Footer / User Profile & Toggle */}
-            <div className="border-t border-neutral-200 p-4 space-y-4">
-
-                {/* User Profile Section */}
-                <div className={cn(
-                    "flex items-center gap-3 rounded-md border border-neutral-200 bg-neutral-50 p-2",
-                    collapsed ? "justify-center border-none bg-transparent" : ""
-                )}>
-                    <img
-                        src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user.first_name}`}
-                        alt="Avatar"
-                        className="h-9 w-9 rounded-full object-cover border border-white shadow-sm"
-                    />
-
-                    {!collapsed && (
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-neutral-900 truncate">
-                                {user.first_name} {user.last_name}
-                            </p>
-                            <p className="text-xs text-neutral-500 truncate capitalize">
-                                {userRole === 'chef' ? 'Project Manager' : 'Team Member'}
-                            </p>
                         </div>
-                    )}
+                        {/* Separator between Workspace and Main Menu */}
+                        <div className="my-2 mx-4 border-t border-neutral-200" />
+                    </>
+                )}
 
-                    {!collapsed && (
-                        <button
-                            onClick={handleLogout}
-                            className="text-neutral-400 hover:text-red-500 transition-colors"
-                            title="Logout"
-                        >
-                            <LogOut className="h-5 w-5" />
-                        </button>
-                    )}
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto py-4">
+                    <nav className="grid items-start px-4 text-sm font-medium gap-1">
+                        {userRole === 'chef' ? (
+                            renderChefNavigation()
+                        ) : (
+                            <>
+                                <div className="px-2 py-1.5 text-xs font-semibold text-brand-primary-500 uppercase tracking-wider">
+                                    {!collapsed && "Menu"}
+                                </div>
+                                <SidebarItem to="/my-tasks" icon={CheckSquare} label="My Tasks" collapsed={collapsed} />
+                                <SidebarItem to="/inbox" icon={Inbox} label="Inbox" collapsed={collapsed} />
+                                <SidebarItem to="/calendar" icon={Calendar} label="Calendar" collapsed={collapsed} />
+                                <SidebarItem to="/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
+                                <SidebarItem to="/settings" icon={Settings} label="Settings" collapsed={collapsed} />
+                            </>
+                        )}
+                    </nav>
                 </div>
 
-                <button
-                    onClick={() => setCollapsed(!collapsed)}
-                    className="flex w-full items-center justify-center rounded-md border border-neutral-200 bg-transparent py-2 text-sm font-medium text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
-                >
-                    {collapsed ? <ChevronLeft className="h-4 w-4 rotate-180" /> : <ChevronLeft className="h-4 w-4 mr-2" />}
-                    {!collapsed && "Collapse Sidebar"}
-                </button>
-            </div>
-        </aside >
+                {/* Footer / User Profile & Toggle */}
+                <div className="border-t border-neutral-200 p-4 space-y-4">
+                    {/* User Profile Section */}
+                    <div className={cn(
+                        "flex items-center gap-3 rounded-xl border border-surface-border bg-surface-background p-3 shadow-subtle",
+                        collapsed ? "justify-center border-none bg-transparent shadow-none px-0" : ""
+                    )}>
+                        {!collapsed && (
+                            <div className="relative">
+                                <img
+                                    src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user.first_name}`}
+                                    alt="Avatar"
+                                    className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
+                                />
+                                <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success-default border-2 border-white" />
+                            </div>
+                        )}
+
+                        {!collapsed && (
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-neutral-900 truncate tracking-tight">
+                                    {user.first_name} {user.last_name}
+                                </p>
+                                <p className="text-[10px] text-neutral-500 truncate uppercase font-black tracking-widest">
+                                    {userRole === 'chef' ? 'Manager' : 'Team'}
+                                </p>
+                            </div>
+                        )}
+
+                        {collapsed ? (
+                            <Tooltip delayDuration={0}>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="text-neutral-400 hover:text-danger-default transition-colors p-1.5 hover:bg-danger-lighter rounded-lg"
+                                    >
+                                        <LogOut className="h-4 w-4" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="right" sideOffset={20} className="font-bold border border-white/10 shadow-lg bg-danger-default text-white whitespace-nowrap">
+                                    Logout
+                                </TooltipContent>
+                            </Tooltip>
+                        ) : (
+                            <button
+                                onClick={handleLogout}
+                                className="text-neutral-400 hover:text-danger-default transition-colors p-1.5 hover:bg-danger-lighter rounded-lg"
+                                title="Logout"
+                            >
+                                <LogOut className="h-4 w-4" />
+                            </button>
+                        )}
+                    </div>
+
+                    <Tooltip delayDuration={0}>
+                        <TooltipTrigger asChild>
+                            <button
+                                onClick={() => setCollapsed(!collapsed)}
+                                className="flex w-full items-center justify-center rounded-xl border border-surface-border bg-transparent py-2.5 text-xs font-bold text-neutral-500 hover:bg-surface-muted hover:text-neutral-900 transition-ui duration-default ease-soft"
+                            >
+                                {collapsed ? <ChevronLeft className="h-4 w-4 rotate-180" /> : <ChevronLeft className="h-4 w-4 mr-2" />}
+                                {!collapsed && "Collapse Sidebar"}
+                            </button>
+                        </TooltipTrigger>
+                        {collapsed && (
+                            <TooltipContent side="right" sideOffset={20} className="font-bold border border-white/10 shadow-lg whitespace-nowrap">
+                                Expand Sidebar
+                            </TooltipContent>
+                        )}
+                    </Tooltip>
+                </div>
+            </aside >
+        </TooltipProvider>
     );
 };
 

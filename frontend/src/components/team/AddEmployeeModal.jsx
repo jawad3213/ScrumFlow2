@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Loader2, CheckCircle2 } from 'lucide-react';
 
-const AddEmployeeModal = ({ onEmployeeAdded }) => {
+const AddEmployeeModal = ({ onEmployeeAdded, variant = "default" }) => {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [specializations, setSpecializations] = useState([]);
@@ -87,107 +87,117 @@ const AddEmployeeModal = ({ onEmployeeAdded }) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button className="inline-flex items-center justify-center rounded-[20px] text-[16px] font-bold transition-all hover:scale-105 active:scale-95 bg-[#feaa09] text-white shadow-lg shadow-[#feaa09]/30 h-[60px] px-8 py-4 gap-2">
-                    <Plus className="h-5 w-5 stroke-[3]" />
-                    Add Member
-                </button>
+                <Button variant={variant} size="lg" className="rounded-xl h-11 px-6 gap-2 group font-bold tracking-tight">
+                    <Plus className="h-4 w-4 stroke-[3] group-hover:rotate-90 transition-transform duration-default" />
+                    <span>Add Member</span>
+                </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] rounded-[30px] p-8 border-none shadow-2xl overflow-hidden">
-                <DialogHeader className="mb-6">
-                    <DialogTitle className="text-2xl font-black text-neutral-900">Add New Team Member</DialogTitle>
-                    <DialogDescription className="text-neutral-500 font-medium">
-                        Enter details to create a new employee account. They will receive an email with their credentials.
-                    </DialogDescription>
-                </DialogHeader>
+            <DialogContent className="sm:max-w-[550px] rounded-2xl p-0 border-surface-border shadow-modal overflow-hidden bg-white animate-in zoom-in-95 duration-default ease-soft">
+                <div className="bg-surface-background p-8 border-b border-surface-border">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-black text-neutral-900 tracking-tight">Add New Team Member</DialogTitle>
+                        <DialogDescription className="text-neutral-500 font-medium">
+                            Enter details to create a new employee account. They will receive an email with their credentials.
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
 
-                {success ? (
-                    <div className="flex flex-col items-center justify-center py-10 space-y-4 animate-in zoom-in-95 duration-300">
-                        <div className="h-20 w-20 rounded-full bg-emerald-100 flex items-center justify-center">
-                            <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+                <div className="p-8">
+                    {success ? (
+                        <div className="flex flex-col items-center justify-center py-10 space-y-4 animate-in zoom-in-95 duration-default">
+                            <div className="h-20 w-20 rounded-full bg-success-lighter flex items-center justify-center border border-success-default/20">
+                                <CheckCircle2 className="h-10 w-10 text-success-default" />
+                            </div>
+                            <div className="text-center">
+                                <h3 className="text-xl font-bold text-neutral-900">Employee Created!</h3>
+                                <p className="text-neutral-500 font-medium mt-1">The welcome email has been sent successfully.</p>
+                            </div>
                         </div>
-                        <h3 className="text-xl font-bold text-neutral-900">Employee Created!</h3>
-                        <p className="text-neutral-500 text-center">The welcome email has been sent successfully.</p>
-                    </div>
-                ) : (
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest pl-1">First Name</label>
+                    ) : (
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-8">
+                                    <label className="text-xs font-bold text-neutral-900 uppercase tracking-widest pl-1">First Name</label>
+                                    <Input
+                                        required
+                                        placeholder="John"
+                                        value={formData.first_name}
+                                        onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                                        className="h-12"
+                                    />
+                                </div>
+                                <div className="space-y-8">
+                                    <label className="text-xs font-bold text-neutral-900 uppercase tracking-widest pl-1">Last Name</label>
+                                    <Input
+                                        required
+                                        placeholder="Doe"
+                                        value={formData.last_name}
+                                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                                        className="h-12"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-8">
+                                <label className="text-xs font-bold text-neutral-900 uppercase tracking-widest pl-1">Email Address</label>
                                 <Input
                                     required
-                                    placeholder="John"
-                                    value={formData.first_name}
-                                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                                    className="h-12 rounded-xl border-neutral-100 bg-neutral-50 focus:bg-white focus:ring-brand-primary"
+                                    type="email"
+                                    placeholder="john.doe@example.com"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    className="h-12"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest pl-1">Last Name</label>
-                                <Input
+
+                            <div className="space-y-8 relative group">
+                                <label className="text-xs font-bold text-neutral-900 uppercase tracking-widest pl-1">Specialization</label>
+                                <select
                                     required
-                                    placeholder="Doe"
-                                    value={formData.last_name}
-                                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                                    className="h-12 rounded-xl border-neutral-100 bg-neutral-50 focus:bg-white focus:ring-brand-primary"
-                                />
+                                    value={formData.specialization_id}
+                                    onChange={(e) => setFormData({ ...formData, specialization_id: e.target.value })}
+                                    className="w-full h-12 rounded-xl border border-surface-border bg-surface-background px-4 text-sm font-semibold text-neutral-700 focus:outline-none focus:ring-2 focus:ring-brand-primary-500 focus:bg-white transition-ui duration-default ease-soft appearance-none cursor-pointer shadow-subtle"
+                                >
+                                    <option value="" disabled>Select a role</option>
+                                    {specializations.map((spec) => (
+                                        <option key={spec.id} value={spec.id}>
+                                            {spec.name} ({spec.level})
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest pl-1">Email Address</label>
-                            <Input
-                                required
-                                type="email"
-                                placeholder="john.doe@example.com"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="h-12 rounded-xl border-neutral-100 bg-neutral-50 focus:bg-white focus:ring-brand-primary"
-                            />
-                        </div>
+                            {error && (
+                                <div className="p-4 rounded-xl bg-danger-lighter border border-danger-default/20 text-danger-darker text-sm font-bold animate-in slide-in-from-top-2">
+                                    {error}
+                                </div>
+                            )}
 
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest pl-1">Specialization</label>
-                            <select
-                                required
-                                value={formData.specialization_id}
-                                onChange={(e) => setFormData({ ...formData, specialization_id: e.target.value })}
-                                className="w-full h-12 rounded-xl border border-neutral-100 bg-neutral-50 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#feaa09] focus:bg-white transition-all appearance-none cursor-pointer"
-                            >
-                                <option value="" disabled>Select a role</option>
-                                {specializations.map((spec) => (
-                                    <option key={spec.id} value={spec.id}>
-                                        {spec.name} ({spec.level})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {error && (
-                            <div className="p-3 rounded-lg bg-rose-50 border border-rose-100 text-rose-600 text-sm font-medium animate-shake">
-                                {error}
+                            <div className="flex items-center justify-end gap-3 pt-4">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => setOpen(false)}
+                                    className="font-bold"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant={variant}
+                                    disabled={loading}
+                                    className="px-8 min-w-[150px] font-bold"
+                                >
+                                    {loading ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        "Create Employee"
+                                    )}
+                                </Button>
                             </div>
-                        )}
-
-                        <DialogFooter className="pt-4 border-t border-neutral-50 -mx-8 px-8">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => setOpen(false)}
-                                className="rounded-xl font-bold text-neutral-500"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="rounded-xl bg-[#feaa09] hover:bg-[#e59908] text-white font-bold px-8 shadow-lg shadow-[#feaa09]/30"
-                            >
-                                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Create Employee
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                )}
+                        </form>
+                    )}
+                </div>
             </DialogContent>
         </Dialog>
     );

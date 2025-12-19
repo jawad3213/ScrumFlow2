@@ -3,27 +3,27 @@ import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-    "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:scale-105 duration-200 cursor-default",
+    "inline-flex items-center rounded-pill border px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider transition-ui duration-default ease-soft focus:outline-none focus:ring-2 focus:ring-brand-primary-500 focus:ring-offset-2 hover:scale-105 cursor-default",
     {
         variants: {
             variant: {
                 default:
-                    "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+                    "border-transparent bg-brand-primary-500 text-white shadow-subtle",
                 secondary:
-                    "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                    "border-transparent bg-brand-primary-100 text-brand-primary-700",
                 destructive:
-                    "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-                outline: "text-foreground",
+                    "border-transparent bg-danger-lighter text-danger-darker border-danger-default/20",
+                outline: "text-neutral-700 border-neutral-200",
                 success:
-                    "border-transparent bg-emerald-500 text-white hover:bg-emerald-600 shadow-[0_0_10px_rgba(16,185,129,0.3)]",
+                    "border-transparent bg-success-lighter text-success-darker border-success-default/20",
                 warning:
-                    "border-transparent bg-amber-500 text-white hover:bg-amber-600 shadow-[0_0_10px_rgba(245,158,11,0.3)]",
+                    "border-transparent bg-warning-lighter text-warning-darker border-warning-default/20",
                 info:
-                    "border-transparent bg-blue-500 text-white hover:bg-blue-600 shadow-[0_0_10px_rgba(59,130,246,0.3)]",
+                    "border-transparent bg-info-lighter text-info-darker border-info-default/20",
                 danger:
-                    "border-transparent bg-rose-500 text-white hover:bg-rose-600 shadow-[0_0_10px_rgba(244,63,94,0.3)]",
+                    "border-transparent bg-danger-lighter text-danger-darker border-danger-default/20",
                 neutral:
-                    "border-transparent bg-neutral-500 text-white hover:bg-neutral-600",
+                    "border-transparent bg-neutral-100 text-neutral-600",
             },
         },
         defaultVariants: {

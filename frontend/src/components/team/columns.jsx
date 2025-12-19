@@ -88,14 +88,14 @@ export const columns = [
 
             return (
                 <div className="flex items-center gap-3">
-                    <div className={`flex h-9 w-9 items-center justify-center rounded-full border text-[13px] font-semibold ${getRandomColor(name)}`}>
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-full border text-[13px] font-bold ${getRandomColor(name)}`}>
                         {getInitials(name)}
                     </div>
                     <div className="flex flex-col">
-                        <span className="font-semibold text-neutral-900 group-hover:text-brand-primary transition-colors cursor-pointer">
+                        <span className="font-bold text-neutral-900 group-hover:text-brand-primary-500 transition-colors cursor-pointer">
                             {name}
                         </span>
-                        <span className="text-xs text-neutral-500 font-medium">
+                        <span className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider">
                             {email}
                         </span>
                     </div>
@@ -110,8 +110,8 @@ export const columns = [
             const role = row.getValue("role");
             return (
                 <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-brand-primary/40" />
-                    <span className="capitalize text-neutral-700 font-medium">{role}</span>
+                    <div className="h-2 w-2 rounded-full bg-brand-primary-500/30" />
+                    <span className="capitalize text-neutral-600 font-bold text-sm tracking-tight">{role}</span>
                 </div>
             );
         },
@@ -124,7 +124,7 @@ export const columns = [
                     <Button
                         variant="ghost"
                         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                        className="hover:bg-transparent -mr-3 h-8 text-neutral-500 font-semibold inline-flex"
+                        className="hover:bg-transparent -mr-3 h-8 text-neutral-500 font-bold text-[11px] uppercase tracking-wider inline-flex"
                     >
                         Daily Rate
                         <ArrowUpDown className="ml-2 h-3 w-3" />
@@ -133,7 +133,7 @@ export const columns = [
             )
         },
         cell: ({ row }) => (
-            <div className="text-right font-semibold text-neutral-700 pr-4">
+            <div className="text-right font-black text-neutral-900 pr-4 text-sm">
                 {row.getValue("rate")}
             </div>
         ),
@@ -147,28 +147,28 @@ export const columns = [
             const getStatusStyles = (status) => {
                 const normalized = status.toLowerCase();
                 if (normalized === 'active') return {
-                    bg: 'bg-emerald-50',
-                    text: 'text-emerald-700',
-                    border: 'border-emerald-200',
-                    dot: 'bg-emerald-500'
+                    bg: 'bg-success-lighter/50',
+                    text: 'text-success-darker',
+                    border: 'border-success-default/20',
+                    dot: 'bg-success-default'
                 };
                 if (normalized === 'on leave' || normalized === 'pending') return {
-                    bg: 'bg-amber-50',
-                    text: 'text-amber-700',
-                    border: 'border-amber-200',
-                    dot: 'bg-amber-500'
+                    bg: 'bg-warning-lighter/50',
+                    text: 'text-warning-darker',
+                    border: 'border-warning-default/20',
+                    dot: 'bg-warning-default'
                 };
                 if (normalized === 'banned' || normalized === 'terminated') return {
-                    bg: 'bg-rose-50',
-                    text: 'text-rose-700',
-                    border: 'border-rose-200',
-                    dot: 'bg-rose-500'
+                    bg: 'bg-danger-lighter/50',
+                    text: 'text-danger-darker',
+                    border: 'border-danger-default/20',
+                    dot: 'bg-danger-default'
                 };
                 return {
                     bg: 'bg-neutral-50',
-                    text: 'text-neutral-700',
+                    text: 'text-neutral-500',
                     border: 'border-neutral-200',
-                    dot: 'bg-neutral-500'
+                    dot: 'bg-neutral-400'
                 };
             };
 
@@ -176,16 +176,16 @@ export const columns = [
 
             return (
                 <div className="flex items-center">
-                    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${styles.bg} ${styles.text} ${styles.border} gap-1.5 shadow-sm`}>
+                    <div className={`inline-flex items-center px-3 py-1 rounded-pill text-[10px] font-black border ${styles.bg} ${styles.text} ${styles.border} gap-1.5 shadow-subtle`}>
                         {status.toLowerCase() === 'active' ? (
                             <span className="relative flex h-1.5 w-1.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-default opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success-default"></span>
                             </span>
                         ) : (
                             <div className={`h-1.5 w-1.5 rounded-full ${styles.dot}`} />
                         )}
-                        <span className="uppercase tracking-wider text-[10px]">{status}</span>
+                        <span className="uppercase tracking-widest">{status}</span>
                     </div>
                 </div>
             );
@@ -201,26 +201,26 @@ export const columns = [
                 <div className="flex items-center justify-end pr-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-neutral-100 rounded-full transition-all">
+                            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-surface-muted rounded-full transition-ui duration-default">
                                 <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4 text-neutral-500" />
+                                <MoreHorizontal className="h-4 w-4 text-neutral-400 hover:text-neutral-600" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[180px] p-1.5 animate-in slide-in-from-top-1 duration-200">
-                            <DropdownMenuLabel className="px-2 py-1.5 text-xs font-bold text-neutral-400 uppercase tracking-widest">
-                                Manage Employee
+                        <DropdownMenuContent align="end" className="w-[200px] p-2 animate-in slide-in-from-top-1 duration-default shadow-dropdown border-surface-border bg-white rounded-xl">
+                            <DropdownMenuLabel className="px-2 py-2 text-[10px] font-black text-neutral-400 uppercase tracking-widest">
+                                Member Actions
                             </DropdownMenuLabel>
-                            <DropdownMenuSeparator className="-mx-1.5 my-1" />
-                            <DropdownMenuItem className="gap-2 focus:bg-brand-primary/5 focus:text-brand-primary cursor-pointer rounded-md">
+                            <DropdownMenuSeparator className="-mx-2 my-1" />
+                            <DropdownMenuItem className="gap-2 focus:bg-brand-primary-50 focus:text-brand-primary-700 cursor-pointer rounded-lg p-2 font-bold text-neutral-600 text-xs">
                                 <Edit2 className="h-3.5 w-3.5" />
                                 Edit Account
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2 focus:bg-brand-primary/5 focus:text-brand-primary cursor-pointer rounded-md">
+                            <DropdownMenuItem className="gap-2 focus:bg-brand-primary-50 focus:text-brand-primary-700 cursor-pointer rounded-lg p-2 font-bold text-neutral-600 text-xs">
                                 <Shield className="h-3.5 w-3.5" />
                                 Permissions
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                className="gap-2 focus:bg-brand-primary/5 focus:text-brand-primary cursor-pointer rounded-md"
+                                className="gap-2 focus:bg-brand-primary-50 focus:text-brand-primary-700 cursor-pointer rounded-lg p-2 font-bold text-neutral-600 text-xs"
                                 onClick={() => {
                                     window.location.href = `mailto:${member.email}`;
                                 }}
@@ -228,8 +228,8 @@ export const columns = [
                                 <Mail className="h-3.5 w-3.5" />
                                 Send Message
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator className="-mx-1.5 my-1" />
-                            <DropdownMenuItem className="gap-2 group text-rose-600 focus:bg-rose-50 focus:text-rose-700 cursor-pointer rounded-md">
+                            <DropdownMenuSeparator className="-mx-2 my-1" />
+                            <DropdownMenuItem className="gap-2 group text-danger-default focus:bg-danger-lighter focus:text-danger-darker cursor-pointer rounded-lg p-2 font-black text-xs">
                                 <Trash2 className="h-3.5 w-3.5" />
                                 Delete Account
                             </DropdownMenuItem>

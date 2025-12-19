@@ -4,21 +4,22 @@ import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-ui duration-default ease-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95",
     {
         variants: {
             variant: {
-                default: "bg-neutral-900 text-neutral-50 hover:bg-neutral-900/90",
-                destructive: "bg-red-500 text-neutral-50 hover:bg-red-500/90",
-                outline: "border border-neutral-200 bg-white hover:bg-neutral-100 hover:text-neutral-900",
-                secondary: "bg-neutral-100 text-neutral-900 hover:bg-neutral-100/80",
-                ghost: "hover:bg-neutral-100 hover:text-neutral-900",
-                link: "text-neutral-900 underline-offset-4 hover:underline",
+                default: "bg-brand-primary-500 text-white hover:bg-brand-primary-600 shadow-subtle",
+                secondary: "bg-brand-secondary-500 text-white hover:bg-brand-secondary-600 shadow-subtle",
+                outline: "border border-surface-border bg-white text-neutral-700 hover:bg-surface-muted hover:text-neutral-900",
+                ghost: "text-neutral-600 hover:bg-surface-muted hover:text-neutral-900",
+                destructive: "bg-danger-default text-white hover:bg-danger-darker shadow-subtle",
+                success: "bg-success-default text-white hover:bg-success-darker shadow-subtle",
+                link: "text-brand-primary-500 underline-offset-4 hover:underline",
             },
             size: {
-                default: "h-10 px-4 py-2",
-                sm: "h-9 rounded-md px-3",
-                lg: "h-11 rounded-md px-8",
+                default: "py-btn-py-md px-btn-px-md h-10",
+                sm: "py-btn-py-sm px-btn-px-sm h-8 text-xs",
+                lg: "py-btn-py-lg px-btn-px-lg h-12 text-base",
                 icon: "h-10 w-10",
             },
         },

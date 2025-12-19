@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import TeamTable from '../../components/team/TeamTable';
 import AddEmployeeModal from '../../components/team/AddEmployeeModal';
 import { Plus } from 'lucide-react';
+import LoadingAnimation from '../../components/ui/LoadingAnimation';
 
 const TeamPage = () => {
     const { id } = useParams();
@@ -56,40 +57,22 @@ const TeamPage = () => {
     }, [id, fetchEmployees]);
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
-            {/* Header Section */}
-            <div className="bg-white rounded-[40px] border border-neutral-100 p-10 shadow-subtle shadow-custom">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                    <div className="space-y-4">
-                        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#FFF7ED] border border-[#FFEDD5]">
-                            <div className="h-2.5 w-2.5 rounded-full bg-[#feaa09]" />
-                            <span className="text-[#feaa09] text-xs font-bold uppercase tracking-widest">
-                                ORGANIZATION TEAM
-                            </span>
-                        </div>
-
-                        <div className="space-y-2">
-                            <h1 className="text-[42px] font-black tracking-tight text-[#000000]">
-                                Team Management
-                            </h1>
-                            <p className="text-[16px] text-neutral-500 max-w-2xl font-medium leading-relaxed">
-                                Manage your entire workforce in one place. Add new employees, update details, and monitor their status.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex-shrink-0">
-                        <AddEmployeeModal onEmployeeAdded={fetchEmployees} />
-                    </div>
+        <div className="space-y-6 animate-in fade-in duration-default ease-soft">
+            {/* Simplified Header Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl border border-surface-border p-6 shadow-elevation">
+                <h1 className="text-2xl font-black tracking-tight text-neutral-900">
+                    Team Management
+                </h1>
+                <div className="flex-shrink-0">
+                    <AddEmployeeModal onEmployeeAdded={fetchEmployees} variant="default" />
                 </div>
             </div>
 
             {/* Table Section */}
-            <div className="animate-in slide-in-from-bottom-4 duration-700 delay-150 px-2">
+            <div className="animate-in slide-in-from-bottom-4 duration-default delay-150 px-1">
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center h-64 bg-white rounded-3xl border border-neutral-200 shadow-sm border-dashed">
-                        <div className="h-10 w-10 border-4 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin mb-4" />
-                        <p className="text-neutral-500 font-medium animate-pulse">Loading team members...</p>
+                    <div className="flex flex-col items-center justify-center h-[500px] bg-white rounded-2xl border border-surface-border shadow-subtle">
+                        <LoadingAnimation className="w-64 h-64" />
                     </div>
                 ) : (
                     <TeamTable data={teamMembers} />
