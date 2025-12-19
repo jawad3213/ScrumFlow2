@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Mail\WelcomeEmployeeMail;
+use App\Models\Specialization;
 
 class EmployeeController extends Controller
 {
@@ -22,7 +24,7 @@ class EmployeeController extends Controller
         // Assuming "Team Global" might want all members or just employees. Let's return all for now or filter.
         // Usually "Team" implies everyone or at least employees.
         // Let's return users where role is 'employee'.
-        $employees = User::where('role', 'employee')->get();
+        $employees = User::where('role', 'employee')->with('specialization')->get();
         return response()->json($employees);
     }
 
@@ -36,7 +38,7 @@ class EmployeeController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'job_title' => 'required|string|max:255',
+            'specialization_id' => 'required|exists:specializations,id',
         ]);
 
         // 2. Générer un mot de passe aléatoire
@@ -47,7 +49,7 @@ class EmployeeController extends Controller
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
-            'job_title' => $request->job_title,
+            'specialization_id' => $request->specialization_id,
             'role' => 'employee', // Rôle forcé à 'employee'
             'password' => Hash::make($generatedPassword),
             'status' => 'active', // Par défaut actif
@@ -64,6 +66,7 @@ class EmployeeController extends Controller
         return response()->json([
             'message' => 'Employé créé avec succès.',
             'user' => $user,
+            'password' => $generatedPassword, // Plain text password for the admin to see/copy
         ], 201);
     }
 
@@ -77,15 +80,15 @@ class EmployeeController extends Controller
         $request->validate([
             'first_name' => 'sometimes|required|string|max:255',
             'last_name' => 'sometimes|required|string|max:255',
-            'job_title' => 'sometimes|required|string|max:255',
+            'specialization_id' => 'sometimes|required|exists:specializations,id',
             'status' => 'sometimes|required|in:active,banned',
         ]);
 
-        $user->update($request->only(['first_name', 'last_name', 'job_title', 'status']));
+        $user->update($request->only(['first_name', 'last_name', 'specialization_id', 'status']));
 
         return response()->json([
             'message' => 'Employé mis à jour avec succès.',
-            'user' => $user
+            'user' => $user->load('specialization')
         ]);
     }
 

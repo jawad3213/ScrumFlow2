@@ -25,7 +25,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'job_title', // <--- Ajouté
+        'specialization_id', // Added
         'status',    // <--- Ajouté 
     ];
 
@@ -50,5 +50,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function specialization()
+    {
+        return $this->belongsTo(Specialization::class);
     }
 }

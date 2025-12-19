@@ -18,8 +18,7 @@ return new class extends Migration
         $table->string('email')->unique();
         $table->string('password');
         $table->enum('role', ['chef', 'employee'])->default('employee'); 
-        $table->string('job_title')->nullable(); 
-        $table->decimal('daily_rate', 8, 2)->nullable(); // Pour le calcul de coût par AI
+        $table->unsignedBigInteger('specialization_id')->nullable();
         $table->rememberToken();
         $table->timestamps();
     });

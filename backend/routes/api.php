@@ -22,6 +22,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/employees/{id}', [EmployeeController::class, 'update']);
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
 
+    // Specialization Routes
+    Route::get('/specializations', [\App\Http\Controllers\SpecializationController::class, 'index']);
+    Route::post('/specializations', [\App\Http\Controllers\SpecializationController::class, 'store']);
+
     // Juste pour tester que le token fonctionne
     Route::get('/me', function (Request $request) {
         return $request->user();
