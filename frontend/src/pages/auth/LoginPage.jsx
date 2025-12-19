@@ -53,7 +53,7 @@ const LoginPage = () => {
             <div className="w-full lg:w-[480px] flex flex-col justify-center px-8 md:px-12 lg:px-16 py-12">
                 <div className="mb-10 flex flex-col items-center">
                     {/* Logo */}
-                    <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow Logo" className="w-64 h-32 mb-6 object-cover" />
+                    <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow Logo" className="h-20 w-auto mb-6 object-contain" />
                     <h1 className="text-2xl font-bold text-neutral-900">Log in</h1>
                 </div>
 
@@ -81,7 +81,7 @@ const LoginPage = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-neutral-700 mb-2 font-sans">Password</label>
+                        <label className="block text-sm font-semibold text-neutral-700 mb-2">Password</label>
                         <div className="relative">
                             <input
                                 type={showPassword ? "text" : "password"}

@@ -35,9 +35,13 @@ function App() {
           <Route path="/my-tasks" element={<MyTasksPage />} />
           <Route path="/profile" element={<ProfilePage />} />
 
+
           {/* CRÉATION PROJET (CHEF ONLY) */}
           <Route path="/projects/new" element={
             <RoleGuard role="admin"><NewProjectPage /></RoleGuard>
+          } />
+          <Route path="/team-global" element={
+            <RoleGuard role="admin"><TeamPage /></RoleGuard>
           } />
 
           {/* --- CONTEXTE PROJET (:id) --- */}

@@ -42,9 +42,9 @@ const ForgotPasswordPage = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-surface-background p-4">
-            <div className="w-full max-w-[520px] bg-surface-card rounded-xl shadow-elevation p-10 md:p-16 flex flex-col items-center">
+            <div className="w-full max-w-[520px] bg-surface-card rounded-xl shadow-custom p-10 md:p-16 flex flex-col items-center">
                 {/* Logo */}
-                <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow Logo" className="w-64 h-32 mb-6 object-cover" />
+                <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow Logo" className="h-20 w-auto mb-6 object-contain" />
 
                 <h1 className="text-2xl font-bold text-neutral-900 mb-10">Recover</h1>
 

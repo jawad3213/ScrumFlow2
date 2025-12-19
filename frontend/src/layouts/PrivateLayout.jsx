@@ -13,7 +13,7 @@ const PrivateLayout = () => {
     return (
         <div className="flex min-h-screen bg-surface-background">
             <Sidebar />
-            <div className="ml-64 flex-1 flex flex-col">
+            <div className="ml-[280px] flex-1 flex flex-col">
                 <Navbar />
                 <main className="flex-1 p-8">
                     <Outlet />

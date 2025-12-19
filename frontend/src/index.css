@@ -8,9 +8,9 @@
 }
 
 :root {
-  font-family: var(--font-plus-jakarta);
+  font-family: "Inter", "system-ui", "sans-serif";
   background-color: #F8F9FD;
-  color: #111827;
+  color: #000000;
 }
 
 body {

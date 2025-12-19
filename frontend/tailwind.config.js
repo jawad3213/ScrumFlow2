@@ -8,8 +8,10 @@ export default {
     extend: {
       colors: {
         brand: {
-          primary: "#5D5FEF",
-          secondary: "#A5A6F6",
+          primary: "#feaa09",
+          secondary: "#fe5c73",
+          dark: "#343c6a",
+          blue: "#2d60ff",
           muted: "#EEF2FF",
         },
         neutral: {
@@ -22,7 +24,7 @@ export default {
           600: "#4B5563",
           700: "#374151",
           800: "#1F2937",
-          900: "#111827",
+          900: "#000000",
         },
         semantic: {
           success: {
@@ -64,15 +66,16 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Plus Jakarta Sans", "Inter", "system-ui", "sans-serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
       },
       fontSize: {
-        xs: ["0.75rem", { lineHeight: "1rem" }],
-        sm: ["0.875rem", { lineHeight: "1.25rem" }],
-        base: ["1rem", { lineHeight: "1.5rem" }],
-        lg: ["1.125rem", { lineHeight: "1.75rem" }],
-        xl: ["1.25rem", { lineHeight: "1.75rem" }],
-        "2xl": ["1.5rem", { lineHeight: "2rem" }],
+        xs: ["13px", { lineHeight: "1rem" }],
+        sm: ["15px", { lineHeight: "1.25rem" }],
+        base: ["16px", { lineHeight: "1.5rem" }],
+        lg: ["18px", { lineHeight: "1.75rem" }],
+        xl: ["20px", { lineHeight: "1.75rem" }],
+        "2xl": ["22px", { lineHeight: "2rem" }],
+        "3xl": ["28px", { lineHeight: "2.25rem" }],
       },
       fontWeight: {
         normal: "400",
@@ -104,6 +107,10 @@ export default {
         subtle: "0 1px 3px 0 rgb(0 0 0 / 0.05)",
         card: "0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)",
         elevation: "0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07)",
+        custom: "4px 4px 18px -2px rgba(231, 228, 232, 0.8)",
+      },
+      backgroundImage: {
+        'brand-gradient': "linear-gradient(136deg, #123288 0%, #295eec 100%)",
       },
     },
   },

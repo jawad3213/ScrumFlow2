@@ -84,7 +84,7 @@ const ResetPasswordPage = () => {
     if (success) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-surface-background p-4">
-                <div className="w-full max-w-[520px] bg-surface-card rounded-xl shadow-elevation p-10 flex flex-col items-center text-center">
+                <div className="w-full max-w-[520px] bg-surface-card rounded-xl shadow-custom p-10 flex flex-col items-center text-center">
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-6">
                         <Check size={40} />
                     </div>
@@ -100,7 +100,7 @@ const ResetPasswordPage = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-surface-background p-4">
-            <div className="w-full max-w-[520px] bg-surface-card rounded-xl shadow-elevation p-10 md:p-16 flex flex-col items-center">
+            <div className="w-full max-w-[520px] bg-surface-card rounded-xl shadow-custom p-10 md:p-16 flex flex-col items-center">
                 {/* Logo */}
                 <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow Logo" className="w-64 h-32 mb-6 object-cover" />
 

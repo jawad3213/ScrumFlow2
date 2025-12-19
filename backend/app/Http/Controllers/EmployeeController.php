@@ -12,6 +12,21 @@ use App\Mail\WelcomeEmployeeMail;
 class EmployeeController extends Controller
 {
     /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        // Select specific fields if needed, or all. 
+        // Based on user request "table de migration des employee", we assume users table.
+        // We filter by role 'employee' if that's the intention, or return all for "Team Global".
+        // Assuming "Team Global" might want all members or just employees. Let's return all for now or filter.
+        // Usually "Team" implies everyone or at least employees.
+        // Let's return users where role is 'employee'.
+        $employees = User::where('role', 'employee')->get();
+        return response()->json($employees);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
