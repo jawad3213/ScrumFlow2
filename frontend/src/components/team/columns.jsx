@@ -117,28 +117,6 @@ export const columns = [
         },
     },
     {
-        accessorKey: "rate",
-        header: ({ column }) => {
-            return (
-                <div className="text-right w-full pr-4">
-                    <Button
-                        variant="ghost"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                        className="hover:bg-transparent -mr-3 h-8 text-neutral-500 font-bold text-[11px] uppercase tracking-wider inline-flex"
-                    >
-                        Daily Rate
-                        <ArrowUpDown className="ml-2 h-3 w-3" />
-                    </Button>
-                </div>
-            )
-        },
-        cell: ({ row }) => (
-            <div className="text-right font-black text-neutral-900 pr-4 text-sm">
-                {row.getValue("rate")}
-            </div>
-        ),
-    },
-    {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => {
@@ -193,48 +171,31 @@ export const columns = [
     },
     {
         id: "actions",
-        enableHiding: false,
-        cell: ({ row }) => {
+        header: () => <div className="text-right pr-4">Actions</div>,
+        cell: ({ row, table }) => {
             const member = row.original
 
             return (
-                <div className="flex items-center justify-end pr-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-surface-muted rounded-full transition-ui duration-default">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4 text-neutral-400 hover:text-neutral-600" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[200px] p-2 animate-in slide-in-from-top-1 duration-default shadow-dropdown border-surface-border bg-white rounded-xl">
-                            <DropdownMenuLabel className="px-2 py-2 text-[10px] font-black text-neutral-400 uppercase tracking-widest">
-                                Member Actions
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator className="-mx-2 my-1" />
-                            <DropdownMenuItem className="gap-2 focus:bg-brand-primary-50 focus:text-brand-primary-700 cursor-pointer rounded-lg p-2 font-bold text-neutral-600 text-xs">
-                                <Edit2 className="h-3.5 w-3.5" />
-                                Edit Account
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2 focus:bg-brand-primary-50 focus:text-brand-primary-700 cursor-pointer rounded-lg p-2 font-bold text-neutral-600 text-xs">
-                                <Shield className="h-3.5 w-3.5" />
-                                Permissions
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                className="gap-2 focus:bg-brand-primary-50 focus:text-brand-primary-700 cursor-pointer rounded-lg p-2 font-bold text-neutral-600 text-xs"
-                                onClick={() => {
-                                    window.location.href = `mailto:${member.email}`;
-                                }}
-                            >
-                                <Mail className="h-3.5 w-3.5" />
-                                Send Message
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator className="-mx-2 my-1" />
-                            <DropdownMenuItem className="gap-2 group text-danger-default focus:bg-danger-lighter focus:text-danger-darker cursor-pointer rounded-lg p-2 font-black text-xs">
-                                <Trash2 className="h-3.5 w-3.5" />
-                                Delete Account
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                <div className="flex items-center justify-end gap-2 pr-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-10 w-10 p-0 rounded-xl hover:bg-brand-primary-50 hover:text-brand-primary-600 transition-all duration-200 group"
+                        onClick={() => table.options.meta?.onEdit(member)}
+                    >
+                        <Edit2 className="h-5 w-5 stroke-[2.5]" />
+                        <span className="sr-only">Edit</span>
+                    </Button>
+
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-10 w-10 p-0 rounded-xl hover:bg-danger-lighter hover:text-danger-default transition-all duration-200 group"
+                        onClick={() => table.options.meta?.onDelete(member)}
+                    >
+                        <Trash2 className="h-5 w-5 stroke-[2.5]" />
+                        <span className="sr-only">Delete</span>
+                    </Button>
                 </div>
             )
         },

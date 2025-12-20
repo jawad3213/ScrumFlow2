@@ -1,17 +1,29 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import TeamTable from '../../components/team/TeamTable';
+import SpecializationTable from '../../components/team/SpecializationTable';
 import AddEmployeeModal from '../../components/team/AddEmployeeModal';
-import { Plus } from 'lucide-react';
+import AddSpecializationModal from '../../components/team/AddSpecializationModal';
+import { Plus, Trash2 } from 'lucide-react';
 import LoadingAnimation from '../../components/ui/LoadingAnimation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { useRef } from 'react';
 
 const TeamPage = () => {
     const { id } = useParams();
     const [teamMembers, setTeamMembers] = useState([]);
+    const [specializations, setSpecializations] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState("employees");
+    const [selectedCount, setSelectedCount] = useState(0);
+
+    const teamTableRef = useRef();
+    const specializationTableRef = useRef();
+
+    const handleSelectionChange = useCallback((rows) => setSelectedCount(rows.length), []);
 
     const fetchEmployees = useCallback(async () => {
-        setLoading(true);
         try {
             const token = localStorage.getItem('auth_token');
             const response = await fetch('http://localhost:8000/api/employees', {
@@ -23,59 +35,124 @@ const TeamPage = () => {
 
             if (response.ok) {
                 const data = await response.json();
-
                 // Transform API data to match Table columns
                 const formattedData = data.map(emp => ({
-                    id: emp.id,
+                    ...emp,
                     name: `${emp.first_name} ${emp.last_name}`,
                     role: emp.specialization?.name || 'N/A',
-                    email: emp.email,
-                    status: emp.status || 'Active',
-                    rate: emp.specialization ? `$${emp.specialization.salary}/day` : "$0/day"
+                    status: emp.status || 'active'
                 }));
-
                 setTeamMembers(formattedData);
-            } else {
-                console.error("Failed to fetch employees");
             }
         } catch (error) {
             console.error("Error fetching employees:", error);
-        } finally {
-            setLoading(false);
         }
     }, []);
 
+    const fetchSpecializations = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch('http://localhost:8000/api/specializations', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setSpecializations(data);
+            }
+        } catch (error) {
+            console.error("Error fetching specializations:", error);
+        }
+    }, []);
+
+    const loadAllData = useCallback(async () => {
+        setLoading(true);
+        await Promise.all([fetchEmployees(), fetchSpecializations()]);
+        setLoading(false);
+    }, [fetchEmployees, fetchSpecializations]);
+
     useEffect(() => {
-        // Only fetch global team data if not in a specific project context (or distinct logic for project team)
-        // For now, assuming "Team Global" (no id) fetches all employees.
         if (!id) {
-            fetchEmployees();
+            loadAllData();
         } else {
-            // TODO: specific project team logic fetching
             setLoading(false);
         }
-    }, [id, fetchEmployees]);
+    }, [id, loadAllData]);
 
     return (
         <div className="space-y-6 animate-in fade-in duration-default ease-soft">
             {/* Simplified Header Section */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl border border-surface-border p-6 shadow-elevation">
-                <h1 className="text-2xl font-black tracking-tight text-neutral-900">
-                    Team Management
-                </h1>
+                <div>
+                    <h1 className="text-2xl font-black tracking-tight text-neutral-900">
+                        Team Management
+                    </h1>
+                    <p className="text-neutral-500 font-medium">Manage your team members and roles.</p>
+                </div>
                 <div className="flex-shrink-0">
-                    <AddEmployeeModal onEmployeeAdded={fetchEmployees} variant="default" />
+                    {activeTab === 'employees' ? (
+                        <AddEmployeeModal onEmployeeAdded={fetchEmployees} variant="default" />
+                    ) : (
+                        <AddSpecializationModal onSpecializationAdded={fetchSpecializations} variant="default" />
+                    )}
                 </div>
             </div>
 
-            {/* Table Section */}
+            {/* Tabs Section */}
             <div className="animate-in slide-in-from-bottom-4 duration-default delay-150 px-1">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-[500px] bg-white rounded-2xl border border-surface-border shadow-subtle">
                         <LoadingAnimation className="w-64 h-64" />
                     </div>
                 ) : (
-                    <TeamTable data={teamMembers} />
+                    <Tabs defaultValue="employees" className="w-full" onValueChange={setActiveTab}>
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+                            <TabsList className="bg-surface-muted/50 p-1 border border-surface-border rounded-xl">
+                                <TabsTrigger value="employees" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-brand-primary-600 data-[state=active]:shadow-sm font-bold text-neutral-500 w-[150px]">
+                                    Employees
+                                </TabsTrigger>
+                                <TabsTrigger value="specializations" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-brand-primary-600 data-[state=active]:shadow-sm font-bold text-neutral-500 w-[150px]">
+                                    Specializations
+                                </TabsTrigger>
+                            </TabsList>
+
+                            {selectedCount > 0 && (
+                                <div className="flex items-center gap-3 animate-in slide-in-from-right-4 duration-300 bg-danger-lighter/30 px-4 py-1.5 rounded-2xl border border-danger-default/10">
+                                    <span className="text-sm font-bold text-danger-darker">
+                                        {selectedCount} item{selectedCount > 1 ? 's' : ''} selected
+                                    </span>
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() => (activeTab === 'employees' ? teamTableRef : specializationTableRef).current?.triggerBulkDelete()}
+                                        className="bg-danger-default hover:bg-danger-darker text-white font-bold rounded-xl px-4 h-9 shadow-sm flex items-center gap-2"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                        <span>Delete Selected</span>
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+
+                        <TabsContent value="employees">
+                            <TeamTable
+                                ref={teamTableRef}
+                                data={teamMembers}
+                                onRefresh={fetchEmployees}
+                                onSelectionChange={handleSelectionChange}
+                            />
+                        </TabsContent>
+
+                        <TabsContent value="specializations">
+                            <SpecializationTable
+                                ref={specializationTableRef}
+                                data={specializations}
+                                onRefresh={fetchSpecializations}
+                                onSelectionChange={handleSelectionChange}
+                            />
+                        </TabsContent>
+                    </Tabs>
                 )}
             </div>
         </div>

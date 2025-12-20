@@ -38,8 +38,14 @@ class EmployeeController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'specialization_id' => 'required|exists:specializations,id',
+            'specialization_name' => 'required|string|exists:specializations,name',
+            'level' => 'required|string|exists:specializations,level',
         ]);
+
+        // Find the specialization ID based on name and level
+        $specialization = Specialization::where('name', $request->specialization_name)
+                                        ->where('level', $request->level)
+                                        ->firstOrFail();
 
         // 2. Générer un mot de passe aléatoire
         $generatedPassword = Str::random(10); // Mot de passe de 10 caractères
@@ -49,7 +55,7 @@ class EmployeeController extends Controller
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
-            'specialization_id' => $request->specialization_id,
+            'specialization_id' => $specialization->id,
             'role' => 'employee', // Rôle forcé à 'employee'
             'password' => Hash::make($generatedPassword),
             'status' => 'active', // Par défaut actif
@@ -80,11 +86,22 @@ class EmployeeController extends Controller
         $request->validate([
             'first_name' => 'sometimes|required|string|max:255',
             'last_name' => 'sometimes|required|string|max:255',
-            'specialization_id' => 'sometimes|required|exists:specializations,id',
+            'specialization_name' => 'sometimes|required|string|exists:specializations,name',
+            'level' => 'sometimes|required|string|exists:specializations,level',
             'status' => 'sometimes|required|in:active,banned',
+            // Allow specialization_id to be optional or calculated
         ]);
 
-        $user->update($request->only(['first_name', 'last_name', 'specialization_id', 'status']));
+        $data = $request->only(['first_name', 'last_name', 'status']);
+
+        if ($request->has('specialization_name') && $request->has('level')) {
+             $specialization = Specialization::where('name', $request->specialization_name)
+                                            ->where('level', $request->level)
+                                            ->firstOrFail();
+             $data['specialization_id'] = $specialization->id;
+        }
+
+        $user->update($data);
 
         return response()->json([
             'message' => 'Employé mis à jour avec succès.',
@@ -110,6 +127,23 @@ class EmployeeController extends Controller
 
         return response()->json([
             'message' => 'Employé supprimé avec succès.'
+        ]);
+    }
+
+    /**
+     * Remove multiple resources from storage.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:users,id'
+        ]);
+
+        User::whereIn('id', $request->ids)->delete();
+
+        return response()->json([
+            'message' => 'Employés supprimés avec succès.'
         ]);
     }
 }

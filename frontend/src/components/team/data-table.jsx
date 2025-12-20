@@ -9,7 +9,8 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table"
-import { ChevronDown, Search, SlidersHorizontal, ChevronLeft, ChevronRight, UserPlus } from "lucide-react"
+import { ChevronDown, Search, SlidersHorizontal, ChevronLeft, ChevronRight, UserPlus, Database } from "lucide-react"
+import EmptyState from "@/components/ui/EmptyState"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -31,6 +32,10 @@ import {
 export function DataTable({
     columns,
     data,
+    meta,
+    emptyState,
+    onSelectionChange,
+    bulkActions,
 }) {
     const [sorting, setSorting] = React.useState([])
     const [columnFilters, setColumnFilters] = React.useState([])
@@ -54,10 +59,27 @@ export function DataTable({
             columnVisibility,
             rowSelection,
         },
+        meta: meta
     })
+
+    // Use a ref for the callback to avoid effect loops from unstable parent callbacks
+    const onSelectionChangeRef = React.useRef(onSelectionChange);
+    React.useEffect(() => {
+        onSelectionChangeRef.current = onSelectionChange;
+    }, [onSelectionChange]);
+
+    // Effect to notify parent of selection changes
+    React.useEffect(() => {
+        if (onSelectionChangeRef.current) {
+            onSelectionChangeRef.current(table.getFilteredSelectedRowModel().rows);
+        }
+    }, [rowSelection]); // Only run when actual selection state changes
+
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
 
     return (
         <div className="w-full space-y-4">
+            {/* Bulk actions bar removed to be handled externally */}
             <div className="rounded-2xl border border-surface-border bg-white shadow-elevation overflow-hidden">
                 <Table>
                     <TableHeader className="bg-surface-muted/30">
@@ -97,15 +119,22 @@ export function DataTable({
                                 </TableRow>
                             ))
                         ) : (
-                            <TableRow>
+                            <TableRow className="hover:bg-transparent">
                                 <TableCell
                                     colSpan={columns.length}
-                                    className="h-32 text-center"
+                                    className="h-[400px] p-0"
                                 >
-                                    <div className="flex flex-col items-center justify-center gap-2 text-neutral-400">
-                                        <Search className="h-8 w-8 opacity-20" />
-                                        <p className="font-semibold tracking-tight">No results found.</p>
-                                    </div>
+                                    {emptyState ? (
+                                        emptyState
+                                    ) : (
+                                        <EmptyState
+                                            icon={Database}
+                                            title="No results found"
+                                            description="Try adjusting your filters or add a new entry to get started."
+                                            onAction={meta?.onCreate}
+                                            actionLabel="Add New"
+                                        />
+                                    )}
                                 </TableCell>
                             </TableRow>
                         )}

@@ -11,16 +11,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Loader2, CheckCircle2 } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
-const AddEmployeeModal = ({ onEmployeeAdded, variant = "default" }) => {
-    const [open, setOpen] = useState(false);
+const AddEmployeeModal = ({ onEmployeeAdded, variant = "default", open: controlledOpen, onOpenChange: setControlledOpen, showTrigger = true }) => {
+    const [internalOpen, setInternalOpen] = useState(false);
+
+    const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+    const setOpen = setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
     const [loading, setLoading] = useState(false);
     const [specializations, setSpecializations] = useState([]);
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
         email: '',
-        specialization_id: ''
+        specialization_name: '',
+        level: ''
     });
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
@@ -71,7 +82,7 @@ const AddEmployeeModal = ({ onEmployeeAdded, variant = "default" }) => {
                 setTimeout(() => {
                     setOpen(false);
                     setSuccess(false);
-                    setFormData({ first_name: '', last_name: '', email: '', specialization_id: '' });
+                    setFormData({ first_name: '', last_name: '', email: '', specialization_name: '', level: '' });
                     if (onEmployeeAdded) onEmployeeAdded();
                 }, 2000);
             } else {
@@ -86,12 +97,14 @@ const AddEmployeeModal = ({ onEmployeeAdded, variant = "default" }) => {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant={variant} size="lg" className="rounded-xl h-11 px-6 gap-2 group font-bold tracking-tight">
-                    <Plus className="h-4 w-4 stroke-[3] group-hover:rotate-90 transition-transform duration-default" />
-                    <span>Add Member</span>
-                </Button>
-            </DialogTrigger>
+            {showTrigger && (
+                <DialogTrigger asChild>
+                    <Button variant={variant} size="lg" className="rounded-xl h-11 px-6 gap-2 group font-bold tracking-tight">
+                        <Plus className="h-4 w-4 stroke-[3] group-hover:rotate-90 transition-transform duration-default" />
+                        <span>Add Member</span>
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent className="sm:max-w-[550px] rounded-2xl p-0 border-surface-border shadow-modal overflow-hidden bg-white animate-in zoom-in-95 duration-default ease-soft">
                 <div className="bg-surface-background p-8 border-b border-surface-border">
                     <DialogHeader>
@@ -116,55 +129,90 @@ const AddEmployeeModal = ({ onEmployeeAdded, variant = "default" }) => {
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-8">
-                                    <label className="text-xs font-bold text-neutral-900 uppercase tracking-widest pl-1">First Name</label>
+                                <div className="space-y-3">
+                                    <label className="text-sm font-bold text-neutral-700 pl-1">First Name</label>
                                     <Input
                                         required
                                         placeholder="John"
                                         value={formData.first_name}
                                         onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                                        className="h-12"
+                                        className="h-12 border-surface-border bg-surface-background focus:bg-white transition-all font-semibold"
                                     />
                                 </div>
-                                <div className="space-y-8">
-                                    <label className="text-xs font-bold text-neutral-900 uppercase tracking-widest pl-1">Last Name</label>
+                                <div className="space-y-3">
+                                    <label className="text-sm font-bold text-neutral-700 pl-1">Last Name</label>
                                     <Input
                                         required
                                         placeholder="Doe"
                                         value={formData.last_name}
                                         onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                                        className="h-12"
+                                        className="h-12 border-surface-border bg-surface-background focus:bg-white transition-all font-semibold"
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-8">
-                                <label className="text-xs font-bold text-neutral-900 uppercase tracking-widest pl-1">Email Address</label>
+                            <div className="space-y-3">
+                                <label className="text-sm font-bold text-neutral-700 pl-1">Email Address</label>
                                 <Input
                                     required
                                     type="email"
                                     placeholder="john.doe@example.com"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="h-12"
+                                    className="h-12 border-surface-border bg-surface-background focus:bg-white transition-all font-semibold"
                                 />
                             </div>
 
-                            <div className="space-y-8 relative group">
-                                <label className="text-xs font-bold text-neutral-900 uppercase tracking-widest pl-1">Specialization</label>
-                                <select
-                                    required
-                                    value={formData.specialization_id}
-                                    onChange={(e) => setFormData({ ...formData, specialization_id: e.target.value })}
-                                    className="w-full h-12 rounded-xl border border-surface-border bg-surface-background px-4 text-sm font-semibold text-neutral-700 focus:outline-none focus:ring-2 focus:ring-brand-primary-500 focus:bg-white transition-ui duration-default ease-soft appearance-none cursor-pointer shadow-subtle"
-                                >
-                                    <option value="" disabled>Select a role</option>
-                                    {specializations.map((spec) => (
-                                        <option key={spec.id} value={spec.id}>
-                                            {spec.name} ({spec.level})
-                                        </option>
-                                    ))}
-                                </select>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-3">
+                                    <label className="text-sm font-bold text-neutral-700 pl-1">Specialization</label>
+                                    <Select
+                                        required
+                                        value={formData.specialization_name}
+                                        onValueChange={(value) => setFormData({ ...formData, specialization_name: value, level: '' })}
+                                    >
+                                        <SelectTrigger className="h-12 border-surface-border bg-surface-background focus:bg-white transition-all font-semibold rounded-xl px-4 text-sm text-neutral-700">
+                                            <SelectValue placeholder="Select Role" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {[...new Set(specializations.map(s => s.name))].map((name) => (
+                                                <SelectItem key={name} value={name}>
+                                                    {name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-sm font-bold text-neutral-700 pl-1">Level</label>
+                                    <Select
+                                        required
+                                        value={formData.level}
+                                        onValueChange={(value) => setFormData({ ...formData, level: value })}
+                                        disabled={!formData.specialization_name}
+                                    >
+                                        <SelectTrigger className="h-12 border-surface-border bg-surface-background focus:bg-white transition-all font-semibold rounded-xl px-4 text-sm text-neutral-700">
+                                            <SelectValue placeholder="Select Level" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {(() => {
+                                                const levelOrder = ['Junior', 'Mid-level', 'Senior', 'Lead / Architect'];
+                                                const filteredLevels = [...new Set(specializations
+                                                    .filter(s => s.name === formData.specialization_name)
+                                                    .map(s => s.level))];
+
+                                                return filteredLevels
+                                                    .sort((a, b) => levelOrder.indexOf(a) - levelOrder.indexOf(b))
+                                                    .map((level) => (
+                                                        <SelectItem key={level} value={level}>
+                                                            {level}
+                                                        </SelectItem>
+                                                    ));
+                                            })()}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
 
                             {error && (

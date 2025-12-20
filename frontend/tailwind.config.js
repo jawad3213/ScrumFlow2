@@ -153,7 +153,22 @@ export default {
       transitionTimingFunction: {
         'soft': 'cubic-bezier(0.4, 0, 0.2, 1)',
       },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        shimmer: {
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
+      animation: {
+        float: 'float 3s ease-in-out infinite',
+        shimmer: 'shimmer 2s infinite',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require("tailwindcss-animate"),
+  ],
 }

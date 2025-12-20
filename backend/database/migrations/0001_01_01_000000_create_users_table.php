@@ -18,7 +18,8 @@ return new class extends Migration
         $table->string('email')->unique();
         $table->string('password');
         $table->enum('role', ['chef', 'employee'])->default('employee'); 
-        $table->unsignedBigInteger('specialization_id')->nullable();
+        $table->enum('status', ['active', 'banned'])->default('active'); 
+        $table->foreignId('specialization_id')->nullable()->constrained('specializations')->onDelete('set null'); 
         $table->rememberToken();
         $table->timestamps();
     });
