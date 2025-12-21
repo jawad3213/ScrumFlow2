@@ -14,6 +14,8 @@ return new class extends Migration
        Schema::create('projects', function (Blueprint $table) {
         $table->id();
         $table->string('name');
+        $table->date('start_date');
+        $table->date('end_date')->nullable();
         $table->text('description')->nullable();
         $table->string('status')->default('pending'); // pending, active, completed
         $table->text('ai_analysis_json')->nullable(); // On stocke la réponse de l'IA ici temporairement
