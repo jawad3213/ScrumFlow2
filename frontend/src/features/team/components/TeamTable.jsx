@@ -1,14 +1,15 @@
-import React, { useState, forwardRef, useImperativeHandle, useRef, useMemo, useCallback } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, useRef, useMemo, useCallback, useEffect } from 'react';
 import { DataTable } from './data-table';
 import { columns } from './columns';
 import EditEmployeeModal from './EditEmployeeModal';
 import DeleteEmployeeModal from './DeleteEmployeeModal';
 import AddEmployeeModal from './AddEmployeeModal';
-import { Users, Search } from 'lucide-react';
-import EmptyState from '../ui/EmptyState';
+import { Users, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import EmptyState from '@/components/ui/EmptyState';
 import BulkDeleteModal from './BulkDeleteModal';
+import { deleteEmployee, bulkDeleteEmployees } from '@/api';
 
-const TeamTable = forwardRef(({ data, onRefresh, onSelectionChange }, ref) => {
+const TeamTable = forwardRef(({ data, specializations, onRefresh, onSelectionChange }, ref) => {
     const [editingEmployee, setEditingEmployee] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [deletingEmployee, setDeletingEmployee] = useState(null);
@@ -41,50 +42,47 @@ const TeamTable = forwardRef(({ data, onRefresh, onSelectionChange }, ref) => {
 
     const handleDeleteConfirm = async (id) => {
         try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(`http://localhost:8000/api/employees/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                onRefresh();
-                setIsDeleteModalOpen(false);
-            } else {
-                alert("Failed to delete employee");
-            }
+            await deleteEmployee(id);
+            onRefresh();
+            setIsDeleteModalOpen(false);
         } catch (error) {
             console.error("Delete error:", error);
-            alert("An error occurred while deleting");
+            alert(error || "An error occurred while deleting");
         }
     };
 
     const handleBulkDeleteConfirm = async () => {
         try {
-            const token = localStorage.getItem('auth_token');
             const ids = selectedRowsForBulk.map(row => row.original.id);
-            const response = await fetch('http://localhost:8000/api/employees/bulk-delete', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ ids })
-            });
-
-            if (response.ok) {
-                onRefresh();
-                setIsBulkDeleteModalOpen(false);
-            } else {
-                alert("Failed to delete selected employees");
-            }
+            await bulkDeleteEmployees(ids);
+            onRefresh();
+            setIsBulkDeleteModalOpen(false);
         } catch (error) {
             console.error("Bulk delete error:", error);
-            alert("An error occurred while deleting selected employees");
+            alert(error || "An error occurred while deleting selected employees");
         }
     };
+
+    const [specFilter, setSpecFilter] = useState('All');
+    const uniqueRoles = ['All', ...new Set((specializations || []).map(s => s.name))];
+
+    const scrollContainerRef = useRef(null);
+    const [showLeftArrow, setShowLeftArrow] = useState(false);
+    const [showRightArrow, setShowRightArrow] = useState(false);
+
+    const checkScroll = useCallback(() => {
+        if (scrollContainerRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+            setShowLeftArrow(scrollLeft > 0);
+            setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
+        }
+    }, []);
+
+    useEffect(() => {
+        checkScroll();
+        window.addEventListener('resize', checkScroll);
+        return () => window.removeEventListener('resize', checkScroll);
+    }, [checkScroll, uniqueRoles]);
 
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
@@ -100,16 +98,71 @@ const TeamTable = forwardRef(({ data, onRefresh, onSelectionChange }, ref) => {
         onCreate: handleAdd
     }), [handleEdit, handleDeleteRequest, handleAdd]);
 
+    const scroll = (direction) => {
+        if (scrollContainerRef.current) {
+            const scrollAmount = 200;
+            scrollContainerRef.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
     const filteredData = (data || []).filter(emp => {
         const matchesStatus = statusFilter === 'all' || emp.status === statusFilter;
+        const matchesSpec = specFilter === 'All' || emp.specialization?.name === specFilter;
         const fullName = `${emp.first_name} ${emp.last_name}`.toLowerCase();
         const matchesSearch = fullName.includes(searchTerm.toLowerCase());
-        return matchesStatus && matchesSearch;
+        return matchesStatus && matchesSearch && matchesSpec;
     });
 
     return (
         <>
-            <div className="space-y-4">
+            <div className="space-y-6">
+                {/* Specialization Chips Filter */}
+                <div className="relative flex items-center group/filter px-1">
+                    {/* Left Arrow */}
+                    {showLeftArrow && (
+                        <button
+                            onClick={() => scroll('left')}
+                            className="absolute left-0 z-10 p-2 rounded-full bg-white border border-surface-border shadow-modal text-neutral-400 hover:text-brand-primary-500 hover:border-brand-primary-200 transition-all -translate-x-1/2"
+                        >
+                            <ChevronLeft className="h-4 w-4 stroke-[3]" />
+                        </button>
+                    )}
+
+                    <div
+                        ref={scrollContainerRef}
+                        onScroll={checkScroll}
+                        className="flex items-center gap-2 overflow-x-auto py-2 scrollbar-none w-full scroll-smooth"
+                    >
+                        {uniqueRoles.map((role) => (
+                            <button
+                                key={role}
+                                onClick={() => setSpecFilter(role)}
+                                className={`
+                                px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-200
+                                ${specFilter === role
+                                        ? 'bg-brand-primary-500 text-white shadow-md transform scale-105'
+                                        : 'bg-white text-neutral-600 border border-surface-border hover:border-brand-primary-200 hover:text-brand-primary-600 hover:bg-brand-primary-50'}
+                            `}
+                            >
+                                {role}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Right Arrow */}
+                    {showRightArrow && (
+                        <button
+                            onClick={() => scroll('right')}
+                            className="absolute right-0 z-10 p-2 rounded-full bg-white border border-surface-border shadow-modal text-neutral-400 hover:text-brand-primary-500 hover:border-brand-primary-200 transition-all translate-x-1/2"
+                        >
+                            <ChevronRight className="h-4 w-4 stroke-[3]" />
+                        </button>
+                    )}
+                </div>
+
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-transparent px-1">
                     <div className="relative w-full sm:w-80 group">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

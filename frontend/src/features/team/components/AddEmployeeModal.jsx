@@ -11,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Loader2, CheckCircle2 } from 'lucide-react';
+import { getSpecializations, createEmployee } from '@/api';
+import { isValidEmail, isEmpty } from '@/utils';
 import {
     Select,
     SelectContent,
@@ -44,16 +46,8 @@ const AddEmployeeModal = ({ onEmployeeAdded, variant = "default", open: controll
 
     const fetchSpecializations = async () => {
         try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch('http://localhost:8000/api/specializations', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setSpecializations(data);
-            }
+            const data = await getSpecializations();
+            setSpecializations(data);
         } catch (error) {
             console.error("Error fetching specializations:", error);
         }
@@ -61,35 +55,36 @@ const AddEmployeeModal = ({ onEmployeeAdded, variant = "default", open: controll
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setError(null);
 
+        // Client-side Validations
+        if (isEmpty(formData.first_name) || isEmpty(formData.last_name)) {
+            setError('First and last name are required.');
+            return;
+        }
+
+        if (!isValidEmail(formData.email)) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+
+        if (!formData.specialization_name || !formData.level) {
+            setError('Please select both a specialization and a level.');
+            return;
+        }
+
+        setLoading(true);
         try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch('http://localhost:8000/api/employees', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setSuccess(true);
-                setTimeout(() => {
-                    setOpen(false);
-                    setSuccess(false);
-                    setFormData({ first_name: '', last_name: '', email: '', specialization_name: '', level: '' });
-                    if (onEmployeeAdded) onEmployeeAdded();
-                }, 2000);
-            } else {
-                setError(data.message || "Something went wrong");
-            }
+            await createEmployee(formData);
+            setSuccess(true);
+            setTimeout(() => {
+                setOpen(false);
+                setSuccess(false);
+                setFormData({ first_name: '', last_name: '', email: '', specialization_name: '', level: '' });
+                if (onEmployeeAdded) onEmployeeAdded();
+            }, 2000);
         } catch (error) {
-            setError("Failed to connect to server");
+            setError(error || "Something went wrong");
         } finally {
             setLoading(false);
         }

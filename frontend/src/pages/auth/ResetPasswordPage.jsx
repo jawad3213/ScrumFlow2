@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Activity, Eye, EyeOff, Check, X, Loader2, ArrowLeft } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { resetPassword } from '@/api';
+import logo from '@/assets/login/logo.png';
+import illustrationAlt from '@/assets/login/illustration-alt.png';
 
 const ResetPasswordPage = () => {
     const [searchParams] = useSearchParams();
@@ -52,30 +55,16 @@ const ResetPasswordPage = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/reset-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({
-                    token,
-                    email,
-                    password,
-                    password_confirmation: confirmPassword
-                }),
+            await resetPassword({
+                token,
+                email,
+                password,
+                password_confirmation: confirmPassword
             });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setSuccess(true);
-                setTimeout(() => navigate('/login'), 3000);
-            } else {
-                setError(data.message || 'Failed to reset password. Link might be expired.');
-            }
+            setSuccess(true);
+            setTimeout(() => navigate('/login'), 3000);
         } catch (err) {
-            setError('An error occurred. Please try again later.');
+            setError(err || 'Failed to reset password. Link might be expired.');
         } finally {
             setIsLoading(false);
         }
@@ -99,7 +88,7 @@ const ResetPasswordPage = () => {
                     </div>
                 </div>
                 <div className="hidden lg:flex flex-1 bg-surface-background items-center justify-center p-12 relative overflow-hidden">
-                    <img src="/login/Illustration13213.png" alt="Success illustration" className="max-w-[550px] w-full transform hover:scale-105 transition-transform duration-default ease-soft relative z-10 drop-shadow-2xl" />
+                    <img src={illustrationAlt} alt="Success illustration" className="max-w-[550px] w-full transform hover:scale-105 transition-transform duration-default ease-soft relative z-10 drop-shadow-2xl" />
                 </div>
             </div>
         );
@@ -112,7 +101,7 @@ const ResetPasswordPage = () => {
                 <div className="mb-10 flex flex-col items-center">
                     {/* Logo */}
                     <Link to="/login">
-                        <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow Logo" className="h-20 w-auto mb-6 object-contain hover:scale-105 transition-transform" />
+                        <img src={logo} alt="TaskFlow Logo" className="h-20 w-auto mb-6 object-contain hover:scale-105 transition-transform" />
                     </Link>
                     <h1 className="text-2xl font-black text-neutral-900 tracking-tight">Set New Password</h1>
                     <p className="text-sm text-neutral-500 font-bold mt-1.5 text-center">Ensure your new password is secure</p>
@@ -218,7 +207,7 @@ const ResetPasswordPage = () => {
 
                 <div className="max-w-[550px] w-full transform hover:scale-105 transition-transform duration-default ease-soft relative z-10">
                     <img
-                        src="/login/Illustration13213.png"
+                        src={illustrationAlt}
                         alt="Security illustration"
                         className="w-full h-auto drop-shadow-2xl"
                     />

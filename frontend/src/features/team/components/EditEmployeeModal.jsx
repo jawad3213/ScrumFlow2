@@ -9,6 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from 'lucide-react';
+import { getSpecializations, updateEmployee } from '@/api';
+import { isEmpty } from '@/utils';
 import {
     Select,
     SelectContent,
@@ -51,16 +53,8 @@ const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) 
 
     const fetchSpecializations = async () => {
         try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch('http://localhost:8000/api/specializations', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setSpecializations(data);
-            }
+            const data = await getSpecializations();
+            setSpecializations(data);
         } catch (error) {
             console.error("Error fetching specializations:", error);
         }
@@ -68,32 +62,30 @@ const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) 
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
+
+        // Validations
+        if (isEmpty(formData.first_name) || isEmpty(formData.last_name)) {
+            setError('First and last name are required.');
+            return;
+        }
+
+        if (!formData.specialization_name || !formData.level) {
+            setError('Please select both a specialization and a level.');
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
         const { email, ...updateData } = formData;
 
         try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(`http://localhost:8000/api/employees/${employee.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(updateData)
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                onEmployeeUpdated();
-                onOpenChange(false);
-            } else {
-                setError(data.message || "Something went wrong");
-            }
+            await updateEmployee(employee.id, updateData);
+            onEmployeeUpdated();
+            onOpenChange(false);
         } catch (error) {
-            setError("Failed to connect to server");
+            setError(error || "Something went wrong");
         } finally {
             setLoading(false);
         }

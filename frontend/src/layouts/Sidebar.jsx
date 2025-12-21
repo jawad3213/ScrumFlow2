@@ -9,7 +9,6 @@ import {
     Calendar,
     Users,
     ChevronLeft,
-    Inbox,
     LogOut,
     ChevronsUpDown,
     Check,
@@ -19,7 +18,9 @@ import {
     BrainCircuit,
     Folder
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn } from '../utils/utils';
+import logo from '@/assets/login/logo.png';
+import logoMini from '@/assets/login/logo-mini.png';
 import {
     Command,
     CommandEmpty,
@@ -40,6 +41,9 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+
+import { useAuth } from '@/hooks/useAuth';
+import { useProject } from '@/hooks/useProject';
 
 const navLinkClass = ({ isActive }) =>
     cn(
@@ -71,17 +75,15 @@ const SidebarItem = ({ to, icon: Icon, label, collapsed, end = false }) => {
     );
 };
 
-const Sidebar = () => {
-    const userRole = localStorage.getItem('user_role');
-    const [collapsed, setCollapsed] = useState(false);
-    const [user, setUser] = useState({ first_name: 'User', last_name: '', role: '' });
+const Sidebar = ({ collapsed, setCollapsed }) => {
+    const { user, userRole, logout } = useAuth();
+    const { currentProject: selectedProject, setCurrentProject: setSelectedProject } = useProject();
     const navigate = useNavigate();
     const location = useLocation();
     const mouseEnterTimer = React.useRef(null);
 
     // Project Switcher State
     const [open, setOpen] = useState(false);
-    const [selectedProject, setSelectedProject] = useState("global"); // 'global' or project ID
 
     // Mock Projects list - in real app, fetch from API
     const projects = [
@@ -91,31 +93,8 @@ const Sidebar = () => {
         { value: "p4", label: "Marketing Campaign" },
     ];
 
-    useEffect(() => {
-        const path = location.pathname;
-        const projectMatch = path.match(/\/project\/([^/]+)/);
-        if (projectMatch && projectMatch[1]) {
-            setSelectedProject(projectMatch[1]);
-        } else if (!path.includes('/project/')) {
-            setSelectedProject("global");
-        }
-    }, [location.pathname]);
-
-    useEffect(() => {
-        try {
-            const storedUser = JSON.parse(localStorage.getItem('user'));
-            if (storedUser) {
-                setUser(storedUser);
-            }
-        } catch (e) {
-            console.error("Failed to parse user", e);
-        }
-    }, []);
-
     const handleLogout = () => {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_role');
-        localStorage.removeItem('user');
+        logout();
         navigate('/login');
     };
 
@@ -127,7 +106,8 @@ const Sidebar = () => {
                         {!collapsed && "Main Menu"}
                     </div>
                     <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Overview" collapsed={collapsed} />
-                    <SidebarItem to="/my-tasks" icon={CheckSquare} label="My Tasks (Global)" collapsed={collapsed} />
+                    <SidebarItem to="/my-tasks" icon={CheckSquare} label="My Tasks" collapsed={collapsed} />
+                    <SidebarItem to="/calendar" icon={Calendar} label="Calendar" collapsed={collapsed} />
                     <SidebarItem to="/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
 
                     <div className="my-2 mx-2 border-t border-neutral-200" />
@@ -143,16 +123,17 @@ const Sidebar = () => {
             return (
                 <>
                     <div className="px-2 py-1.5 text-xs font-semibold text-brand-primary-500 uppercase tracking-wider">
-                        {!collapsed && "Menu Projet"}
+                        {!collapsed && "Project Menu"}
                     </div>
 
-                    <SidebarItem to={`/project/${projectId}`} icon={LayoutDashboard} label="Tableau de Bord" collapsed={collapsed} end />
-                    <SidebarItem to={`/project/${projectId}/board`} icon={FolderKanban} label="Sprint Actuel (Kanban)" collapsed={collapsed} />
-                    <SidebarItem to={`/project/${projectId}/analysis`} icon={BrainCircuit} label="Analyse Projet (IA)" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}`} icon={LayoutDashboard} label="Project Hub" collapsed={collapsed} end />
+                    <SidebarItem to={`/project/${projectId}/board`} icon={FolderKanban} label="Sprint Board" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/my-space`} icon={CheckSquare} label="My Project Tasks" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/analysis`} icon={BrainCircuit} label="AI Analysis" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/backlog`} icon={ListTodo} label="Product Backlog" collapsed={collapsed} />
-                    <SidebarItem to={`/project/${projectId}/team`} icon={Users} label="Gestion Équipe" collapsed={collapsed} />
-                    <SidebarItem to={`/project/${projectId}/financials`} icon={PieChart} label="Rapports & Budget" collapsed={collapsed} />
-                    <SidebarItem to={`/project/${projectId}/settings`} icon={Settings} label="Paramètres" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/team`} icon={Users} label="Project Team" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/financials`} icon={PieChart} label="Financials" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/settings`} icon={Settings} label="Project Settings" collapsed={collapsed} />
                 </>
             );
         }
@@ -165,14 +146,14 @@ const Sidebar = () => {
                 collapsed ? "w-[80px]" : "w-[280px]"
             )}>
                 {/* Header / Logo */}
-                <div className={cn("flex items-center justify-center border-b border-neutral-200 px-4 transition-all duration-300 overflow-hidden", collapsed ? "h-16" : "h-24")}>
+                <div className={cn("flex items-center justify-center py-6 transition-all duration-default", collapsed ? "px-2" : "px-6")}>
                     {collapsed ? (
-                        <div className="h-10 w-10 flex items-center justify-center">
-                            <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview_mini.png" alt="Logo" className="h-8 w-8 object-contain" />
+                        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-primary-50">
+                            <img src={logoMini} alt="Logo" className="h-8 w-8 object-contain" />
                         </div>
                     ) : (
                         <div className="flex items-center justify-center w-full h-full">
-                            <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow" className="h-20 w-auto object-contain transition-transform duration-300 hover:scale-105" />
+                            <img src={logo} alt="TaskFlow" className="h-20 w-auto object-contain transition-transform duration-300 hover:scale-105" />
                         </div>
                     )}
                 </div>
@@ -319,8 +300,7 @@ const Sidebar = () => {
                     </>
                 )}
 
-                {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto py-4">
+                <div className="flex-1 overflow-y-auto py-4 scrollbar-thin">
                     <nav className="grid items-start px-4 text-sm font-medium gap-1">
                         {userRole === 'chef' ? (
                             renderChefNavigation()
@@ -330,10 +310,8 @@ const Sidebar = () => {
                                     {!collapsed && "Menu"}
                                 </div>
                                 <SidebarItem to="/my-tasks" icon={CheckSquare} label="My Tasks" collapsed={collapsed} />
-                                <SidebarItem to="/inbox" icon={Inbox} label="Inbox" collapsed={collapsed} />
                                 <SidebarItem to="/calendar" icon={Calendar} label="Calendar" collapsed={collapsed} />
                                 <SidebarItem to="/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
-                                <SidebarItem to="/settings" icon={Settings} label="Settings" collapsed={collapsed} />
                             </>
                         )}
                     </nav>
@@ -360,7 +338,7 @@ const Sidebar = () => {
                         {!collapsed && (
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-bold text-neutral-900 truncate tracking-tight">
-                                    {user.first_name} {user.last_name}
+                                    {user?.first_name} {user?.last_name}
                                 </p>
                                 <p className="text-[10px] text-neutral-500 truncate uppercase font-black tracking-widest">
                                     {userRole === 'chef' ? 'Manager' : 'Team'}

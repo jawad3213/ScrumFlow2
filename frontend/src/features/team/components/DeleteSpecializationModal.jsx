@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { deleteSpecialization } from '@/api';
 
 const DeleteSpecializationModal = ({ specialization, open, onOpenChange, onSpecializationDeleted }) => {
     const [loading, setLoading] = useState(false);
@@ -16,23 +17,12 @@ const DeleteSpecializationModal = ({ specialization, open, onOpenChange, onSpeci
         if (!specialization) return;
         setLoading(true);
         try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(`http://localhost:8000/api/specializations/${specialization.id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                onSpecializationDeleted();
-                onOpenChange(false);
-            } else {
-                console.error("Failed to delete specialization");
-            }
+            await deleteSpecialization(specialization.id);
+            onSpecializationDeleted();
+            onOpenChange(false);
         } catch (error) {
             console.error("Error deleting specialization:", error);
+            alert(error || "Failed to delete specialization");
         } finally {
             setLoading(false);
         }

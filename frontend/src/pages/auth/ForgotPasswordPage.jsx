@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Activity, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { forgotPassword } from '@/api';
+import { isValidEmail } from '@/utils';
+import logo from '@/assets/login/logo.png';
+import illustrationAlt from '@/assets/login/illustration-alt.png';
 
 const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');
@@ -10,30 +14,21 @@ const ForgotPasswordPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsLoading(true);
         setError('');
         setMessage('');
 
+        if (!isValidEmail(email)) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+
+        setIsLoading(true);
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/forgot-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({ email }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setMessage(data.status || 'If an account exists with this email, a reset link has been sent.');
-                setEmail('');
-            } else {
-                setError(data.message || 'Unable to define reset link. Please try again.');
-            }
+            const data = await forgotPassword(email);
+            setMessage(data.status || 'If an account exists with this email, a reset link has been sent.');
+            setEmail('');
         } catch (err) {
-            setError('An error occurred. Please try again later.');
+            setError(err || 'Unable to send reset link. Please try again.');
             console.error('Forgot Password error:', err);
         } finally {
             setIsLoading(false);
@@ -47,7 +42,7 @@ const ForgotPasswordPage = () => {
                 <div className="mb-10 flex flex-col items-center">
                     {/* Logo */}
                     <Link to="/login">
-                        <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow Logo" className="h-20 w-auto mb-6 object-contain hover:scale-105 transition-transform" />
+                        <img src={logo} alt="TaskFlow Logo" className="h-20 w-auto mb-6 object-contain hover:scale-105 transition-transform" />
                     </Link>
                     <h1 className="text-2xl font-black text-neutral-900 tracking-tight">Recover Password</h1>
                     <p className="text-sm text-neutral-500 font-bold mt-1.5 text-center">Enter your email to receive a reset link</p>
@@ -108,7 +103,7 @@ const ForgotPasswordPage = () => {
 
                 <div className="max-w-[550px] w-full transform hover:scale-105 transition-transform duration-default ease-soft relative z-10">
                     <img
-                        src="/login/Illustration13213.png"
+                        src={illustrationAlt}
                         alt="Recovery illustration"
                         className="w-full h-auto drop-shadow-2xl"
                     />

@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import TeamTable from '../../components/team/TeamTable';
-import SpecializationTable from '../../components/team/SpecializationTable';
-import AddEmployeeModal from '../../components/team/AddEmployeeModal';
-import AddSpecializationModal from '../../components/team/AddSpecializationModal';
+import TeamTable from '@/features/team/components/TeamTable';
+import SpecializationTable from '@/features/team/components/SpecializationTable';
+import AddEmployeeModal from '@/features/team/components/AddEmployeeModal';
+import AddSpecializationModal from '@/features/team/components/AddSpecializationModal';
 import { Plus, Trash2 } from 'lucide-react';
-import LoadingAnimation from '../../components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useRef } from 'react';
+import { EmployeeService } from '@/services';
 
 const TeamPage = () => {
     const { id } = useParams();
@@ -23,54 +24,18 @@ const TeamPage = () => {
 
     const handleSelectionChange = useCallback((rows) => setSelectedCount(rows.length), []);
 
-    const fetchEmployees = useCallback(async () => {
-        try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch('http://localhost:8000/api/employees', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                // Transform API data to match Table columns
-                const formattedData = data.map(emp => ({
-                    ...emp,
-                    name: `${emp.first_name} ${emp.last_name}`,
-                    role: emp.specialization?.name || 'N/A',
-                    status: emp.status || 'active'
-                }));
-                setTeamMembers(formattedData);
-            }
-        } catch (error) {
-            console.error("Error fetching employees:", error);
-        }
-    }, []);
-
-    const fetchSpecializations = useCallback(async () => {
-        try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch('http://localhost:8000/api/specializations', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setSpecializations(data);
-            }
-        } catch (error) {
-            console.error("Error fetching specializations:", error);
-        }
-    }, []);
-
     const loadAllData = useCallback(async () => {
         setLoading(true);
-        await Promise.all([fetchEmployees(), fetchSpecializations()]);
-        setLoading(false);
-    }, [fetchEmployees, fetchSpecializations]);
+        try {
+            const { employees, specializations } = await EmployeeService.getTeamData();
+            setTeamMembers(employees);
+            setSpecializations(specializations);
+        } catch (error) {
+            console.error("Error loading team data:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
         if (!id) {
@@ -79,6 +44,9 @@ const TeamPage = () => {
             setLoading(false);
         }
     }, [id, loadAllData]);
+
+    const handleEmployeeAdded = () => loadAllData();
+    const handleSpecializationAdded = () => loadAllData();
 
     return (
         <div className="space-y-6 animate-in fade-in duration-default ease-soft">
@@ -92,9 +60,9 @@ const TeamPage = () => {
                 </div>
                 <div className="flex-shrink-0">
                     {activeTab === 'employees' ? (
-                        <AddEmployeeModal onEmployeeAdded={fetchEmployees} variant="default" />
+                        <AddEmployeeModal onEmployeeAdded={handleEmployeeAdded} variant="default" />
                     ) : (
-                        <AddSpecializationModal onSpecializationAdded={fetchSpecializations} variant="default" />
+                        <AddSpecializationModal onSpecializationAdded={handleSpecializationAdded} variant="default" />
                     )}
                 </div>
             </div>
@@ -139,7 +107,8 @@ const TeamPage = () => {
                             <TeamTable
                                 ref={teamTableRef}
                                 data={teamMembers}
-                                onRefresh={fetchEmployees}
+                                specializations={specializations}
+                                onRefresh={loadAllData}
                                 onSelectionChange={handleSelectionChange}
                             />
                         </TabsContent>
@@ -148,7 +117,7 @@ const TeamPage = () => {
                             <SpecializationTable
                                 ref={specializationTableRef}
                                 data={specializations}
-                                onRefresh={fetchSpecializations}
+                                onRefresh={loadAllData}
                                 onSelectionChange={handleSelectionChange}
                             />
                         </TabsContent>

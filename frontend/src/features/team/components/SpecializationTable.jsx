@@ -1,11 +1,12 @@
-import React, { useState, forwardRef, useImperativeHandle, useMemo, useCallback } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, useMemo, useCallback, useRef, useEffect } from 'react';
 import { DataTable } from './data-table';
 import { specializationColumns } from './SpecializationColumns';
-import { Database } from 'lucide-react';
-import EmptyState from '../ui/EmptyState';
+import { Database, ChevronLeft, ChevronRight } from 'lucide-react';
+import EmptyState from '@/components/ui/EmptyState';
 import EditSpecializationModal from './EditSpecializationModal';
 import DeleteSpecializationModal from './DeleteSpecializationModal';
 import BulkDeleteModal from './BulkDeleteModal';
+import { bulkDeleteSpecializations } from '@/api';
 
 const SpecializationTable = forwardRef(({ data, onRefresh, onSelectionChange }, ref) => {
     const [editingSpec, setEditingSpec] = useState(null);
@@ -31,26 +32,13 @@ const SpecializationTable = forwardRef(({ data, onRefresh, onSelectionChange }, 
 
     const handleBulkDeleteConfirm = async () => {
         try {
-            const token = localStorage.getItem('auth_token');
             const ids = selectedRowsForBulk.map(row => row.original.id);
-            const response = await fetch('http://localhost:8000/api/specializations/bulk-delete', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ ids })
-            });
-
-            if (response.ok) {
-                onRefresh();
-                setIsBulkDeleteModalOpen(false);
-            } else {
-                alert("Failed to delete selected specializations");
-            }
+            await bulkDeleteSpecializations(ids);
+            onRefresh();
+            setIsBulkDeleteModalOpen(false);
         } catch (error) {
             console.error("Bulk delete error:", error);
-            alert("An error occurred while deleting selected specializations");
+            alert(error || "An error occurred while deleting selected specializations");
         }
     };
 
@@ -72,11 +60,53 @@ const SpecializationTable = forwardRef(({ data, onRefresh, onSelectionChange }, 
         ? (data || [])
         : (data || []).filter(item => item.name === selectedFilter);
 
+    const scrollContainerRef = useRef(null);
+    const [showLeftArrow, setShowLeftArrow] = useState(false);
+    const [showRightArrow, setShowRightArrow] = useState(false);
+
+    const checkScroll = useCallback(() => {
+        if (scrollContainerRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+            setShowLeftArrow(scrollLeft > 0);
+            setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
+        }
+    }, []);
+
+    useEffect(() => {
+        checkScroll();
+        window.addEventListener('resize', checkScroll);
+        return () => window.removeEventListener('resize', checkScroll);
+    }, [checkScroll, uniqueRoles]);
+
+    const scroll = (direction) => {
+        if (scrollContainerRef.current) {
+            const scrollAmount = 200;
+            scrollContainerRef.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
     return (
         <>
             <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-1">
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none w-full sm:w-auto">
+                <div className="relative flex items-center group/filter px-1">
+                    {/* Left Arrow */}
+                    {showLeftArrow && (
+                        <button
+                            onClick={() => scroll('left')}
+                            className="absolute left-0 z-10 p-2 rounded-full bg-white border border-surface-border shadow-modal text-neutral-400 hover:text-brand-primary-500 hover:border-brand-primary-200 transition-all -translate-x-1/2"
+                        >
+                            <ChevronLeft className="h-4 w-4 stroke-[3]" />
+                        </button>
+                    )}
+
+                    <div
+                        ref={scrollContainerRef}
+                        onScroll={checkScroll}
+                        className="flex items-center gap-2 overflow-x-auto py-2 scrollbar-none w-full scroll-smooth"
+                    >
                         {uniqueRoles.map((role) => (
                             <button
                                 key={role}
@@ -92,6 +122,16 @@ const SpecializationTable = forwardRef(({ data, onRefresh, onSelectionChange }, 
                             </button>
                         ))}
                     </div>
+
+                    {/* Right Arrow */}
+                    {showRightArrow && (
+                        <button
+                            onClick={() => scroll('right')}
+                            className="absolute right-0 z-10 p-2 rounded-full bg-white border border-surface-border shadow-modal text-neutral-400 hover:text-brand-primary-500 hover:border-brand-primary-200 transition-all translate-x-1/2"
+                        >
+                            <ChevronRight className="h-4 w-4 stroke-[3]" />
+                        </button>
+                    )}
                 </div>
 
                 <DataTable

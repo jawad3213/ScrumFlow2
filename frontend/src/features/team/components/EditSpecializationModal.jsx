@@ -9,6 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from 'lucide-react';
+import { updateSpecialization } from '@/api';
+import { isEmpty } from '@/utils';
 import {
     Select,
     SelectContent,
@@ -38,31 +40,33 @@ const EditSpecializationModal = ({ specialization, open, onOpenChange, onSpecial
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
+
+        // Validations
+        if (isEmpty(formData.name)) {
+            setError('Role name is required.');
+            return;
+        }
+
+        if (!formData.level) {
+            setError('Please select a level.');
+            return;
+        }
+
+        if (isEmpty(formData.salary) || parseFloat(formData.salary) <= 0) {
+            setError('Please enter a valid salary amount.');
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
         try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(`http://localhost:8000/api/specializations/${specialization.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                onSpecializationUpdated();
-                onOpenChange(false);
-            } else {
-                setError(data.message || "Something went wrong");
-            }
+            await updateSpecialization(specialization.id, formData);
+            onSpecializationUpdated();
+            onOpenChange(false);
         } catch (error) {
-            setError("Failed to connect to server");
+            setError(error || "Failed to update specialization");
         } finally {
             setLoading(false);
         }

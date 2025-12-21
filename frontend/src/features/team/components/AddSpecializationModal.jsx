@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Loader2, CheckCircle2 } from 'lucide-react';
+import { createSpecialization } from '@/api';
+import { isEmpty } from '@/utils';
 import {
     Select,
     SelectContent,
@@ -31,37 +33,37 @@ const AddSpecializationModal = ({ onSpecializationAdded, variant = "default" }) 
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setError(null);
 
+        // Validations
+        if (isEmpty(formData.name)) {
+            setError('Role name is required.');
+            return;
+        }
+
+        if (!formData.level) {
+            setError('Please select a level.');
+            return;
+        }
+
+        if (isEmpty(formData.salary) || parseFloat(formData.salary) <= 0) {
+            setError('Please enter a valid salary amount.');
+            return;
+        }
+
+        setLoading(true);
         try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch('http://localhost:8000/api/specializations', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setSuccess(true);
-                setTimeout(() => {
-                    setOpen(false);
-                    setSuccess(false);
-                    setFormData({ name: '', level: '', salary: '' });
-                    if (onSpecializationAdded) onSpecializationAdded();
-                }, 2000);
-            } else {
-                setError(data.message || "Something went wrong");
-            }
+            await createSpecialization(formData);
+            setSuccess(true);
+            setTimeout(() => {
+                setOpen(false);
+                setSuccess(false);
+                setFormData({ name: '', level: '', salary: '' });
+                if (onSpecializationAdded) onSpecializationAdded();
+            }, 2000);
         } catch (error) {
             console.error(error);
-            setError("Failed to connect to server");
+            setError(error || "Failed to create specialization");
         } finally {
             setLoading(false);
         }

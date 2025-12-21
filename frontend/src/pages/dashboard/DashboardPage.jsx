@@ -1,7 +1,7 @@
 import React from 'react';
-import StatsCards from '../../components/dashboard/StatsCards';
-import Overview from '../../components/dashboard/Overview';
-import RecentSales from '../../components/dashboard/RecentSales';
+import StatsCards from '@/features/dashboard/components/StatsCards';
+import Overview from '@/features/dashboard/components/Overview';
+import RecentSales from '@/features/dashboard/components/RecentSales';
 import { Download } from 'lucide-react';
 
 const DashboardPage = () => {

@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/utils"
 // import { buttonVariants } from "@/components/ui/button"
 // Since we might not want to depend on buttonVariants explicitly if not available, we can mock or remove it.
 // Standard shadcn implementation usually imports buttonVariants. Let's try to assume button is present or just style manually if needed.

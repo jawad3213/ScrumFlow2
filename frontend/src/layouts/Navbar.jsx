@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Search, Bell, User, Settings, LogOut, ChevronRight, Menu } from 'lucide-react';
 
+import { useAuth } from '@/hooks/useAuth';
+
 const Navbar = () => {
+    const { user, logout } = useAuth();
     const [showUserMenu, setShowUserMenu] = useState(false);
-    const [user, setUser] = useState({ first_name: 'User', last_name: '', role: '' });
     const location = useLocation();
     const navigate = useNavigate();
     const menuRef = useRef(null);
@@ -22,17 +24,8 @@ const Navbar = () => {
         };
     }, []);
 
-    useEffect(() => {
-        try {
-            const storedUser = JSON.parse(localStorage.getItem('user'));
-            if (storedUser) setUser(storedUser);
-        } catch (e) { console.error(e); }
-    }, []);
-
     const handleLogout = () => {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_role');
-        localStorage.removeItem('user');
+        logout();
         navigate('/login');
     };
 
@@ -78,7 +71,7 @@ const Navbar = () => {
                         className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-background border border-surface-border hover:bg-white hover:border-brand-primary-500/20 transition-ui duration-default ease-soft focus:outline-none focus:ring-4 focus:ring-brand-primary-500/10 shadow-subtle"
                     >
                         <img
-                            src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user.first_name}`}
+                            src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
                             alt="Avatar"
                             className="h-8 w-8 rounded-full object-cover"
                         />
@@ -87,8 +80,8 @@ const Navbar = () => {
                     {showUserMenu && (
                         <div className="absolute right-0 top-12 w-64 origin-top-right rounded-2xl border border-surface-border bg-white shadow-dropdown ring-1 ring-black/5 focus:outline-none animate-in fade-in zoom-in-95 duration-default ease-soft p-1.5 z-50">
                             <div className="px-4 py-4 bg-surface-muted/50 rounded-xl mb-1.5 border border-surface-border/50">
-                                <p className="text-sm font-black text-neutral-900 tracking-tight">{user.first_name} {user.last_name}</p>
-                                <p className="text-[11px] font-bold text-neutral-400 truncate mt-0.5">{user.email || 'user@example.com'}</p>
+                                <p className="text-sm font-black text-neutral-900 tracking-tight">{user?.first_name} {user?.last_name}</p>
+                                <p className="text-[11px] font-bold text-neutral-400 truncate mt-0.5">{user?.email || 'user@example.com'}</p>
                             </div>
 
                             <Link to="/profile" className="flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-bold text-neutral-600 hover:bg-brand-primary-50 hover:text-brand-primary-700 transition-ui duration-default ease-soft">

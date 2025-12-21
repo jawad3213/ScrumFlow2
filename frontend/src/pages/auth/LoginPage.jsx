@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Activity, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import logo from '@/assets/login/logo.png';
+import illustrationMain from '@/assets/login/illustration-main.png';
+import { isValidEmail } from '@/utils';
 
 const LoginPage = () => {
+    const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -13,34 +18,19 @@ const LoginPage = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
+
+        if (!isValidEmail(email)) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // Assuming the backend returns a token, store it
-                if (data.access_token) {
-                    localStorage.setItem('auth_token', data.access_token);
-                    localStorage.setItem('user_role', data.role);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                }
-                // Redirect to dashboard
-                navigate('/dashboard');
-            } else {
-                setError(data.message || 'Login failed. Please check your credentials.');
-            }
+            await login({ email, password });
+            navigate('/dashboard');
         } catch (err) {
-            setError('An error occurred. Please try again later.');
+            setError(err || 'Login failed. Please check your credentials.');
             console.error('Login error:', err);
         } finally {
             setIsLoading(false);
@@ -53,7 +43,7 @@ const LoginPage = () => {
             <div className="w-full lg:w-[480px] bg-white flex flex-col justify-center px-8 md:px-12 lg:px-16 py-12 shadow-elevation z-10">
                 <div className="mb-10 flex flex-col items-center">
                     {/* Logo */}
-                    <img src="/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow Logo" className="h-20 w-auto mb-6 object-contain" />
+                    <img src={logo} alt="TaskFlow Logo" className="h-20 w-auto mb-6 object-contain" />
                     <h1 className="text-2xl font-black text-neutral-900 tracking-tight">Log in</h1>
                     <p className="text-sm text-neutral-500 font-medium mt-1.5">Access your workspace</p>
                 </div>
@@ -135,7 +125,7 @@ const LoginPage = () => {
 
                 <div className="max-w-[550px] w-full transform hover:scale-105 transition-transform duration-default ease-soft relative z-10">
                     <img
-                        src="/login/Illustration.png"
+                        src={illustrationMain}
                         alt="Work illustration"
                         className="w-full h-auto drop-shadow-2xl"
                     />

@@ -1,12 +1,17 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
+import { useAuth } from '@/hooks/useAuth';
+
 const RoleGuard = ({ children, role }) => {
-    const userRole = localStorage.getItem('user_role');
-    const authToken = localStorage.getItem('auth_token');
+    const { userRole, isAuthenticated, loading } = useAuth();
     const location = useLocation();
 
-    if (!authToken) {
+    if (loading) {
+        return null; // Or a smaller loading spinner
+    }
+
+    if (!isAuthenticated) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 

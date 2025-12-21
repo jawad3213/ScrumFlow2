@@ -1,42 +1,66 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+
+// Layouts
 import PrivateLayout from './layouts/PrivateLayout';
 import ProjectLayout from './layouts/ProjectLayout';
-import RoleGuard from './components/RoleGuard';
+
+// Features
+import RoleGuard from './features/auth/components/RoleGuard';
+
+// Pages - Auth
 import LoginPage from './pages/auth/LoginPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
-import DashboardPage from './pages/hub/DashboardPage';
-import MyTasksPage from './pages/hub/MyTasksPage';
-import ProfilePage from './pages/hub/ProfilePage';
-import NewProjectPage from './pages/hub/NewProjectPage';
-import ProjectDashboardPage from './pages/project/ProjectDashboardPage';
-import SprintBoardPage from './pages/project/SprintBoardPage';
-import BacklogPage from './pages/project/BacklogPage';
-import AnalysisPage from './pages/project/AnalysisPage';
-import TeamPage from './pages/project/TeamPage';
-import FinancialsPage from './pages/project/FinancialsPage';
-import SettingsPage from './pages/project/SettingsPage';
-import MySpacePage from './pages/project/MySpacePage';
+import ProfilePage from './pages/auth/ProfilePage';
+
+// Pages - Dashboard & Hub
+import DashboardPage from './pages/dashboard/DashboardPage';
+import NewProjectPage from './pages/ai-analysis/NewProjectPage';
+import ProjectDashboardPage from './pages/dashboard/ProjectDashboardPage';
+import CalendarPage from './pages/dashboard/CalendarPage';
+import NotificationsPage from './pages/dashboard/NotificationsPage';
+
+// Pages - Kanban & Tasks
+import MyTasksPage from './pages/kanban/MyTasksPage';
+import MySpacePage from './pages/kanban/MySpacePage';
+import SprintBoardPage from './pages/sprints/SprintBoardPage';
+
+// Pages - Backlog & Analysis
+import BacklogPage from './pages/backlog/BacklogPage';
+import AnalysisPage from './pages/ai-analysis/AnalysisPage';
+
+// Pages - Team & Admin
+import TeamPage from './pages/team/TeamPage';
+import SettingsPage from './pages/team/SettingsPage';
+
+// Pages - Reporting
+import FinancialsPage from './pages/reporting/FinancialsPage';
+
 function App() {
   return (
-    <div className="min-h-screen bg-surface-background">
+    <div className="min-h-screen bg-surface-background font-sans antialiased text-neutral-900">
       <Routes>
-        {/* --- PUBLIC --- */}
+        {/* ==========================================
+            PUBLIC ROUTES
+           ========================================== */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        {/* --- PRIVATE LAYOUT (Sidebar + Navbar) --- */}
+        {/* ==========================================
+            PRIVATE PROTECTED ROUTES
+           ========================================== */}
         <Route element={<PrivateLayout />}>
 
-          {/* HUB GLOBAL */}
+          {/* --- GLOBAL HUB (Unified View) --- */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/my-tasks" element={<MyTasksPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
 
-
-          {/* CRÉATION PROJET (CHEF ONLY) */}
+          {/* --- ADMIN / MANAGER ONLY (Global) --- */}
           <Route path="/projects/new" element={
             <RoleGuard role="admin"><NewProjectPage /></RoleGuard>
           } />
@@ -44,18 +68,17 @@ function App() {
             <RoleGuard role="admin"><TeamPage /></RoleGuard>
           } />
 
-          {/* --- CONTEXTE PROJET (:id) --- */}
+          {/* --- PROJECT SPECIFIC CONTEXT (:id) --- */}
           <Route path="/project/:id" element={<ProjectLayout />}>
-
-            {/* VUES COMMUNES */}
-            <Route index element={<ProjectDashboardPage />} /> {/* Default */}
+            {/* Common Project Views */}
+            <Route index element={<ProjectDashboardPage />} />
             <Route path="board" element={<SprintBoardPage />} />
             <Route path="backlog" element={<BacklogPage />} />
 
-            {/* VUES EMPLOYÉ */}
+            {/* Employee Specific View */}
             <Route path="my-space" element={<MySpacePage />} />
 
-            {/* VUES CHEF (PROTECTED) */}
+            {/* Manager Protected Project Views */}
             <Route path="analysis" element={
               <RoleGuard role="admin"><AnalysisPage /></RoleGuard>
             } />
@@ -68,9 +91,11 @@ function App() {
             <Route path="settings" element={
               <RoleGuard role="admin"><SettingsPage /></RoleGuard>
             } />
-
           </Route>
         </Route>
+
+        {/* 404 CATCH-ALL */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </div>
   );
