@@ -27,6 +27,7 @@ class User extends Authenticatable
         'role',
         'specialization_id', // Added
         'status',    // <--- Ajouté 
+        'avatar',
     ];
 
     /**

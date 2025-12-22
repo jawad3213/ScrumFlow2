@@ -22,7 +22,13 @@ const client = async (endpoint, { body, ...customConfig } = {}) => {
   };
 
   if (body) {
-    config.body = JSON.stringify(body);
+    if (body instanceof FormData) {
+      config.body = body;
+      // Remove Content-Type to let the browser set it with boundary
+      delete config.headers['Content-Type'];
+    } else {
+      config.body = JSON.stringify(body);
+    }
   }
 
   try {

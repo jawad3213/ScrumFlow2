@@ -146,14 +146,17 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 collapsed ? "w-[80px]" : "w-[280px]"
             )}>
                 {/* Header / Logo */}
-                <div className={cn("flex items-center justify-center py-6 transition-all duration-default", collapsed ? "px-2" : "px-6")}>
+                <div className={cn(
+                    "flex items-center h-16 border-b border-surface-border transition-all duration-default",
+                    collapsed ? "px-2 justify-center" : "px-6"
+                )}>
                     {collapsed ? (
                         <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-primary-50">
-                            <img src={logoMini} alt="Logo" className="h-8 w-8 object-contain" />
+                            <img src={logoMini} alt="Logo" className="h-7 w-7 object-contain" />
                         </div>
                     ) : (
-                        <div className="flex items-center justify-center w-full h-full">
-                            <img src={logo} alt="TaskFlow" className="h-20 w-auto object-contain transition-transform duration-300 hover:scale-105" />
+                        <div className="flex items-center gap-3">
+                            <img src={logo} alt="TaskFlow" className="h-10 w-auto object-contain" />
                         </div>
                     )}
                 </div>
@@ -161,9 +164,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {/* Chef Project Switcher */}
                 {userRole === 'chef' && (
                     <>
-                        <div className={cn("pt-4", collapsed ? "px-2 flex justify-center" : "px-4")}>
+                        <div className={cn("pt-6", collapsed ? "px-2 flex justify-center" : "px-4")}>
                             {!collapsed && (
-                                <div className="px-2 text-xs font-semibold text-brand-primary-500 uppercase tracking-wider mb-2">
+                                <div className="px-2 text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-3">
                                     Workspace
                                 </div>
                             )}
@@ -324,16 +327,14 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                         "flex items-center gap-3 rounded-xl border border-surface-border bg-surface-background p-3 shadow-subtle",
                         collapsed ? "justify-center border-none bg-transparent shadow-none px-0" : ""
                     )}>
-                        {!collapsed && (
-                            <div className="relative">
-                                <img
-                                    src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user.first_name}`}
-                                    alt="Avatar"
-                                    className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
-                                />
-                                <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success-default border-2 border-white" />
-                            </div>
-                        )}
+                        <div className="relative">
+                            <img
+                                src={user?.avatar ? `http://localhost:8000/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
+                                alt="Avatar"
+                                className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
+                            />
+                            <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success-default border-2 border-white" />
+                        </div>
 
                         {!collapsed && (
                             <div className="flex-1 min-w-0">

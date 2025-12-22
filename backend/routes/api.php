@@ -30,6 +30,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/specializations/{id}', [\App\Http\Controllers\SpecializationController::class, 'destroy']);
     Route::post('/specializations/bulk-delete', [\App\Http\Controllers\SpecializationController::class, 'bulkDestroy']);
 
+    // Profile Routes
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index']);
+    Route::post('/profile', [\App\Http\Controllers\ProfileController::class, 'update']);
+    Route::post('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword']);
+    Route::post('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar']);
+
     // Juste pour tester que le token fonctionne
     Route::get('/me', function (Request $request) {
         return $request->user();

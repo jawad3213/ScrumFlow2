@@ -165,6 +165,7 @@ export default {
       animation: {
         float: 'float 3s ease-in-out infinite',
         shimmer: 'shimmer 2s infinite',
+        'spin-slow': 'spin 8s linear infinite',
       },
     },
   },

@@ -18,6 +18,33 @@ class ProfileController extends Controller
     }
 
     /**
+     * Update the authenticated user's profile.
+     */
+    public function update(Request $request)
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user->update([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+        ]);
+
+        return response()->json([
+            'message' => 'Profil mis à jour avec succès.',
+            'user' => $user
+        ]);
+    }
+
+    /**
      * Update the authenticated user's password.
      */
     public function updatePassword(Request $request)

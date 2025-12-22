@@ -16,6 +16,7 @@ return new class extends Migration
         $table->string('first_name');
         $table->string('last_name');
         $table->string('email')->unique();
+        $table->string('avatar')->nullable();
         $table->string('password');
         $table->enum('role', ['chef', 'employee'])->default('employee'); 
         $table->enum('status', ['active', 'banned'])->default('active'); 
