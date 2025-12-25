@@ -20,6 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { LEVEL_ORDER } from '@/constants/roles';
 
 const AddEmployeeModal = ({ onEmployeeAdded, variant = "default", open: controlledOpen, onOpenChange: setControlledOpen, showTrigger = true }) => {
     const [internalOpen, setInternalOpen] = useState(false);
@@ -192,13 +193,12 @@ const AddEmployeeModal = ({ onEmployeeAdded, variant = "default", open: controll
                                         </SelectTrigger>
                                         <SelectContent>
                                             {(() => {
-                                                const levelOrder = ['Junior', 'Mid-level', 'Senior', 'Lead / Architect'];
                                                 const filteredLevels = [...new Set(specializations
                                                     .filter(s => s.name === formData.specialization_name)
                                                     .map(s => s.level))];
 
                                                 return filteredLevels
-                                                    .sort((a, b) => levelOrder.indexOf(a) - levelOrder.indexOf(b))
+                                                    .sort((a, b) => LEVEL_ORDER.indexOf(a) - LEVEL_ORDER.indexOf(b))
                                                     .map((level) => (
                                                         <SelectItem key={level} value={level}>
                                                             {level}

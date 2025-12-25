@@ -16,7 +16,7 @@ class SpecializationController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'level' => 'required|in:Junior,Mid-level,Senior,Lead / Architect',
+            'level' => 'required|string|max:255',
             'salary' => 'required|numeric',
         ]);
 
@@ -31,7 +31,7 @@ class SpecializationController extends Controller
 
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'level' => 'sometimes|required|in:Junior,Mid-level,Senior,Lead / Architect',
+            'level' => 'sometimes|required|string|max:255',
             'salary' => 'sometimes|required|numeric',
         ]);
 

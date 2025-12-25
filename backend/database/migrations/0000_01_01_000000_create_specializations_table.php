@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('specializations', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('level', ['Junior', 'Mid-level', 'Senior', 'Lead / Architect']);
+            $table->string('level');
             $table->decimal('salary', 10, 2); // Salary for one month
             $table->timestamps();
         });

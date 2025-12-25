@@ -170,6 +170,25 @@ export const columns = [
         },
     },
     {
+        accessorKey: "is_engaged",
+        header: "Engagement",
+        cell: ({ row }) => {
+            const isEngaged = !!row.getValue("is_engaged");
+
+            return (
+                <div className="flex items-center">
+                    <div className={`inline-flex items-center px-3 py-1 rounded-pill text-[10px] font-black border gap-1.5 shadow-subtle ${isEngaged
+                            ? 'bg-brand-primary-50 text-brand-primary-700 border-brand-primary-100'
+                            : 'bg-neutral-50 text-neutral-500 border-neutral-200'
+                        }`}>
+                        <div className={`h-1.5 w-1.5 rounded-full ${isEngaged ? 'bg-brand-primary-500' : 'bg-neutral-400'}`} />
+                        <span className="uppercase tracking-widest">{isEngaged ? 'Engaged' : 'Available'}</span>
+                    </div>
+                </div>
+            );
+        },
+    },
+    {
         id: "actions",
         header: () => <div className="text-right pr-4">Actions</div>,
         cell: ({ row, table }) => {

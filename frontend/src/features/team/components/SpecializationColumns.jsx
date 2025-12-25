@@ -54,10 +54,24 @@ export const specializationColumns = [
         cell: ({ row }) => {
             const level = row.getValue("level");
             let badgeColor = "bg-neutral-100 text-neutral-700";
-            if (level === 'Senior') badgeColor = "bg-purple-100 text-purple-700";
-            if (level === 'Lead / Architect') badgeColor = "bg-indigo-100 text-indigo-700";
-            if (level === 'Mid-level') badgeColor = "bg-blue-100 text-blue-700";
-            if (level === 'Junior') badgeColor = "bg-success-lighter text-success-default";
+
+            // Map keywords to colors
+            const levelStr = level.toLowerCase();
+            if (levelStr.includes('architect') || levelStr.includes('principal') || levelStr.includes('portfolio')) {
+                badgeColor = "bg-indigo-100 text-indigo-700";
+            } else if (levelStr.includes('staff') || levelStr.includes('lead') || levelStr.includes('program')) {
+                badgeColor = "bg-purple-100 text-purple-700";
+            } else if (levelStr.includes('senior')) {
+                badgeColor = "bg-blue-100 text-blue-700 font-black";
+            } else if (levelStr.includes('mid') || levelStr.includes('manager') || levelStr.includes('sde')) {
+                badgeColor = "bg-emerald-100 text-emerald-700";
+            } else if (levelStr.includes('junior')) {
+                badgeColor = "bg-teal-50 text-teal-600";
+            } else if (levelStr.includes('intern')) {
+                badgeColor = "bg-amber-50 text-amber-600 border border-amber-200";
+            } else {
+                badgeColor = "bg-neutral-50 text-neutral-500 border border-neutral-200";
+            }
 
             return (
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeColor}`}>

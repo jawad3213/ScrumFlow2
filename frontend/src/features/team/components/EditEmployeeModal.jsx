@@ -18,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { LEVEL_ORDER } from '@/constants/roles';
 
 const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) => {
     const [loading, setLoading] = useState(false);
@@ -28,7 +29,8 @@ const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) 
         email: '',
         specialization_name: '',
         level: '',
-        status: 'active'
+        status: 'active',
+        is_engaged: 'false'
     });
     const [error, setError] = useState(null);
 
@@ -40,7 +42,8 @@ const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) 
                 email: employee.email || '',
                 specialization_name: employee.specialization?.name || '',
                 level: employee.specialization?.level || '',
-                status: employee.status || 'active'
+                status: employee.status || 'active',
+                is_engaged: employee.is_engaged ? 'true' : 'false'
             });
         }
     }, [employee]);
@@ -78,7 +81,11 @@ const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) 
         setLoading(true);
         setError(null);
 
-        const { email, ...updateData } = formData;
+        const { email, is_engaged, ...rest } = formData;
+        const updateData = {
+            ...rest,
+            is_engaged: is_engaged === 'true'
+        };
 
         try {
             await updateEmployee(employee.id, updateData);
@@ -172,13 +179,12 @@ const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) 
                                     </SelectTrigger>
                                     <SelectContent>
                                         {(() => {
-                                            const levelOrder = ['Junior', 'Mid-level', 'Senior', 'Lead / Architect'];
                                             const filteredLevels = [...new Set(specializations
                                                 .filter(s => s.name === formData.specialization_name)
                                                 .map(s => s.level))];
 
                                             return filteredLevels
-                                                .sort((a, b) => levelOrder.indexOf(a) - levelOrder.indexOf(b))
+                                                .sort((a, b) => LEVEL_ORDER.indexOf(a) - LEVEL_ORDER.indexOf(b))
                                                 .map((level) => (
                                                     <SelectItem key={level} value={level}>
                                                         {level}
@@ -190,22 +196,41 @@ const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) 
                             </div>
                         </div>
 
-                        <div className="space-y-3">
-                            <label className="text-sm font-bold text-neutral-700 pl-1">Account Status</label>
-                            <Select
-                                required
-                                value={formData.status}
-                                onValueChange={(value) => setFormData({ ...formData, status: value })}
-                            >
-                                <SelectTrigger className="h-12 border-surface-border bg-surface-background focus:bg-white transition-all font-semibold rounded-xl px-4 text-sm text-neutral-700">
-                                    <SelectValue placeholder="Select Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="banned">Banned</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-3">
+                                <label className="text-sm font-bold text-neutral-700 pl-1">Account Status</label>
+                                <Select
+                                    required
+                                    value={formData.status}
+                                    onValueChange={(value) => setFormData({ ...formData, status: value })}
+                                >
+                                    <SelectTrigger className="h-12 border-surface-border bg-surface-background focus:bg-white transition-all font-semibold rounded-xl px-4 text-sm text-neutral-700">
+                                        <SelectValue placeholder="Select Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">Active</SelectItem>
+                                        <SelectItem value="pending">Pending</SelectItem>
+                                        <SelectItem value="banned">Banned</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-sm font-bold text-neutral-700 pl-1">Engagement Status</label>
+                                <Select
+                                    required
+                                    value={formData.is_engaged}
+                                    onValueChange={(value) => setFormData({ ...formData, is_engaged: value })}
+                                >
+                                    <SelectTrigger className="h-12 border-surface-border bg-surface-background focus:bg-white transition-all font-semibold rounded-xl px-4 text-sm text-neutral-700">
+                                        <SelectValue placeholder="Select Engagement" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="false">Available</SelectItem>
+                                        <SelectItem value="true">Engaged</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         {error && (

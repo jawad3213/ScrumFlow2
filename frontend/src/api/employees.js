@@ -4,6 +4,10 @@ export const getEmployees = () => {
   return client('/employees');
 };
 
+export const getAvailableEmployees = () => {
+  return client('/employees/available');
+};
+
 export const createEmployee = (employeeData) => {
   return client('/employees', { body: employeeData });
 };

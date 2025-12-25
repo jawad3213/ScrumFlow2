@@ -20,6 +20,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
+import { ROLE_LEVELS, ALL_ROLES } from '@/constants/roles';
+
 const AddSpecializationModal = ({ onSpecializationAdded, variant = "default" }) => {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -31,13 +33,15 @@ const AddSpecializationModal = ({ onSpecializationAdded, variant = "default" }) 
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
 
+    const availableLevels = formData.name ? ROLE_LEVELS[formData.name] || [] : [];
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
 
         // Validations
-        if (isEmpty(formData.name)) {
-            setError('Role name is required.');
+        if (!formData.name) {
+            setError('Please select a role.');
             return;
         }
 
@@ -102,13 +106,20 @@ const AddSpecializationModal = ({ onSpecializationAdded, variant = "default" }) 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-neutral-700 pl-1">Role Name</label>
-                                <Input
+                                <Select
                                     required
-                                    placeholder="e.g. Frontend Developer"
                                     value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="h-12 border-surface-border bg-surface-background focus:bg-white transition-all font-semibold"
-                                />
+                                    onValueChange={(value) => setFormData({ ...formData, name: value, level: '' })}
+                                >
+                                    <SelectTrigger className="h-12 border-surface-border bg-surface-background focus:bg-white transition-all font-semibold rounded-xl px-4 text-sm text-neutral-700">
+                                        <SelectValue placeholder="Select Role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {ALL_ROLES.map(role => (
+                                            <SelectItem key={role} value={role}>{role}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="space-y-3">
@@ -117,15 +128,15 @@ const AddSpecializationModal = ({ onSpecializationAdded, variant = "default" }) 
                                     required
                                     value={formData.level}
                                     onValueChange={(value) => setFormData({ ...formData, level: value })}
+                                    disabled={!formData.name}
                                 >
                                     <SelectTrigger className="h-12 border-surface-border bg-surface-background focus:bg-white transition-all font-semibold rounded-xl px-4 text-sm text-neutral-700">
                                         <SelectValue placeholder="Select Level" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Junior">Junior</SelectItem>
-                                        <SelectItem value="Mid-level">Mid-level</SelectItem>
-                                        <SelectItem value="Senior">Senior</SelectItem>
-                                        <SelectItem value="Lead / Architect">Lead / Architect</SelectItem>
+                                        {availableLevels.map(lvl => (
+                                            <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>

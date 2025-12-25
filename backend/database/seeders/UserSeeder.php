@@ -42,12 +42,12 @@ class UserSeeder extends Seeder
             // First Name, Last Name, Email, Specialization Name, Level, Status
             ['Ahmed', 'Aelhail', 'ahmed@projet.com', 'Frontend Developer', 'Junior', 'active'],
             ['Emily', 'Wilson', 'emily.w@taskflow.com', 'UI/UX Designer', 'Senior', 'active'],
-            ['Marcus', 'Chen', 'marcus.c@taskflow.com', 'Fullstack Developer', 'Lead / Architect', 'active'],
+            ['Marcus', 'Chen', 'marcus.c@taskflow.com', 'Fullstack Developer', 'Software Architect', 'active'],
             ['Sarah', 'Johnson', 'sarah.j@taskflow.com', 'Backend Developer', 'Mid-level', 'banned'],
             ['David', 'Smith', 'david.s@taskflow.com', 'DevOps Engineer', 'Senior', 'active'],
-            ['Jessica', 'Davis', 'jessica.d@taskflow.com', 'Project Manager', 'Senior', 'active'],
+            ['Jessica', 'Davis', 'jessica.d@taskflow.com', 'Project Manager', 'Senior PM', 'active'],
             ['Michael', 'Brown', 'michael.b@taskflow.com', 'QA Engineer', 'Junior', 'active'],
-            ['Lucas', 'Miller', 'lucas.m@taskflow.com', 'Fullstack Developer', 'Senior', 'on leave'],
+            ['Lucas', 'Miller', 'lucas.m@taskflow.com', 'Fullstack Developer', 'Senior', 'active'], // Changed status to active
             ['Sophia', 'Taylor', 'sophia.t@taskflow.com', 'UI/UX Designer', 'Junior', 'active'],
             ['Daniel', 'Anderson', 'daniel.a@taskflow.com', 'Backend Developer', 'Senior', 'active'],
         ];

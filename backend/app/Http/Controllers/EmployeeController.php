@@ -29,6 +29,18 @@ class EmployeeController extends Controller
     }
 
     /**
+     * Display a listing of available employees.
+     */
+    public function available()
+    {
+        $employees = User::where('role', 'employee')
+            ->where('is_engaged', false)
+            ->with('specialization')
+            ->get();
+        return response()->json($employees);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -89,10 +101,10 @@ class EmployeeController extends Controller
             'specialization_name' => 'sometimes|required|string|exists:specializations,name',
             'level' => 'sometimes|required|string|exists:specializations,level',
             'status' => 'sometimes|required|in:active,banned',
-            // Allow specialization_id to be optional or calculated
+            'is_engaged' => 'sometimes|boolean',
         ]);
 
-        $data = $request->only(['first_name', 'last_name', 'status']);
+        $data = $request->only(['first_name', 'last_name', 'status', 'is_engaged']);
 
         if ($request->has('specialization_name') && $request->has('level')) {
              $specialization = Specialization::where('name', $request->specialization_name)

@@ -21,6 +21,7 @@ return new class extends Migration
         $table->enum('role', ['chef', 'employee'])->default('employee'); 
         $table->enum('status', ['active', 'banned'])->default('active'); 
         $table->foreignId('specialization_id')->nullable()->constrained('specializations')->onDelete('set null'); 
+        $table->boolean('is_engaged')->default(false); 
         $table->rememberToken();
         $table->timestamps();
     });

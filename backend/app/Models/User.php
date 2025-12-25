@@ -28,6 +28,7 @@ class User extends Authenticatable
         'specialization_id', // Added
         'status',    // <--- Ajouté 
         'avatar',
+        'is_engaged',
     ];
 
     /**
