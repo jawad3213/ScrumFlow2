@@ -1,0 +1,230 @@
+{
+    "estimated_duration_months": 4.0,
+    "selected_engineers": [
+        {
+            "role": "Backend Developer",
+            "specialization": "Senior",
+            "level": "Senior",
+            "monthly_salary_mad": 30000.0,
+            "months_assigned": 4.0,
+            "total_cost_mad": 120000.0
+        },
+        {
+            "role": "Backend Developer",
+            "specialization": "General / Infrastructure",
+            "level": "Staff Engineer",
+            "monthly_salary_mad": 20000.0,
+            "months_assigned": 4.0,
+            "total_cost_mad": 80000.0
+        },
+        {
+            "role": "Frontend Developer",
+            "specialization": "React.js",
+            "level": "Mid-level",
+            "monthly_salary_mad": 20000.0,
+            "months_assigned": 4.0,
+            "total_cost_mad": 80000.0
+        },
+        {
+            "role": "UI/UX Designer",
+            "specialization": "Lead Designer",
+            "level": "Lead Designer",
+            "monthly_salary_mad": 18000.0,
+            "months_assigned": 4.0,
+            "total_cost_mad": 72000.0
+        },
+        {
+            "role": "QA Engineer",
+            "specialization": "General",
+            "level": "QA Lead",
+            "monthly_salary_mad": 20000.0,
+            "months_assigned": 4.0,
+            "total_cost_mad": 80000.0
+        },
+        {
+            "role": "Project Manager",
+            "specialization": "General",
+            "level": "Junior PM",
+            "monthly_salary_mad": 20000.0,
+            "months_assigned": 4.0,
+            "total_cost_mad": 80000.0
+        }
+    ],
+    "licenses_and_apis": [
+        {
+            "item_name": "Gemini API - Plan D\u00e9veloppeur",
+            "cost_mad": 20000.0,
+            "description": "Co\u00fbt estim\u00e9 pour l'utilisation de l'API Gemini pour l'analyse NLP et la g\u00e9n\u00e9ration de backlog durant la phase de d\u00e9veloppement (4 mois x 5000 MAD/mois).",
+            "formule": "Co\u00fbt Mensuel Gemini API * Dur\u00e9e du Projet (en mois)"
+        },
+        {
+            "item_name": "Laravel Nova / Outils Premium Laravel",
+            "cost_mad": 2000.0,
+            "description": "Licence unique pour Laravel Nova (panneau d'administration) ou autres packages Laravel premium pour acc\u00e9l\u00e9rer le d\u00e9veloppement.",
+            "formule": "Co\u00fbt de la licence (g\u00e9n\u00e9ralement annuel ou unique)"
+        },
+        {
+            "item_name": "Autres Licences Logicielles / Outils de Dev",
+            "cost_mad": 1000.0,
+            "description": "Budget pour des licences de petits outils de d\u00e9veloppement, librairies ou support \u00e9tendu non-open source.",
+            "formule": "Estimation forfaitaire pour divers outils."
+        }
+    ],
+    "contingency_buffer_percentage": 15.0,
+    "total_capex": 615250.0,
+    "cloud_subscription": [
+        {
+            "item_name": "AWS EC2 (Instances Serveur)",
+            "cost_mad": 12000.0,
+            "description": "Co\u00fbt annuel estim\u00e9 pour les instances EC2 h\u00e9bergeant l'application Laravel et le service Python/IA. (1000 MAD/mois).",
+            "formule": "Co\u00fbt Mensuel EC2 * 12 mois"
+        },
+        {
+            "item_name": "AWS RDS (Base de Donn\u00e9es PostgreSQL)",
+            "cost_mad": 9600.0,
+            "description": "Co\u00fbt annuel estim\u00e9 pour une instance de base de donn\u00e9es PostgreSQL g\u00e9r\u00e9e (RDS). (800 MAD/mois).",
+            "formule": "Co\u00fbt Mensuel RDS * 12 mois"
+        },
+        {
+            "item_name": "AWS S3 (Stockage Objets)",
+            "cost_mad": 2400.0,
+            "description": "Co\u00fbt annuel estim\u00e9 pour le stockage des documents PDF et des photos de profil sur S3. (200 MAD/mois).",
+            "formule": "Co\u00fbt Mensuel S3 * 12 mois"
+        },
+        {
+            "item_name": "AWS SES (Service d'Envoi d'Emails)",
+            "cost_mad": 1200.0,
+            "description": "Co\u00fbt annuel estim\u00e9 pour l'envoi d'emails transactionnels (notifications, r\u00e9initialisation de mot de passe). (100 MAD/mois).",
+            "formule": "Co\u00fbt Mensuel SES * 12 mois"
+        },
+        {
+            "item_name": "GitHub Actions (CI/CD)",
+            "cost_mad": 1200.0,
+            "description": "Co\u00fbt annuel estim\u00e9 pour l'utilisation de GitHub Actions pour l'int\u00e9gration et le d\u00e9ploiement continus au-del\u00e0 du forfait gratuit. (100 MAD/mois).",
+            "formule": "Co\u00fbt Mensuel GitHub Actions * 12 mois"
+        },
+        {
+            "item_name": "Gemini API - Utilisation Op\u00e9rationnelle",
+            "cost_mad": 60000.0,
+            "description": "Co\u00fbt annuel estim\u00e9 pour l'utilisation continue de l'API Gemini en production pour l'analyse de cahiers des charges (5000 MAD/mois).",
+            "formule": "Co\u00fbt Mensuel Gemini API * 12 mois"
+        }
+    ],
+    "maintenance_engineers": [
+        {
+            "role": "Backend Developer",
+            "specialization": "Support & Maintenance",
+            "level": "Mid-level",
+            "monthly_salary_mad": 20000.0,
+            "months_assigned": 12.0,
+            "total_cost_mad": 120000.0
+        }
+    ],
+    "total_opex": 206400.0,
+    "kpis": [
+        {
+            "metric_name": "Pr\u00e9cision de la G\u00e9n\u00e9ration du Backlog (IA)",
+            "target_value": "> 85% de conformit\u00e9",
+            "measurement_method": "\u00c9valuation manuelle par les Chefs de Projet sur un \u00e9chantillon al\u00e9atoire de 5% de backlogs g\u00e9n\u00e9r\u00e9s. Feedback qualitatif et quantitatif."
+        },
+        {
+            "metric_name": "R\u00e9duction du Temps de Setup Projet",
+            "target_value": "R\u00e9duction de 50% par rapport \u00e0 la m\u00e9thode manuelle",
+            "measurement_method": "Comparaison du temps moyen de cr\u00e9ation d'un backlog (du PDF au format actionable) avant et apr\u00e8s l'utilisation de ScrumFlow."
+        },
+        {
+            "metric_name": "Taux d'Adoption de la Plateforme",
+            "target_value": "50 projets actifs et 100 utilisateurs mensuels d'ici la fin de l'ann\u00e9e 1",
+            "measurement_method": "Suivi du nombre de projets cr\u00e9\u00e9s, d'utilisateurs actifs, et de sprints lanc\u00e9s via le tableau de bord d'administration."
+        },
+        {
+            "metric_name": "Satisfaction Utilisateur (NPS)",
+            "target_value": "> 7/10",
+            "measurement_method": "Sondages r\u00e9guliers aupr\u00e8s des utilisateurs (Chefs de Projet, Membres d'\u00c9quipe) et analyse des retours."
+        },
+        {
+            "metric_name": "Taux de R\u00e9solution des Obstacles",
+            "target_value": "> 90% des obstacles r\u00e9solus en moins de 3 jours",
+            "measurement_method": "Suivi des obstacles signal\u00e9s, de leur statut et du d\u00e9lai de r\u00e9solution via le module de gestion des obstacles."
+        }
+    ],
+    "risk_assessment": [
+        {
+            "risk_name": "Pr\u00e9cision et Hallucination de l'IA",
+            "impact": "High",
+            "probability": "Medium",
+            "mitigation_strategy": "Mettre en place un processus de relecture et de correction humaine syst\u00e9matique pour les backlogs g\u00e9n\u00e9r\u00e9s par l'IA. Collecter les feedbacks utilisateurs pour affiner et entra\u00eener continuellement les mod\u00e8les. Int\u00e9grer des garde-fous pour des r\u00e9ponses non pertinentes."
+        },
+        {
+            "risk_name": "S\u00e9curit\u00e9 et Confidentialit\u00e9 des Donn\u00e9es Client",
+            "impact": "Critical",
+            "probability": "Medium",
+            "mitigation_strategy": "Impl\u00e9menter les meilleures pratiques de s\u00e9curit\u00e9 (chiffrement des donn\u00e9es, gestion des acc\u00e8s IAM, audits de s\u00e9curit\u00e9 r\u00e9guliers, conformit\u00e9 au RGPD/lois locales). Sensibiliser l'\u00e9quipe aux risques li\u00e9s \u00e0 la manipulation des donn\u00e9es sensibles."
+        },
+        {
+            "risk_name": "Adoption et R\u00e9sistance au Changement",
+            "impact": "Medium",
+            "probability": "Medium",
+            "mitigation_strategy": "Concevoir une interface utilisateur intuitive et conviviale (UI/UX). Proposer des sessions de formation et un support utilisateur r\u00e9actif. Mettre en avant les b\u00e9n\u00e9fices concrets pour les utilisateurs (gain de temps, standardisation). Programme ambassadeur."
+        },
+        {
+            "risk_name": "D\u00e9pendance Technologique (API Gemini/AWS)",
+            "impact": "Medium",
+            "probability": "Low",
+            "mitigation_strategy": "Surveiller les co\u00fbts et les performances des services tiers. Pr\u00e9voir des strat\u00e9gies de contingence (ex: basculer vers Azure OpenAI ou des mod\u00e8les open-source pour l'IA, architectures multi-cloud ou hybrides pour l'infrastructure) si les conditions changent drastiquement."
+        },
+        {
+            "risk_name": "D\u00e9rive des Co\u00fbts Cloud",
+            "impact": "Medium",
+            "probability": "Medium",
+            "mitigation_strategy": "Mettre en place un suivi rigoureux des co\u00fbts cloud (budgets, alertes). Optimiser en continu l'utilisation des ressources (instances, stockage, bases de donn\u00e9es). Utiliser des services manag\u00e9s et serveurs sans-serveur quand appropri\u00e9."
+        }
+    ],
+    "total_project_cost": 821650.0,
+    "estimated_gains": [
+        {
+            "item_name": "Abonnements Plateforme (Annuel)",
+            "cost_mad": 300000.0,
+            "description": "Revenus annuels estim\u00e9s des abonnements aux diff\u00e9rents plans de la plateforme ScrumFlow pour la premi\u00e8re ann\u00e9e compl\u00e8te d'op\u00e9ration (ex: 50 projets * 500 MAD/mois * 12 mois).",
+            "formule": "Nombre de Projets Abonn\u00e9s * Tarif Mensuel Moyen * 12 mois"
+        },
+        {
+            "item_name": "Analyse de Backlog IA (Annuel)",
+            "cost_mad": 100000.0,
+            "description": "Revenus annuels estim\u00e9s de la facturation par analyse de cahier des charges par l'IA pour la premi\u00e8re ann\u00e9e compl\u00e8te d'op\u00e9ration (ex: 100 projets * 1000 MAD/analyse).",
+            "formule": "Nombre d'Analyses Vendues * Co\u00fbt par Analyse"
+        },
+        {
+            "item_name": "Services Conseil/Support Premium (Annuel)",
+            "cost_mad": 0.0,
+            "description": "Revenus annuels potentiels de services de conseil ou de support premium. (Non inclus dans l'estimation initiale pour rester conservateur).",
+            "formule": "Estimation bas\u00e9e sur les services suppl\u00e9mentaires propos\u00e9s"
+        }
+    ],
+    "annual_opex_value": 206400.0,
+    "roi_projections": {
+        "year_1": {
+            "year_number": 1,
+            "cumulative_costs": 821650.0,
+            "cumulative_gains": 20000.0,
+            "net_cash_flow": -801650.0,
+            "roi_percentage": -97.57
+        },
+        "year_2": {
+            "year_number": 2,
+            "cumulative_costs": 1028050.0,
+            "cumulative_gains": 420000.0,
+            "net_cash_flow": -608050.0,
+            "roi_percentage": -59.14
+        },
+        "year_3": {
+            "year_number": 3,
+            "cumulative_costs": 1234450.0,
+            "cumulative_gains": 1520000.0,
+            "net_cash_flow": 285550.0,
+            "roi_percentage": 23.13
+        },
+        "break_even_point_months": 32.0
+    },
+    "roi_analysis_summary": "Le projet ScrumFlow n\u00e9cessite un investissement initial significatif en CAPEX (615 250 MAD) principalement d\u00fb aux salaires de l'\u00e9quipe de d\u00e9veloppement. Les co\u00fbts op\u00e9rationnels annuels sont estim\u00e9s \u00e0 206 400 MAD. Les projections indiquent que le projet ne sera pas rentable au cours de la premi\u00e8re ann\u00e9e, affichant un ROI fortement n\u00e9gatif. La rentabilit\u00e9 est pr\u00e9vue au cours de la troisi\u00e8me ann\u00e9e d'exploitation, avec un point de seuil de rentabilit\u00e9 estim\u00e9 \u00e0 environ 32 mois (soit 8 mois de la troisi\u00e8me ann\u00e9e). Cela est r\u00e9aliste pour une nouvelle plateforme SaaS B2B sur le march\u00e9 marocain, n\u00e9cessitant du temps pour l'adoption et la construction d'une base client\u00e8le solide. Les gains sont projet\u00e9s de mani\u00e8re conservative, et un focus sur l'acquisition client et l'optimisation des co\u00fbts sera crucial pour atteindre ces objectifs."
+}

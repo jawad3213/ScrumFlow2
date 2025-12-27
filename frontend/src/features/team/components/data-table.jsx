@@ -80,66 +80,68 @@ export function DataTable({
     return (
         <div className="w-full space-y-4">
             {/* Bulk actions bar removed to be handled externally */}
-            <div className="rounded-2xl border border-surface-border bg-white shadow-elevation overflow-hidden">
-                <Table>
-                    <TableHeader className="bg-surface-muted/30">
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id} className="hover:bg-transparent">
-                                {headerGroup.headers.map((header) => {
-                                    return (
-                                        <TableHead key={header.id} className="h-12 py-3 px-4 first:pl-6 last:pr-6 border-b border-surface-border">
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext()
-                                                )}
-                                        </TableHead>
-                                    )
-                                })}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                    className="group hover:bg-surface-muted/50 transition-ui duration-default ease-soft border-b border-surface-border last:border-0"
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id} className="py-4 px-4 first:pl-6 last:pr-6 align-middle">
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </TableCell>
-                                    ))}
+            <div className="rounded-2xl border border-surface-border bg-white shadow-elevation overflow-hidden w-full transition-all duration-500">
+                <div className="overflow-x-auto scrollbar-thin">
+                    <Table>
+                        <TableHeader className="bg-surface-muted/30">
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                                    {headerGroup.headers.map((header) => {
+                                        return (
+                                            <TableHead key={header.id} className="h-10 py-2 px-2 first:pl-4 last:pr-4 border-b border-surface-border">
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(
+                                                        header.column.columnDef.header,
+                                                        header.getContext()
+                                                    )}
+                                            </TableHead>
+                                        )
+                                    })}
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow className="hover:bg-transparent">
-                                <TableCell
-                                    colSpan={columns.length}
-                                    className="h-[400px] p-0"
-                                >
-                                    {emptyState ? (
-                                        emptyState
-                                    ) : (
-                                        <EmptyState
-                                            icon={Database}
-                                            title="No results found"
-                                            description="Try adjusting your filters or add a new entry to get started."
-                                            onAction={meta?.onCreate}
-                                            actionLabel="Add New"
-                                        />
-                                    )}
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                            ))}
+                        </TableHeader>
+                        <TableBody>
+                            {table.getRowModel().rows?.length ? (
+                                table.getRowModel().rows.map((row) => (
+                                    <TableRow
+                                        key={row.id}
+                                        data-state={row.getIsSelected() && "selected"}
+                                        className="group hover:bg-surface-muted/50 transition-ui duration-default ease-soft border-b border-surface-border last:border-0"
+                                    >
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell key={cell.id} className="py-2.5 px-2 first:pl-4 last:pr-4 align-middle">
+                                                {flexRender(
+                                                    cell.column.columnDef.cell,
+                                                    cell.getContext()
+                                                )}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell
+                                        colSpan={columns.length}
+                                        className="h-[400px] p-0"
+                                    >
+                                        {emptyState ? (
+                                            emptyState
+                                        ) : (
+                                            <EmptyState
+                                                icon={Database}
+                                                title="No results found"
+                                                description="Try adjusting your filters or add a new entry to get started."
+                                                onAction={meta?.onCreate}
+                                                actionLabel="Add New"
+                                            />
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 px-2">

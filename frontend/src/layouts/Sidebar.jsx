@@ -16,7 +16,8 @@ import {
     PieChart,
     ListTodo,
     BrainCircuit,
-    Folder
+    Folder,
+    Loader2
 } from 'lucide-react';
 import { cn } from '../utils/utils';
 import logo from '@/assets/login/logo.png';
@@ -44,6 +45,7 @@ import {
 
 import { useAuth } from '@/hooks/useAuth';
 import { useProject } from '@/hooks/useProject';
+import { getProjects } from '@/api/projects';
 
 const navLinkClass = ({ isActive }) =>
     cn(
@@ -85,13 +87,32 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     // Project Switcher State
     const [open, setOpen] = useState(false);
 
-    // Mock Projects list - in real app, fetch from API
-    const projects = [
-        { value: "p1", label: "Project Alpha" },
-        { value: "p2", label: "Website Redesign" },
-        { value: "p3", label: "Mobile App" },
-        { value: "p4", label: "Marketing Campaign" },
-    ];
+    // Dynamic Projects list
+    const [projects, setProjects] = useState([]);
+    const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+
+    useEffect(() => {
+        if (userRole === 'chef') {
+            const fetchProjects = async () => {
+                setIsLoadingProjects(true);
+                try {
+                    const data = await getProjects();
+                    // Transform API data to combobox format if needed
+                    // The API returns an array of project objects
+                    const formattedProjects = data.map(project => ({
+                        value: project.id.toString(),
+                        label: project.name
+                    }));
+                    setProjects(formattedProjects);
+                } catch (error) {
+                    console.error("Error fetching projects:", error);
+                } finally {
+                    setIsLoadingProjects(false);
+                }
+            };
+            fetchProjects();
+        }
+    }, [userRole]);
 
     const handleLogout = () => {
         logout();
@@ -196,7 +217,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                                             </PopoverTrigger>
                                         </TooltipTrigger>
                                         <TooltipContent side="right" sideOffset={20} className="font-bold border border-white/10 shadow-lg whitespace-nowrap">
-                                            {selectedProject === "global" ? "Vue Globale" : projects.find((p) => p.value === selectedProject)?.label || "Workspace"}
+                                            {selectedProject === "global" ? "Vue Globale" : projects.find((p) => p.value === selectedProject)?.label || (isLoadingProjects ? "Loading..." : "Workspace")}
                                         </TooltipContent>
                                     </Tooltip>
                                 ) : (
@@ -221,7 +242,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                                                 <span className="truncate">
                                                     {selectedProject === "global"
                                                         ? "Vue Globale"
-                                                        : projects.find((project) => project.value === selectedProject)?.label}
+                                                        : projects.find((project) => project.value === selectedProject)?.label || (isLoadingProjects ? "Loading..." : "Project")}
                                                 </span>
                                             </div>
                                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -245,7 +266,13 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                                     <Command>
                                         <CommandInput placeholder="Search workspace..." />
                                         <CommandList>
-                                            <CommandEmpty>No project found.</CommandEmpty>
+                                            <CommandEmpty>
+                                                {isLoadingProjects ? (
+                                                    <div className="flex items-center justify-center p-4">
+                                                        <Loader2 className="h-4 w-4 animate-spin text-brand-primary-500" />
+                                                    </div>
+                                                ) : "No project found."}
+                                            </CommandEmpty>
                                             <CommandGroup>
                                                 <CommandItem
                                                     value="global"
@@ -329,7 +356,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     )}>
                         <div className="relative">
                             <img
-                                src={user?.avatar ? `http://localhost:8000/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
+                                src={user?.avatar ? `http://127.0.0.1:8000/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
                                 alt="Avatar"
                                 className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
                             />

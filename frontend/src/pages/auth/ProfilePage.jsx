@@ -142,7 +142,7 @@ const ProfilePage = () => {
                                     onChange={handlePhotoUpload}
                                 />
                                 <img
-                                    src={user?.avatar ? `http://localhost:8000/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
+                                    src={user?.avatar ? `http://127.0.0.1:8000/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
                                     alt="Avatar"
                                     className="w-32 h-32 rounded-3xl object-cover bg-white border-4 border-white shadow-xl mb-4 group-hover:scale-[1.02] transition-transform duration-500"
                                 />

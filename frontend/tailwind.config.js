@@ -161,11 +161,28 @@ export default {
         shimmer: {
           '100%': { transform: 'translateX(100%)' },
         },
+        "border-beam": {
+          "100%": {
+            "offset-distance": "100%",
+          },
+        },
+        "shine-pulse": {
+          "0%": {
+            "background-position": "0% 0%",
+          },
+          "50%": {
+            "background-position": "100% 100%",
+          },
+          to: {
+            "background-position": "0% 0%",
+          },
+        },
       },
       animation: {
         float: 'float 3s ease-in-out infinite',
         shimmer: 'shimmer 2s infinite',
         'spin-slow': 'spin 8s linear infinite',
+        "border-beam": "border-beam calc(var(--duration)*1s) infinite linear",
       },
     },
   },

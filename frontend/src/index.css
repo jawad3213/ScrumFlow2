@@ -1,4 +1,3 @@
-
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
@@ -53,4 +52,17 @@ body {
   &:hover::-webkit-scrollbar-thumb {
     background-color: #CBD5E1;
   }
-}
+
+  @keyframes shrink {
+    from {
+      width: 100%;
+    }
+
+    to {
+      width: 0%;
+    }
+  }
+
+  .animate-shrink {
+    animation: shrink linear forwards;
+  }

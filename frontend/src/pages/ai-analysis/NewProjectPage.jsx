@@ -1,39 +1,100 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     ChevronRight,
     ChevronLeft,
-    Plus,
-    Trash2,
-    FileUp,
-    FileText,
-    Sparkles,
-    TrendingUp,
-    Users,
-    Clock,
-    AlertTriangle,
     CheckCircle2,
-    X,
-    Loader2
+    Sparkles,
+    Briefcase,
+    FileText,
+    Key,
+    Users,
+    TrendingUp,
+    Store,
+    Rocket,
+    AlertCircle,
+    Target
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+
+import client from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/utils/utils';
-import { getAvailableEmployees } from '@/api';
+
+// New Modular Components
+import GeminiAuth from './components/GeminiAuth';
+import ResourcePool from './components/ResourcePool';
+import InternalResourcePool from './components/InternalResourcePool';
+import DynamicResourcePool from './components/DynamicResourcePool';
+import StaffingStrategy from './components/StaffingStrategy';
+import RequirementUpload from './components/RequirementUpload';
+import AIDashboard from './components/AIDashboard';
+
 import teamChecklistImg from '@/assets/login/team checklist-pana.png';
 import team1Img from '@/assets/login/team1.png';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
 
-const steps = ["Project Info", "Team Strategy", "Team Roles", "Specifications", "AI Results"];
+const STEPS = [
+    { id: 1, title: "Identity", icon: Briefcase },
+    { id: 2, title: "Engine", icon: Key },
+    { id: 3, title: "Strategy", icon: Target },
+    { id: 4, title: "Resources", icon: Users },
+    { id: 5, title: "Scoping", icon: FileText },
+    { id: 6, title: "Blueprint", icon: TrendingUp }
+];
+
+const ANALYZE_API_URL = 'http://127.0.0.1:8001';
+
+// --- Animation Variants ---
+const slideVariants = {
+    enter: (direction) => ({
+        x: direction > 0 ? 20 : -20,
+        opacity: 0
+    }),
+    center: {
+        zIndex: 1,
+        x: 0,
+        opacity: 1
+    },
+    exit: (direction) => ({
+        zIndex: 0,
+        x: direction < 0 ? 20 : -20,
+        opacity: 0
+    })
+};
+
+const cascadeContainer = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2
+        }
+    }
+};
+
+const cascadeItem = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0 }
+};
+
+const shakeVariant = {
+    shake: {
+        x: [-5, 5, -5, 5, 0],
+        transition: { duration: 0.4 }
+    }
+};
 
 const NewProjectPage = () => {
     const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(1);
+    const [direction, setDirection] = useState(0); // 1 for forward, -1 for backward
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [teamStrategy, setTeamStrategy] = useState('available'); // 'available' or 'manual'
+    const [error, setError] = useState(null);
+    const [validationError, setValidationError] = useState(null);
 
     // --- State ---
     const [projectData, setProjectData] = useState({
@@ -41,593 +102,485 @@ const NewProjectPage = () => {
         description: '',
     });
 
-    const [file, setFile] = useState(null);
-    const [uploadProgress, setUploadProgress] = useState(0);
-
-    const [roles, setRoles] = useState([
-        { id: 1, name: 'Senior Developer', salary: 6500 },
-        { id: 2, name: 'UI/UX Designer', salary: 4500 },
+    const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
+    const [employeePool, setEmployeePool] = useState([
+        { role: "Backend Developer", level: "Senior", salary: 30000 },
+        { role: "Frontend Developer", level: "Mid-level", salary: 20000 },
+        { role: "UI/UX Designer", level: "Junior", salary: 18000 },
     ]);
 
-    const [availableEmployees, setAvailableEmployees] = useState([]);
-    const [fetchingEmployees, setFetchingEmployees] = useState(false);
-    const [selectedEmployees, setSelectedEmployees] = useState([]);
+    const [staffingStrategy, setStaffingStrategy] = useState('internal'); // 'internal' or 'custom'
 
-    useEffect(() => {
-        if (currentStep === 3 && teamStrategy === 'available') {
-            fetchAvailable();
+    const [staffingData, setStaffingData] = useState(null);
+    const [isStoring, setIsStoring] = useState(false);
+    const [storeMessage, setStoreMessage] = useState(null);
+
+    const nameControls = useAnimation();
+    const descControls = useAnimation();
+    const apiControls = useAnimation();
+
+    const validateCurrentStep = () => {
+        if (currentStep === 1) {
+            let hasError = false;
+            if (!projectData.name) {
+                nameControls.start("shake");
+                hasError = true;
+            }
+            if (!projectData.description) {
+                descControls.start("shake");
+                hasError = true;
+            }
+            if (hasError) {
+                setValidationError("Required fields are missing");
+                return false;
+            }
         }
-    }, [currentStep, teamStrategy]);
 
-    const fetchAvailable = async () => {
-        setFetchingEmployees(true);
-        try {
-            const data = await getAvailableEmployees();
-            setAvailableEmployees(data);
-            // Auto-select all by default
-            setSelectedEmployees(data.map(emp => emp.id));
-        } catch (err) {
-            console.error("Error fetching available employees:", err);
-        } finally {
-            setFetchingEmployees(false);
+        if (currentStep === 2) {
+            if (!apiKey) {
+                apiControls.start("shake");
+                setValidationError("Gemini API Key is required to continue");
+                return false;
+            }
         }
+
+        return true;
     };
 
-    const toggleEmployee = (empId) => {
-        setSelectedEmployees(prev =>
-            prev.includes(empId)
-                ? prev.filter(id => id !== empId)
-                : [...prev, empId]
-        );
-    };
+    const handleNext = async () => {
+        if (!validateCurrentStep()) return;
 
-    const analysisResult = {
-        teamSizing: [
-            { role: 'Backend Dev', count: 2, confidence: 95 },
-            { role: 'Frontend Dev', count: 2, confidence: 90 },
-            { role: 'QA Engineer', count: 1, confidence: 85 },
-        ],
-        financials: {
-            totalCost: '€142,500',
-            roi: '14 months',
-            monthlyBurn: '€24,000'
-        },
-        phases: [
-            { name: 'Discovery', duration: '2 weeks', color: 'bg-blue-500' },
-            { name: 'Development', duration: '12 weeks', color: 'bg-brand-primary-500' },
-            { name: 'Testing', duration: '3 weeks', color: 'bg-purple-500' },
-        ],
-        epics: [
-            { title: 'User Authentication', stories: 5 },
-            { title: 'Task Dashboard', stories: 12 },
-            { title: 'AI Integration', stories: 8 },
-        ]
-    };
-
-    const handleNext = () => {
-        if (currentStep === 4) {
-            // Prepare data for Gemini analysis
-            const selectedTeam = teamStrategy === 'available'
-                ? availableEmployees
-                    .filter(emp => selectedEmployees.includes(emp.id))
-                    .map(emp => ({
-                        id: emp.id,
-                        name: `${emp.first_name} ${emp.last_name}`,
-                        specialization: emp.specialization?.name,
-                        level: emp.specialization?.level,
-                        salary: emp.specialization?.salary
-                    }))
-                : roles.map(role => ({
-                    role: role.name,
-                    salary: role.salary
-                }));
-
-            const finalData = {
-                project: projectData,
-                teamStrategy,
-                selectedTeam,
-                specificationFile: file ? { name: file.name, type: file.type } : null
-            };
-
-            console.log("Preparing analysis for Gemini:", finalData);
-
-            setIsAnalyzing(true);
-            setTimeout(() => {
-                setIsAnalyzing(false);
-                setCurrentStep(5);
-            }, 3000);
-        } else {
-            setCurrentStep(prev => Math.min(prev + 1, steps.length));
+        if (currentStep < 6) {
+            setDirection(1);
+            setCurrentStep(prev => prev + 1);
+            setValidationError(null);
         }
     };
 
     const handleBack = () => {
-        setCurrentStep(prev => Math.max(prev - 1, 1));
-    };
-
-    const handleFileUpload = (e) => {
-        const selectedFile = e.target.files[0];
-        if (selectedFile && selectedFile.type === 'application/pdf') {
-            setFile(selectedFile);
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 10;
-                setUploadProgress(progress);
-                if (progress >= 100) clearInterval(interval);
-            }, 100);
+        if (currentStep > 1) {
+            setDirection(-1);
+            setCurrentStep(prev => prev - 1);
+            setValidationError(null);
         }
     };
 
-    const addRole = () => {
-        const newId = roles.length > 0 ? Math.max(...roles.map(r => r.id)) + 1 : 1;
-        setRoles([...roles, { id: newId, name: '', salary: 0 }]);
+    const handleApiKeyChange = (key) => {
+        setApiKey(key);
+        localStorage.setItem('gemini_api_key', key);
     };
 
-    const updateRole = (id, field, value) => {
-        setRoles(roles.map(role => role.id === id ? { ...role, [field]: value } : role));
+    const handleAnalysis = async (file) => {
+        if (!apiKey) {
+            setError("Please enter your Google Gemini API Key first.");
+            setDirection(-1);
+            setCurrentStep(2);
+            return;
+        }
+
+        setError(null);
+        setIsAnalyzing(true);
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('pool_employes', JSON.stringify(employeePool));
+        formData.append('api_key', apiKey);
+
+        try {
+            const response = await axios.post(`${ANALYZE_API_URL}/analyze-direct`, formData);
+            setStaffingData(response.data);
+            setDirection(1);
+            setCurrentStep(6);
+        } catch (err) {
+            console.error("Analysis error:", err);
+            const errorMessage = err.response?.data?.detail || err.message || "Intelligence engine failed to process requirements.";
+            setError(errorMessage);
+        } finally {
+            setIsAnalyzing(false);
+        }
     };
 
-    const removeRole = (id) => {
-        setRoles(roles.filter(role => role.id !== id));
+    const handleStoreInDatabase = async () => {
+        if (!staffingData) return;
+        setIsStoring(true);
+        setStoreMessage(null);
+        try {
+            const payload = {
+                ...staffingData,
+                name: projectData.name,
+                description: projectData.description,
+                status: 'active'
+            };
+
+            if (!payload.name) {
+                throw new Error("Project name is required. You must enter it in Step 1.");
+            }
+
+            await client('/projects', { body: payload });
+            setStoreMessage({ type: 'success', text: 'Project blueprint synchronized successfully!' });
+
+            setTimeout(() => {
+                navigate('/dashboard/projects');
+            }, 2000);
+        } catch (err) {
+            console.error('Store error:', err);
+            const errorMsg = err.response?.data?.message || 'Failed to synchronize with central database.';
+            setStoreMessage({ type: 'error', text: errorMsg });
+        } finally {
+            setIsStoring(false);
+        }
     };
 
     const renderStep1 = () => (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-2xl mx-auto py-4">
-            <div className="space-y-3">
-                <label className="text-[10px] font-black text-neutral-400 tracking-[0.2em] uppercase ml-1">Project Name</label>
-                <Input
-                    placeholder="e.g., Enterprise SaaS Platform"
-                    value={projectData.name}
-                    onChange={e => setProjectData({ ...projectData, name: e.target.value })}
-                    className="h-12 text-base rounded-xl border-neutral-200 bg-neutral-50/30 focus:bg-white transition-all px-4 font-normal shadow-subtle focus:ring-4 focus:ring-brand-primary-500/5 placeholder:text-neutral-300"
-                />
-            </div>
-            <div className="space-y-3">
-                <label className="text-[10px] font-black text-neutral-400 tracking-[0.2em] uppercase ml-1">Project Description</label>
-                <Textarea
-                    placeholder="Describe your project goals..."
-                    className="rounded-2xl border-neutral-200 bg-neutral-50/30 focus:bg-white transition-all min-h-[160px] p-4 text-sm leading-relaxed shadow-subtle focus:ring-4 focus:ring-brand-primary-500/5 placeholder:text-neutral-300 font-normal"
-                    value={projectData.description}
-                    onChange={e => setProjectData({ ...projectData, description: e.target.value })}
-                />
-            </div>
-        </div>
-    );
-
-    const renderStep2 = () => (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 py-4 max-w-3xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Option 1: Available Team */}
-                <div
-                    onClick={() => setTeamStrategy('available')}
-                    className={cn(
-                        "group relative bg-white rounded-3xl border-2 transition-all duration-300 cursor-pointer overflow-hidden",
-                        teamStrategy === 'available'
-                            ? "border-brand-primary-500 shadow-xl shadow-brand-primary-500/10 scale-[1.02]"
-                            : "border-neutral-100 hover:border-brand-primary-200 grayscale opacity-80"
-                    )}
-                >
-                    <div className="p-6 flex flex-col items-center text-center space-y-4">
-                        <div className="w-full aspect-square bg-neutral-50 rounded-2xl overflow-hidden flex items-center justify-center p-4 group-hover:bg-brand-primary-50/50 transition-colors">
-                            <img src={teamChecklistImg} alt="Available Team" className="max-h-full object-contain" />
-                        </div>
-                        <div className="space-y-1">
-                            <h3 className="font-bold text-neutral-900 text-base">Use Available Team</h3>
-                            <p className="text-[10px] text-neutral-500 font-medium px-4">Leverage your existing staff members from the talent pool.</p>
-                        </div>
-                        <div className={cn(
-                            "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
-                            teamStrategy === 'available' ? "border-brand-primary-500 bg-brand-primary-500" : "border-neutral-200"
-                        )}>
-                            {teamStrategy === 'available' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Option 2: Manual / Build Own */}
-                <div
-                    onClick={() => setTeamStrategy('manual')}
-                    className={cn(
-                        "group relative bg-white rounded-3xl border-2 transition-all duration-300 cursor-pointer overflow-hidden",
-                        teamStrategy === 'manual'
-                            ? "border-brand-primary-500 shadow-xl shadow-brand-primary-500/10 scale-[1.02]"
-                            : "border-neutral-100 hover:border-brand-primary-200 grayscale opacity-80"
-                    )}
-                >
-                    <div className="p-6 flex flex-col items-center text-center space-y-4">
-                        <div className="w-full aspect-square bg-neutral-50 rounded-2xl overflow-hidden flex items-center justify-center p-4 group-hover:bg-brand-primary-50/50 transition-colors">
-                            <img src={team1Img} alt="Manual Roles" className="max-h-full object-contain" />
-                        </div>
-                        <div className="space-y-1">
-                            <h3 className="font-bold text-neutral-900 text-base">Choose Your Own Team</h3>
-                            <p className="text-[10px] text-neutral-500 font-medium px-4">Define specific roles and requirements manually for this project.</p>
-                        </div>
-                        <div className={cn(
-                            "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
-                            teamStrategy === 'manual' ? "border-brand-primary-500 bg-brand-primary-500" : "border-neutral-200"
-                        )}>
-                            {teamStrategy === 'manual' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-
-    const renderStep3 = () => {
-        if (teamStrategy === 'available') {
-            const sortedEmployees = [...availableEmployees].sort((a, b) =>
-                (a.specialization?.name || "").localeCompare(b.specialization?.name || "")
-            );
-
-            const getSpecColor = (name) => {
-                const colors = {
-                    'Frontend Developer': 'bg-sky-50/70',
-                    'Backend Developer': 'bg-emerald-50/70',
-                    'Fullstack Developer': 'bg-indigo-50/70',
-                    'UI/UX Designer': 'bg-fuchsia-50/70',
-                    'DevOps Engineer': 'bg-amber-50/70',
-                    'Project Manager': 'bg-violet-50/70',
-                    'QA Engineer': 'bg-teal-50/70',
-                };
-                return colors[name] || 'bg-neutral-50/50';
-            };
-
-            return (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 py-4 max-w-3xl mx-auto">
-                    <div className="bg-white rounded-2xl border border-surface-border overflow-hidden shadow-subtle min-h-[300px]">
-                        {fetchingEmployees ? (
-                            <div className="flex flex-col items-center justify-center py-10 bg-white">
-                                <LoadingAnimation className="w-64 h-64" />
-                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest -mt-10">Searching for perfect matches...</p>
-                            </div>
-                        ) : availableEmployees.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                                <div className="h-16 w-16 rounded-full bg-neutral-50 flex items-center justify-center">
-                                    <Users className="h-8 w-8 text-neutral-300" />
-                                </div>
-                                <div className="text-center space-y-1">
-                                    <h3 className="text-sm font-bold text-neutral-900">No Employees Available</h3>
-                                    <p className="text-[10px] text-neutral-500 font-medium">All team members are currently engaged in other projects.</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <table className="w-full text-left">
-                                <thead className="bg-neutral-50/50 border-b border-surface-border">
-                                    <tr>
-                                        <th className="px-6 py-3 w-12 text-center">
-                                            <Checkbox
-                                                checked={selectedEmployees.length === sortedEmployees.length}
-                                                onCheckedChange={(checked) => {
-                                                    if (checked) setSelectedEmployees(sortedEmployees.map(e => e.id));
-                                                    else setSelectedEmployees([]);
-                                                }}
-                                                className="rounded-[4px] border-neutral-300 data-[state=checked]:bg-brand-primary-500 data-[state=checked]:border-brand-primary-500"
-                                            />
-                                        </th>
-                                        <th className="px-2 py-3 text-[9px] font-black uppercase tracking-widest text-neutral-400">Employee Name</th>
-                                        <th className="px-6 py-3 text-[9px] font-black uppercase tracking-widest text-neutral-400">Role</th>
-                                        <th className="px-6 py-3 text-[9px] font-black uppercase tracking-widest text-neutral-400">Level</th>
-                                        <th className="px-6 py-3 text-[9px] font-black uppercase tracking-widest text-neutral-400 text-right">Base Salary</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-surface-border/30">
-                                    {sortedEmployees.map((emp) => (
-                                        <tr
-                                            key={emp.id}
-                                            className={cn(
-                                                "group transition-all cursor-pointer",
-                                                getSpecColor(emp.specialization?.name),
-                                                !selectedEmployees.includes(emp.id) && "bg-opacity-40 hover:bg-opacity-100"
-                                            )}
-                                            onClick={() => toggleEmployee(emp.id)}
-                                        >
-                                            <td className="px-6 py-4">
-                                                <Checkbox
-                                                    checked={selectedEmployees.includes(emp.id)}
-                                                    onCheckedChange={() => toggleEmployee(emp.id)}
-                                                    className="rounded-md"
-                                                />
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="text-xs font-bold text-neutral-900">{emp.first_name} {emp.last_name}</span>
-                                            </td>
-                                            <td className="px-6 py-4 font-medium text-neutral-600 text-xs">
-                                                {emp.specialization?.name}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <Badge className="bg-white text-neutral-900 border-neutral-200 font-bold px-2 py-0.5 text-[9px] uppercase tracking-tighter">
-                                                    {emp.specialization?.level}
-                                                </Badge>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <span className="text-xs font-black text-neutral-900">{parseFloat(emp.specialization?.salary).toLocaleString()} MAD</span>
-                                                <span className="text-[9px] text-neutral-400 block font-medium">/ month</span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+        <motion.div
+            variants={cascadeContainer}
+            initial="hidden"
+            animate="show"
+            className="space-y-8 max-w-2xl mx-auto py-8"
+        >
+            <motion.div variants={cascadeItem} className="space-y-3 text-left">
+                <label className="text-[10px] font-black text-neutral-400 tracking-[0.2em] uppercase ml-1 flex items-center justify-between">
+                    Project Name
+                    {validationError && !projectData.name && <span className="text-red-500 normal-case tracking-normal">Required</span>}
+                </label>
+                <motion.div animate={nameControls} variants={shakeVariant}>
+                    <Input
+                        placeholder="e.g., Enterprise SaaS Platform v2.0"
+                        value={projectData.name}
+                        onChange={e => setProjectData({ ...projectData, name: e.target.value })}
+                        className={cn(
+                            "h-14 text-lg rounded-[20px] border-neutral-100 bg-neutral-50/50 focus:bg-white transition-all px-6 font-bold shadow-subtle focus:ring-8 focus:ring-brand-primary-500/5 placeholder:text-neutral-300",
+                            validationError && !projectData.name && "border-red-200 bg-red-50/10"
                         )}
-                    </div>
-                    <div className="flex justify-between items-center px-2">
-                        <p className="text-[10px] text-neutral-400 font-medium italic">
-                            * Select members to assign them to this new project team.
-                        </p>
-                        <span className="text-[10px] font-black text-brand-primary-600 uppercase tracking-wider">
-                            {selectedEmployees.length} Members Selected
-                        </span>
-                    </div>
-                </div>
-            );
-        }
-
-        return (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 py-4 max-w-2xl mx-auto">
-                <div className="bg-white rounded-2xl border border-surface-border overflow-hidden shadow-subtle">
-                    <table className="w-full text-left">
-                        <thead className="bg-neutral-50/50 border-b border-surface-border">
-                            <tr>
-                                <th className="px-6 py-3 text-[9px] font-black uppercase tracking-widest text-neutral-400">Role Name</th>
-                                <th className="px-6 py-3 text-[9px] font-black uppercase tracking-widest text-neutral-400">Monthly Salary (€)</th>
-                                <th className="px-6 py-3 w-16"></th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-surface-border">
-                            {roles.map((role) => (
-                                <tr key={role.id} className="group hover:bg-neutral-50/30 transition-colors">
-                                    <td className="px-6 py-3">
-                                        <Input
-                                            value={role.name}
-                                            onChange={e => updateRole(role.id, 'name', e.target.value)}
-                                            className="border-none bg-transparent hover:bg-white focus:bg-white focus:ring-0 shadow-none px-0 font-bold text-neutral-900 h-8 text-sm"
-                                            placeholder="Enter role..."
-                                        />
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        <Input
-                                            type="number"
-                                            value={role.salary}
-                                            onChange={e => updateRole(role.id, 'salary', e.target.value)}
-                                            className="border-none bg-transparent hover:bg-white focus:bg-white focus:ring-0 shadow-none px-0 font-bold text-neutral-900 h-8 text-sm"
-                                            placeholder="0.00"
-                                        />
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        <button
-                                            onClick={() => removeRole(role.id)}
-                                            className="text-neutral-300 hover:text-danger-default transition-colors p-2 rounded-lg"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <div className="p-3 bg-neutral-50/30">
-                        <button
-                            onClick={addRole}
-                            className="flex items-center gap-2 text-brand-primary-600 hover:text-brand-primary-700 font-black text-[10px] uppercase tracking-wider px-2 py-1 transition-all"
-                        >
-                            <Plus className="h-3.5 w-3.5" />
-                            Add Custom Role
-                        </button>
-                    </div>
-                </div>
-                <p className="text-[10px] text-neutral-400 font-medium px-2 italic">
-                    * These rates help Gemini estimate the total project budget.
-                </p>
-            </div>
-        );
-    };
-
-    const renderStep4 = () => (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 py-4 max-w-2xl mx-auto">
-            <div
-                className={cn(
-                    "border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all duration-300",
-                    file ? "border-success-500 bg-success-50/30" : "border-neutral-200 hover:border-brand-primary-500 hover:bg-brand-primary-50/10"
-                )}
-            >
-                <div className={cn(
-                    "w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300",
-                    file ? "bg-success-100 text-success-600 scale-110" : "bg-neutral-100 text-neutral-400 group-hover:scale-110"
-                )}>
-                    {file ? <FileText className="h-7 w-7" /> : <FileUp className="h-7 w-7" />}
-                </div>
-
-                <h3 className="text-sm font-black text-neutral-900 tracking-tight mb-1">
-                    {file ? file.name : "Upload Technical Specs"}
-                </h3>
-                <p className="text-[11px] text-neutral-500 font-medium mb-6 text-center max-w-xs">
-                    Drag and drop your PDF here to help Gemini understand the scope.
-                </p>
-
-                <input type="file" id="spec-upload" className="hidden" accept=".pdf" onChange={handleFileUpload} />
-                <Button asChild variant={file ? "secondary" : "default"} className="rounded-xl px-6 h-10 text-xs font-bold font-sans">
-                    <label htmlFor="spec-upload" className="cursor-pointer">{file ? "Change File" : "Select PDF"}</label>
-                </Button>
-
-                {file && (
-                    <div className="w-full max-w-xs mt-6 space-y-1.5">
-                        <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-neutral-400">
-                            <span>Processing</span>
-                            <span>{uploadProgress}%</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-success-500 transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-
-    const renderStep5 = () => (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                {[
-                    { label: 'Total Estimated Cost', value: analysisResult.financials.totalCost, icon: TrendingUp, color: 'text-success-600', bg: 'bg-success-50' },
-                    { label: 'Target ROI', value: analysisResult.financials.roi, icon: Clock, color: 'text-brand-primary-600', bg: 'bg-brand-primary-50' },
-                    { label: 'Monthly Burn', value: analysisResult.financials.monthlyBurn, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
-                ].map((item, i) => (
-                    <div key={i} className="bg-white rounded-2xl border border-surface-border p-5 shadow-subtle">
-                        <p className="text-[9px] font-black text-neutral-400 uppercase tracking-widest mb-1">{item.label}</p>
-                        <h4 className="text-xl font-black text-neutral-900 tracking-tight">{item.value}</h4>
-                    </div>
-                ))}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white rounded-2xl border border-surface-border p-6 shadow-subtle">
-                    <h3 className="text-sm font-black text-neutral-900 tracking-tight mb-4 flex items-center gap-2">
-                        <Users className="h-4 w-4 text-brand-primary-500" />
-                        Team Sizing
-                    </h3>
-                    <div className="space-y-3">
-                        {analysisResult.teamSizing.map((team, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-surface-background/50 border border-surface-border/50">
-                                <span className="font-bold text-neutral-800 text-xs">{team.role}</span>
-                                <Badge className="bg-white text-neutral-900 border-neutral-200 font-bold px-2 py-0.5 text-[10px]">
-                                    {team.count} Pax
-                                </Badge>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl border border-surface-border p-6 shadow-subtle">
-                    <h3 className="text-sm font-black text-neutral-900 tracking-tight mb-4 flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-brand-primary-500" />
-                        Timeline
-                    </h3>
-                    <div className="space-y-5">
-                        {analysisResult.phases.map((phase, i) => (
-                            <div key={i} className="space-y-2">
-                                <div className="flex justify-between text-[10px] font-bold text-neutral-800">
-                                    <span>{phase.name}</span>
-                                    <span className="text-neutral-400 uppercase">{phase.duration}</span>
-                                </div>
-                                <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
-                                    <div className={cn("h-full transition-all duration-1000", phase.color)} style={{ width: '100%' }} />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
+                    />
+                </motion.div>
+            </motion.div>
+            <motion.div variants={cascadeItem} className="space-y-3 text-left">
+                <label className="text-[10px] font-black text-neutral-400 tracking-[0.2em] uppercase ml-1 flex items-center justify-between">
+                    Mission Brief
+                    {validationError && !projectData.description && <span className="text-red-500 normal-case tracking-normal">Required</span>}
+                </label>
+                <motion.div animate={descControls} variants={shakeVariant}>
+                    <Textarea
+                        placeholder="What is the primary objective of this project? Describe the core problem we are solving..."
+                        className={cn(
+                            "rounded-[24px] border-neutral-100 bg-neutral-50/50 focus:bg-white transition-all min-h-[220px] p-6 text-sm leading-relaxed shadow-subtle focus:ring-8 focus:ring-brand-primary-500/5 placeholder:text-neutral-300 font-medium",
+                            validationError && !projectData.description && "border-red-200 bg-red-50/10"
+                        )}
+                        value={projectData.description}
+                        onChange={e => setProjectData({ ...projectData, description: e.target.value })}
+                    />
+                </motion.div>
+            </motion.div>
+        </motion.div>
     );
 
     const renderAnalyzing = () => (
-        <div className="flex flex-col items-center justify-center py-20 space-y-8 animate-in zoom-in-95 duration-700 max-w-md mx-auto">
+        <div className="flex flex-col items-center justify-center py-24 space-y-10 max-w-md mx-auto">
             <div className="relative">
-                <div className="h-24 w-24 rounded-full border-4 border-brand-primary-100 flex items-center justify-center animate-pulse">
-                    <Sparkles className="h-12 w-12 text-brand-primary-500 animate-spin-slow" />
-                </div>
-                <div className="absolute top-0 left-0 h-24 w-24 border-t-4 border-brand-primary-500 rounded-full animate-spin" />
+                <motion.div
+                    animate={{ scale: [1, 1.05, 1], rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="h-32 w-32 rounded-[40px] bg-brand-primary-50 flex items-center justify-center"
+                >
+                    <Sparkles className="h-14 w-14 text-brand-primary-500" />
+                </motion.div>
+                <div className="absolute -top-2 -left-2 h-36 w-36 border-2 border-brand-primary-500/20 rounded-[44px] animate-[spin_8s_linear_infinite]" />
             </div>
 
-            <div className="text-center space-y-2">
-                <h2 className="text-xl font-black text-neutral-900 tracking-tight uppercase">AI Generation In Progress</h2>
-                <p className="text-xs text-neutral-500 font-medium leading-relaxed">
-                    Gemini Flash 1.5 is scanning your requirements to build a complete project roadmap.
+            <div className="text-center space-y-3">
+                <h2 className="text-2xl font-black text-neutral-900 tracking-tight uppercase tracking-[0.1em]">AI Synthesis In Progress</h2>
+                <p className="text-sm text-neutral-400 font-medium leading-relaxed font-mono">
+                    Decomposing specifications into high-fidelity nodes...
                 </p>
+                <div className="flex justify-center gap-1.5 pt-4">
+                    {[0, 1, 2].map(i => (
+                        <motion.div
+                            key={i}
+                            animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+                            transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.3 }}
+                            className="w-2 h-2 rounded-full bg-brand-primary-500"
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );
 
+    const showSteppers = !(currentStep === 6 && staffingData);
+
     return (
-        <div className="max-w-5xl mx-auto space-y-8 pb-20 pt-10 px-4">
-            {/* Header Area */}
-            <div className="text-center max-w-xl mx-auto space-y-3">
-                <h1 className="text-3xl font-black text-neutral-900 tracking-tighter animate-in fade-in duration-700">
-                    Create New Project
-                </h1>
-                <p className="text-neutral-500 font-medium text-sm animate-in fade-in duration-700 delay-200">
-                    Follow the steps below to initialize your project with AI analysis.
-                </p>
-            </div>
+        <div className="max-w-7xl mx-auto space-y-6 pb-20 pt-4 px-6 overflow-x-hidden">
+            {/* Super Header - Centered Professional Staging */}
+            {showSteppers && (
+                <div className="flex flex-col items-center justify-center space-y-3 pb-8 border-b border-neutral-100 text-center">
+                    <motion.h1
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-7xl font-black text-neutral-900 tracking-tighter leading-none"
+                    >
+                        Project <span className="text-brand-primary-500 italic">Analysis</span>
+                    </motion.h1>
 
-            {/* Combined Stepper + Form Container */}
-            <div className="bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-neutral-100 overflow-hidden">
-                {/* Horizontal Stepper Top Center */}
-                {!isAnalyzing && (
-                    <div className="p-8 border-b border-neutral-50 flex justify-center">
-                        <div className="flex items-center gap-2">
-                            {steps.map((step, index) => {
-                                const stepNumber = index + 1;
-                                const isActive = stepNumber === currentStep;
-                                const isCompleted = stepNumber < currentStep;
+                    <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="text-neutral-400 font-bold text-[11px] uppercase tracking-[0.3em] max-w-3xl leading-relaxed"
+                    >
+                        Instantiate high-fidelity project plans using advanced LLM reasoning and resource mapping.
+                    </motion.p>
+                </div>
+            )}
 
-                                return (
-                                    <React.Fragment key={index}>
-                                        <div className="flex items-center gap-3 group">
-                                            <div className={cn(
-                                                "w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all duration-500 shrink-0",
-                                                isActive
-                                                    ? "bg-brand-primary-500 border-brand-primary-500 text-white scale-110 shadow-lg shadow-brand-primary-500/20"
-                                                    : isCompleted
-                                                        ? "bg-success-default border-success-default text-white"
-                                                        : "bg-white border-neutral-100 text-neutral-400"
-                                            )}>
-                                                {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : <span className="font-bold text-xs">{stepNumber}</span>}
-                                            </div>
-                                            <span className={cn(
-                                                "text-[10px] font-black uppercase tracking-widest hidden md:block",
-                                                isActive ? "text-neutral-900" : "text-neutral-400"
-                                            )}>
-                                                {step}
-                                            </span>
-                                        </div>
-                                        {index < steps.length - 1 && (
-                                            <div className="w-12 h-[2px] bg-neutral-200 mx-2" />
-                                        )}
-                                    </React.Fragment>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <AnimatePresence>
+                    {showSteppers && (
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="lg:col-span-3 space-y-6 sticky top-12"
+                        >
+                            <div className="bg-neutral-50/50 p-4 rounded-[40px] border border-neutral-100 shadow-sm">
+                                <div className="space-y-3">
+                                    {STEPS.map((step, idx) => {
+                                        const isActive = currentStep === step.id;
+                                        const isCompleted = currentStep > step.id;
+                                        return (
+                                            <motion.div
+                                                key={step.id}
+                                                whileHover={{ x: 4 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={() => {
+                                                    // Only validate if trying to move forward
+                                                    if (step.id > currentStep) {
+                                                        if (!validateCurrentStep()) return;
+                                                    }
 
-                {/* Form Body */}
-                <div className="p-8 md:p-12">
-                    {isAnalyzing ? (
-                        renderAnalyzing()
-                    ) : (
-                        <div className="min-h-[300px]">
-                            {currentStep === 1 && renderStep1()}
-                            {currentStep === 2 && renderStep2()}
-                            {currentStep === 3 && renderStep3()}
-                            {currentStep === 4 && renderStep4()}
-                            {currentStep === 5 && renderStep5()}
+                                                    setDirection(step.id > currentStep ? 1 : -1);
+                                                    setCurrentStep(step.id);
+                                                    setValidationError(null);
+                                                }}
+                                                className={cn(
+                                                    "flex items-center gap-4 px-6 py-5 rounded-3xl relative group cursor-pointer border border-transparent transition-all duration-300",
+                                                    isActive ? "bg-white shadow-2xl shadow-neutral-900/5 text-neutral-900 border-neutral-100/50" : "text-neutral-400 hover:bg-neutral-100/30"
+                                                )}
+                                            >
+                                                <div className={cn(
+                                                    "w-11 h-11 rounded-2xl flex items-center justify-center transition-colors duration-300",
+                                                    isActive ? "bg-brand-primary-500 text-white shadow-xl shadow-brand-primary-500/20" :
+                                                        isCompleted ? "bg-emerald-50 text-emerald-500" : "bg-neutral-100/50 text-neutral-400"
+                                                )}>
+                                                    {isCompleted ? <CheckCircle2 size={22} strokeWidth={2.5} /> : <step.icon size={22} strokeWidth={2.5} />}
+                                                </div>
 
-                            {/* Navigation */}
-                            <div className={cn(
-                                "mt-10 pt-8 border-t border-neutral-50 flex items-center justify-between",
-                                currentStep === 1 ? "justify-end" : "justify-between"
-                            )}>
-                                {currentStep > 1 && currentStep < 6 && (
-                                    <Button
-                                        variant="ghost"
-                                        onClick={handleBack}
-                                        className="rounded-xl px-6 font-black text-[10px] uppercase tracking-widest h-10 hover:bg-neutral-50 transition-all text-neutral-400 hover:text-neutral-900"
-                                    >
-                                        Back
-                                    </Button>
-                                )}
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 mb-0.5">Step 0{step.id}</span>
+                                                    <span className="text-[13px] font-black uppercase tracking-widest">
+                                                        {step.id === 4 ? (staffingStrategy === 'internal' ? 'Talent Pool' : 'Resources') : step.title}
+                                                    </span>
+                                                </div>
 
-                                <Button
-                                    onClick={currentStep === 5 ? () => navigate('/dashboard') : handleNext}
-                                    className="bg-brand-primary-500 hover:bg-neutral-900 text-white rounded-xl px-8 h-10 font-black text-[10px] uppercase tracking-[0.15em] shadow-lg shadow-brand-primary-500/10 transition-all duration-300"
-                                >
-                                    {currentStep === 5 ? "Finalize Project" : "Next Step"}
-                                </Button>
+                                                {isActive && (
+                                                    <motion.div
+                                                        layoutId="vertical-indicator"
+                                                        className="absolute left-0 w-1.5 h-8 bg-brand-primary-500 rounded-r-full"
+                                                    />
+                                                )}
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Main Content Stage */}
+                <div className={cn(
+                    "relative transition-all duration-500",
+                    showSteppers ? "lg:col-span-9" : "lg:col-span-12"
+                )}>
+                    <motion.div
+                        layout
+                        className="relative group"
+                    >
+                        <div className="absolute -inset-1 bg-gradient-to-r from-brand-primary-500/10 to-indigo-500/10 rounded-[48px] blur-2xl opacity-20 pointer-events-none"></div>
+                        <div className="bg-white rounded-[48px] border border-white shadow-super border-neutral-100 relative overflow-hidden backdrop-blur-md">
+                            {/* Horizontal Internal Progress Line */}
+                            {showSteppers && (
+                                <div className="absolute top-0 left-0 w-full h-[6px] bg-neutral-50 overflow-hidden z-20">
+                                    <motion.div
+                                        className="h-full bg-gradient-to-r from-brand-primary-500 via-indigo-600 to-brand-primary-500 bg-[length:200%_auto]"
+                                        initial={{ width: "20%" }}
+                                        animate={{
+                                            width: `${(currentStep / 6) * 100}%`,
+                                            backgroundPosition: ["0% center", "200% center"]
+                                        }}
+                                        transition={{
+                                            width: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+                                            backgroundPosition: { duration: 10, repeat: Infinity, ease: "linear" }
+                                        }}
+                                    />
+                                </div>
+                            )}
+
+                            <div className="p-12 md:p-20">
+                                <AnimatePresence mode="wait" custom={direction}>
+                                    {isAnalyzing ? (
+                                        <motion.div
+                                            key="analyzing"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                        >
+                                            {renderAnalyzing()}
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div
+                                            key={currentStep}
+                                            custom={direction}
+                                            variants={slideVariants}
+                                            initial="enter"
+                                            animate="center"
+                                            exit="exit"
+                                            transition={{
+                                                x: { type: "spring", stiffness: 200, damping: 25 },
+                                                opacity: { duration: 0.4 }
+                                            }}
+                                        >
+                                            {currentStep === 1 && renderStep1()}
+                                            {currentStep === 2 && (
+                                                <GeminiAuth
+                                                    apiKey={apiKey}
+                                                    onKeyChange={handleApiKeyChange}
+                                                    onNext={handleNext}
+                                                    validationError={validationError && !apiKey}
+                                                    shakeControls={apiControls}
+                                                />
+                                            )}
+                                            {currentStep === 3 && (
+                                                <StaffingStrategy
+                                                    selected={staffingStrategy}
+                                                    onSelect={setStaffingStrategy}
+                                                    team1Img={team1Img}
+                                                    teamChecklistImg={teamChecklistImg}
+                                                />
+                                            )}
+                                            {currentStep === 4 && (
+                                                staffingStrategy === 'internal' ? (
+                                                    <InternalResourcePool onSync={setEmployeePool} />
+                                                ) : (
+                                                    <DynamicResourcePool onSync={setEmployeePool} />
+                                                )
+                                            )}
+                                            {currentStep === 5 && (
+                                                <RequirementUpload
+                                                    onFileSelected={handleAnalysis}
+                                                    isLoading={isAnalyzing}
+                                                    error={error}
+                                                />
+                                            )}
+                                            {currentStep === 6 && (
+                                                <div className="space-y-10">
+                                                    <div className="flex flex-col md:flex-row justify-between items-center bg-brand-primary-50/20 p-8 md:p-10 rounded-[40px] border border-brand-primary-100/50 mb-10 gap-8">
+                                                        <div className="flex items-center gap-6">
+                                                            <div className="w-16 h-16 rounded-[24px] bg-white border border-brand-primary-100 flex items-center justify-center text-brand-primary-500 shadow-xl">
+                                                                <Rocket size={32} />
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="text-base font-black text-neutral-900 uppercase tracking-widest leading-none mb-2">Architectural Validation</h3>
+                                                                <p className="text-xs text-neutral-400 font-bold uppercase tracking-widest">Verify analysis and commit to central registry</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-6">
+                                                            {storeMessage && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, scale: 0.9 }}
+                                                                    animate={{ opacity: 1, scale: 1 }}
+                                                                    className={cn(
+                                                                        "px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 shadow-lg border",
+                                                                        storeMessage.type === 'success' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-red-50 text-red-600 border-red-100"
+                                                                    )}
+                                                                >
+                                                                    {storeMessage.text}
+                                                                </motion.div>
+                                                            )}
+                                                            <motion.button
+                                                                whileHover={{ y: -4, shadow: "0 25px 30px -10px rgb(0 0 0 / 0.15)" }}
+                                                                whileTap={{ scale: 0.96 }}
+                                                                onClick={handleStoreInDatabase}
+                                                                disabled={isStoring}
+                                                                className="px-8 py-3.5 bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 text-white rounded-[20px] text-[10px] font-black uppercase tracking-[0.25em] transition-all flex items-center gap-3 shadow-3xl"
+                                                            >
+                                                                {isStoring ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Store size={18} />}
+                                                                Commit Project
+                                                            </motion.button>
+                                                        </div>
+                                                    </div>
+                                                    <AIDashboard data={staffingData} />
+                                                </div>
+                                            )}
+
+                                            {/* Unified Navigation Controllers */}
+                                            {currentStep < 6 && (
+                                                <div className={cn(
+                                                    "mt-16 flex items-center border-t border-neutral-100 pt-12 gap-8",
+                                                    currentStep === 1 ? "justify-end" : "justify-between"
+                                                )}>
+                                                    {currentStep > 1 && (
+                                                        <motion.button
+                                                            whileHover={{ x: -4 }}
+                                                            onClick={handleBack}
+                                                            className="group flex items-center gap-4 text-neutral-400 hover:text-neutral-900 transition-all text-[11px] font-black uppercase tracking-[0.2em] h-12"
+                                                        >
+                                                            <div className="w-11 h-11 rounded-xl border border-neutral-100 group-hover:bg-neutral-50 transition-all flex items-center justify-center shadow-sm">
+                                                                <ChevronLeft size={18} />
+                                                            </div>
+                                                            Back to {STEPS[currentStep - 2].title}
+                                                        </motion.button>
+                                                    )}
+
+                                                    {currentStep !== 5 && (
+                                                        <motion.button
+                                                            whileHover={{ y: -4 }}
+                                                            whileTap={{ scale: 0.96 }}
+                                                            onClick={handleNext}
+                                                            className="bg-neutral-900 hover:bg-brand-primary-500 text-white rounded-[24px] px-10 h-14 font-black text-[11px] uppercase tracking-[0.25em] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] hover:shadow-brand-primary-500/25 transition-all flex items-center gap-4 group"
+                                                        >
+                                                            Progress to {STEPS[currentStep].title}
+                                                            <ChevronRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
+                                                        </motion.button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </div>
-                    )}
+                    </motion.div>
                 </div>
+
+                {/* Success Celebration Element (Hidden until complete) */}
+                <AnimatePresence>
+                    {storeMessage?.type === 'success' && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
+                        >
+                            <motion.div
+                                initial={{ strokeDashoffset: 100 }}
+                                animate={{ strokeDashoffset: 0 }}
+                                className="bg-white/80 backdrop-blur-xl p-20 rounded-full shadow-super"
+                            >
+                                <CheckCircle2 size={120} className="text-emerald-500" strokeWidth={3} />
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

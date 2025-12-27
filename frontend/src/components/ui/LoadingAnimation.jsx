@@ -1,7 +1,7 @@
 import React from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
-const LoadingAnimation = ({ className = "w-48 h-48" }) => {
+const LoadingAnimation = ({ className = "w-48", message = "Almost there... Just a moment" }) => {
     return (
         <div className={`flex flex-col items-center justify-center ${className}`}>
             <DotLottieReact
@@ -9,9 +9,11 @@ const LoadingAnimation = ({ className = "w-48 h-48" }) => {
                 loop
                 autoplay
             />
-            <p className="text-neutral-500 font-bold uppercase tracking-widest text-xs mt-4 animate-pulse">
-                Fetching Data...
-            </p>
+            {message && (
+                <p className="text-neutral-500 font-bold uppercase tracking-widest text-[10px] mt-4 animate-pulse text-center leading-relaxed">
+                    {message}
+                </p>
+            )}
         </div>
     );
 };

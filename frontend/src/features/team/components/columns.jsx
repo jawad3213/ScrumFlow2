@@ -75,7 +75,7 @@ export const columns = [
                 <Button
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    className="hover:bg-transparent -ml-3 h-8 text-neutral-500 font-semibold"
+                    className="hover:bg-transparent -ml-3 h-8 text-neutral-500 font-semibold justify-start text-left"
                 >
                     Employee
                     <ArrowUpDown className="ml-2 h-3 w-3" />
@@ -87,7 +87,7 @@ export const columns = [
             const email = row.original.email;
 
             return (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     <div className={`flex h-9 w-9 items-center justify-center rounded-full border text-[13px] font-bold ${getRandomColor(name)}`}>
                         {getInitials(name)}
                     </div>
@@ -105,11 +105,11 @@ export const columns = [
     },
     {
         accessorKey: "role",
-        header: "Specialization",
+        header: () => <div className="text-left">Specialization</div>,
         cell: ({ row }) => {
             const role = row.getValue("role");
             return (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 whitespace-nowrap">
                     <div className="h-2 w-2 rounded-full bg-brand-primary-500/30" />
                     <span className="capitalize text-neutral-600 font-bold text-sm tracking-tight">{role}</span>
                 </div>
@@ -153,8 +153,8 @@ export const columns = [
             const styles = getStatusStyles(status);
 
             return (
-                <div className="flex items-center">
-                    <div className={`inline-flex items-center px-3 py-1 rounded-pill text-[10px] font-black border ${styles.bg} ${styles.text} ${styles.border} gap-1.5 shadow-subtle`}>
+                <div className="flex items-center whitespace-nowrap">
+                    <div className={`inline-flex items-center px-2 py-0.5 rounded-pill text-[10px] font-black border ${styles.bg} ${styles.text} ${styles.border} gap-1.5 shadow-subtle`}>
                         {status.toLowerCase() === 'active' ? (
                             <span className="relative flex h-1.5 w-1.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-default opacity-75"></span>
@@ -171,15 +171,15 @@ export const columns = [
     },
     {
         accessorKey: "is_engaged",
-        header: "Engagement",
+        header: () => <div className="text-right pr-4">Engagement</div>,
         cell: ({ row }) => {
             const isEngaged = !!row.getValue("is_engaged");
 
             return (
-                <div className="flex items-center">
-                    <div className={`inline-flex items-center px-3 py-1 rounded-pill text-[10px] font-black border gap-1.5 shadow-subtle ${isEngaged
-                            ? 'bg-brand-primary-50 text-brand-primary-700 border-brand-primary-100'
-                            : 'bg-neutral-50 text-neutral-500 border-neutral-200'
+                <div className="flex items-center justify-end pr-4 whitespace-nowrap">
+                    <div className={`inline-flex items-center px-2 py-0.5 rounded-pill text-[10px] font-black border gap-1.5 shadow-subtle ${isEngaged
+                        ? 'bg-brand-primary-50 text-brand-primary-700 border-brand-primary-100'
+                        : 'bg-neutral-50 text-neutral-500 border-neutral-200'
                         }`}>
                         <div className={`h-1.5 w-1.5 rounded-full ${isEngaged ? 'bg-brand-primary-500' : 'bg-neutral-400'}`} />
                         <span className="uppercase tracking-widest">{isEngaged ? 'Engaged' : 'Available'}</span>
@@ -195,7 +195,7 @@ export const columns = [
             const member = row.original
 
             return (
-                <div className="flex items-center justify-end gap-2 pr-2">
+                <div className="flex items-center justify-end gap-2 pr-4 whitespace-nowrap">
                     <Button
                         variant="ghost"
                         size="sm"

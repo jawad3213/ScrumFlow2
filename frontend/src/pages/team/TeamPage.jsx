@@ -71,7 +71,10 @@ const TeamPage = () => {
             <div className="animate-in slide-in-from-bottom-4 duration-default delay-150 px-1">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-[500px] bg-white rounded-2xl border border-surface-border shadow-subtle">
-                        <LoadingAnimation className="w-64 h-64" />
+                        <LoadingAnimation
+                            className="w-64"
+                            message="Setting up your team view... Just a moment"
+                        />
                     </div>
                 ) : (
                     <Tabs defaultValue="employees" className="w-full" onValueChange={setActiveTab}>

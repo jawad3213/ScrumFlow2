@@ -71,7 +71,7 @@ const Navbar = () => {
                         className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-background border border-surface-border hover:bg-white hover:border-brand-primary-500/20 transition-ui duration-default ease-soft focus:outline-none focus:ring-4 focus:ring-brand-primary-500/10 shadow-subtle"
                     >
                         <img
-                            src={user?.avatar ? `http://localhost:8000/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
+                            src={user?.avatar ? `http://127.0.0.1:8000/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
                             alt="Avatar"
                             className="h-8 w-8 rounded-full object-cover"
                         />

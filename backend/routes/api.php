@@ -37,6 +37,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword']);
     Route::post('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar']);
 
+    // Project Routes
+    Route::get('/projects', [\App\Http\Controllers\ProjectController::class, 'index']);
+    Route::post('/projects', [\App\Http\Controllers\ProjectController::class, 'store']);
+    Route::get('/projects/{id}', [\App\Http\Controllers\ProjectController::class, 'show']);
+    Route::put('/projects/{id}', [\App\Http\Controllers\ProjectController::class, 'update']);
+    Route::delete('/projects/{id}', [\App\Http\Controllers\ProjectController::class, 'destroy']);
+
     // Juste pour tester que le token fonctionne
     Route::get('/me', function (Request $request) {
         return $request->user();
