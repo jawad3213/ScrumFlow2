@@ -435,7 +435,7 @@ const NotificationAnalysisDashboard = ({ data }) => {
                 </motion.div>
             </div>
 
-            {/* Metrics & KPIs */}
+            {/* Success Metrics (KPIs) */}
             <div className="w-full">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
