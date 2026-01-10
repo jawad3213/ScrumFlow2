@@ -128,8 +128,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                         {!collapsed && "Main Menu"}
                     </div>
                     <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Overview" collapsed={collapsed} />
-                    <SidebarItem to="/my-tasks" icon={CheckSquare} label="My Tasks" collapsed={collapsed} />
-                    <SidebarItem to="/calendar" icon={Calendar} label="Calendar" collapsed={collapsed} />
+
                     <SidebarItem to="/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
 
                     <div className="my-2 mx-2 border-t border-neutral-200" />
@@ -150,13 +149,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
                     <SidebarItem to={`/project/${projectId}`} icon={LayoutDashboard} label="Overview" collapsed={collapsed} end />
                     <SidebarItem to={`/project/${projectId}/hub`} icon={Sparkles} label="Strategic Blueprint" collapsed={collapsed} />
-                    <SidebarItem to={`/project/${projectId}/board`} icon={FolderKanban} label="Sprint Board" collapsed={collapsed} />
-                    <SidebarItem to={`/project/${projectId}/my-space`} icon={CheckSquare} label="My Project Tasks" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/analysis`} icon={BrainCircuit} label="AI Analysis" collapsed={collapsed} />
-                    <SidebarItem to={`/project/${projectId}/backlog`} icon={ListTodo} label="Product Backlog" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/team`} icon={Users} label="Project Team" collapsed={collapsed} />
-                    <SidebarItem to={`/project/${projectId}/financials`} icon={PieChart} label="Financials" collapsed={collapsed} />
-                    <SidebarItem to={`/project/${projectId}/settings`} icon={Settings} label="Project Settings" collapsed={collapsed} />
+
                 </>
             );
         }
@@ -341,8 +336,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                                 <div className="px-2 py-1.5 text-xs font-semibold text-brand-primary-500 uppercase tracking-wider">
                                     {!collapsed && "Menu"}
                                 </div>
-                                <SidebarItem to="/my-tasks" icon={CheckSquare} label="My Tasks" collapsed={collapsed} />
-                                <SidebarItem to="/calendar" icon={Calendar} label="Calendar" collapsed={collapsed} />
+
                                 <SidebarItem to="/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
                             </>
                         )}

@@ -187,7 +187,7 @@ const NewProjectPage = () => {
         formData.append('api_key', apiKey);
 
         try {
-            const response = await axios.post(`${ANALYZE_API_URL}/analyze-direct`, formData);
+            const response = await axios.post(`${ANALYZE_API_URL}/analyze-staffing`, formData);
             setStaffingData(response.data);
             setDirection(1);
             setCurrentStep(6);

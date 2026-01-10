@@ -338,51 +338,15 @@ const AIDashboard = ({ data }) => {
                 </motion.div>
             </div>
 
-            {/* Risks & KPIs */}
-            <div className="grid lg:grid-cols-2 gap-8">
-                {/* Risk Assessment */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-[32px] border border-neutral-100 p-8 shadow-subtle"
-                >
-                    <SectionHeader title="Risk Assessment Matrix" icon={AlertTriangle} color="amber" />
-                    <div className="space-y-4">
-                        {data.risk_assessment && data.risk_assessment.map((risk, idx) => {
-                            const impactColors = {
-                                Critical: 'bg-red-500',
-                                High: 'bg-orange-500',
-                                Medium: 'bg-amber-500',
-                                Low: 'bg-blue-500'
-                            };
-                            return (
-                                <div key={idx} className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 flex gap-4">
-                                    <div className={`w-1 shrink-0 rounded-full ${impactColors[risk.impact] || 'bg-neutral-300'}`}></div>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-3">
-                                            <h4 className="text-[13px] font-black text-neutral-900">{risk.risk_name}</h4>
-                                            <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase text-white ${impactColors[risk.impact] || 'bg-neutral-300'}`}>
-                                                {risk.impact} Impact
-                                            </span>
-                                        </div>
-                                        <p className="text-[11px] text-neutral-500 font-medium leading-relaxed">
-                                            <span className="text-brand-primary-500 font-bold">Mitigation:</span> {risk.mitigation_strategy}
-                                        </p>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </motion.div>
-
-                {/* Success Metrics (KPIs) */}
+            {/* Success Metrics (KPIs) */}
+            <div className="w-full">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-white rounded-[32px] border border-neutral-100 p-8 shadow-subtle"
                 >
                     <SectionHeader title="Non-Financial KPIs" icon={Target} color="cyan" />
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {data.kpis && data.kpis.map((kpi, idx) => (
                             <div key={idx} className="p-5 bg-cyan-50/30 rounded-2xl border border-cyan-100 flex items-center justify-between group hover:bg-cyan-50 transition-colors">
                                 <div className="space-y-1">

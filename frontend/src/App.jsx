@@ -17,25 +17,20 @@ import ProfilePage from './pages/auth/ProfilePage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import NewProjectPage from './pages/ai-analysis/NewProjectPage';
 import ProjectDashboardPage from './pages/dashboard/ProjectDashboardPage';
-import CalendarPage from './pages/dashboard/CalendarPage';
 import NotificationsPage from './pages/dashboard/NotificationsPage';
 
-// Pages - Kanban & Tasks
-import MyTasksPage from './pages/kanban/MyTasksPage';
-import MySpacePage from './pages/kanban/MySpacePage';
-import SprintBoardPage from './pages/sprints/SprintBoardPage';
 
 // Pages - Backlog & Analysis
-import BacklogPage from './pages/backlog/BacklogPage';
+
 import AnalysisPage from './pages/ai-analysis/AnalysisPage';
 import ProjectDeepDive from './pages/project/ProjectDeepDive';
 
 // Pages - Team & Admin
 import TeamPage from './pages/team/TeamPage';
-import SettingsPage from './pages/team/SettingsPage';
+
 
 // Pages - Reporting
-import FinancialsPage from './pages/reporting/FinancialsPage';
+
 
 function App() {
   return (
@@ -56,8 +51,7 @@ function App() {
 
           {/* --- GLOBAL HUB (Unified View) --- */}
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/my-tasks" element={<MyTasksPage />} />
-          <Route path="/calendar" element={<CalendarPage />} />
+
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
 
@@ -74,11 +68,6 @@ function App() {
             {/* Common Project Views */}
             <Route index element={<ProjectDashboardPage />} />
             <Route path="hub" element={<ProjectDeepDive />} />
-            <Route path="board" element={<SprintBoardPage />} />
-            <Route path="backlog" element={<BacklogPage />} />
-
-            {/* Employee Specific View */}
-            <Route path="my-space" element={<MySpacePage />} />
 
             {/* Manager Protected Project Views */}
             <Route path="analysis" element={
@@ -87,12 +76,7 @@ function App() {
             <Route path="team" element={
               <RoleGuard role="admin"><TeamPage /></RoleGuard>
             } />
-            <Route path="financials" element={
-              <RoleGuard role="admin"><FinancialsPage /></RoleGuard>
-            } />
-            <Route path="settings" element={
-              <RoleGuard role="admin"><SettingsPage /></RoleGuard>
-            } />
+
           </Route>
         </Route>
 

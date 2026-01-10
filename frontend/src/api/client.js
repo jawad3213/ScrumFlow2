@@ -34,7 +34,7 @@ const client = async (endpoint, { body, ...customConfig } = {}) => {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     
-    if (response.status === 401) {
+    if (response.status === 401 && endpoint !== '/login') {
       // Handle unauthorized
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_role');

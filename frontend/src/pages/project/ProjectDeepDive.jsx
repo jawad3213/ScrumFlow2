@@ -435,6 +435,32 @@ const NotificationAnalysisDashboard = ({ data }) => {
                 </motion.div>
             </div>
 
+            {/* Metrics & KPIs */}
+            <div className="w-full">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="bg-white rounded-[32px] border border-neutral-100 p-8 shadow-subtle"
+                >
+                    <SectionHeader title="Non-Financial KPIs" icon={Target} color="cyan" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {data.kpis && data.kpis.map((kpi, idx) => (
+                            <div key={idx} className="p-5 bg-cyan-50/30 rounded-2xl border border-cyan-100 flex items-center justify-between group hover:bg-cyan-50 transition-colors">
+                                <div className="space-y-1">
+                                    <h4 className="text-[13px] font-black text-neutral-900">{kpi.metric_name}</h4>
+                                    <p className="text-[10px] text-neutral-400 font-medium">Method: {kpi.measurement_method}</p>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-lg font-black text-cyan-600 tracking-tight group-hover:scale-110 transition-transform">{kpi.target_value}</div>
+                                    <div className="text-[8px] font-black text-cyan-400 uppercase tracking-widest">Target</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+            </div>
+
             {/* Strategy Insight */}
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -614,7 +640,7 @@ const TechnicalBlueprintWizard = ({ initialData }) => {
         formData.append('api_key', apiKey);
 
         try {
-            const response = await axios.post(`${ANALYZE_API_URL}/analyze-direct`, formData);
+            const response = await axios.post(`${ANALYZE_API_URL}/analyze-staffing`, formData);
             setStaffingData(response.data);
             setStaffingData(response.data);
             setDirection(1);

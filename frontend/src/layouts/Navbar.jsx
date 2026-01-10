@@ -90,12 +90,7 @@ const Navbar = () => {
                                 </div>
                                 Profile
                             </Link>
-                            <Link to="/settings" className="flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-bold text-neutral-600 hover:bg-brand-primary-50 hover:text-brand-primary-700 transition-ui duration-default ease-soft">
-                                <div className="p-1.5 rounded-lg bg-neutral-100 group-hover:bg-brand-primary-100 mr-3">
-                                    <Settings className="h-4 w-4" />
-                                </div>
-                                Settings
-                            </Link>
+
 
                             <div className="h-px bg-surface-border my-1.5 mx-2" />
 

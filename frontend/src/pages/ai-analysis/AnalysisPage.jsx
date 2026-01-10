@@ -59,7 +59,7 @@ const AnalysisPage = () => {
             formData.append('pool_employes', JSON.stringify(employeePool));
             formData.append('api_key', apiKey);
 
-            const response = await fetch('http://localhost:8001/analyze-direct', {
+            const response = await fetch('http://localhost:8001/analyze-staffing', {
                 method: 'POST',
                 body: formData,
             });
