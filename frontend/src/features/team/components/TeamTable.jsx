@@ -65,7 +65,7 @@ const TeamTable = forwardRef(({ data, specializations, onRefresh, onSelectionCha
 
     const [specFilter, setSpecFilter] = useState('All');
     const uniqueRoles = ['All', ...new Set((specializations || []).map(s => s.name))].filter(role =>
-        role !== 'Software Architect' && role !== 'Software Architecture' && role !== 'QA Engineer'
+        role !== 'Software Architect' && role !== 'Software Architecture' && role !== 'QA Tester'
     );
 
     const scrollContainerRef = useRef(null);

@@ -28,6 +28,7 @@ import SprintBoardPage from './pages/sprints/SprintBoardPage';
 // Pages - Backlog & Analysis
 import BacklogPage from './pages/backlog/BacklogPage';
 import AnalysisPage from './pages/ai-analysis/AnalysisPage';
+import ProjectDeepDive from './pages/project/ProjectDeepDive';
 
 // Pages - Team & Admin
 import TeamPage from './pages/team/TeamPage';
@@ -72,6 +73,7 @@ function App() {
           <Route path="/project/:id" element={<ProjectLayout />}>
             {/* Common Project Views */}
             <Route index element={<ProjectDashboardPage />} />
+            <Route path="hub" element={<ProjectDeepDive />} />
             <Route path="board" element={<SprintBoardPage />} />
             <Route path="backlog" element={<BacklogPage />} />
 

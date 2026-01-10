@@ -14,6 +14,9 @@ use App\Models\ProjectKpi;
 use App\Models\ProjectRisk;
 use App\Models\User;
 use App\Models\Sprint;
+use App\Models\ProjectEpic;
+use App\Models\ProjectStory;
+use App\Models\ProjectBlueprintTask;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
@@ -213,9 +216,44 @@ class ProjectController extends Controller
                     }
                 }
 
+                // 10. Save AI Backlog (Epics -> Stories -> Tasks)
+                if ($request->has('backlog')) {
+                    foreach ($request->backlog as $epicData) {
+                        $epic = $project->epics()->create([
+                            'title' => $epicData['title'],
+                            'description' => $epicData['description'],
+                            'external_id' => $epicData['id'] ?? null,
+                        ]);
+
+                        if (isset($epicData['user_stories'])) {
+                            foreach ($epicData['user_stories'] as $storyData) {
+                                $story = $epic->stories()->create([
+                                    'title' => $storyData['title'],
+                                    'description' => $storyData['description'],
+                                    'story_points' => $storyData['story_points'] ?? 0,
+                                    'acceptance_criteria' => $storyData['acceptance_criteria'] ?? [],
+                                    'external_id' => $storyData['id'] ?? null,
+                                ]);
+
+                                if (isset($storyData['tasks'])) {
+                                    foreach ($storyData['tasks'] as $taskData) {
+                                        $story->tasks()->create([
+                                            'role' => $taskData['role'],
+                                            'title' => $taskData['title'],
+                                            'instructions' => $taskData['instructions'],
+                                            'hours' => $taskData['hours'] ?? 0,
+                                            'external_id' => $taskData['id'] ?? null,
+                                        ]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 return response()->json([
                     'message' => 'Project and AI analysis blueprint saved successfully.',
-                    'project' => $project->load(['chef', 'assignedEngineers.specialization', 'estimatedGains', 'infrastructureCosts', 'roiProjections', 'kpis', 'risks'])
+                    'project' => $project->load(['chef', 'assignedEngineers.specialization', 'estimatedGains', 'infrastructureCosts', 'roiProjections', 'kpis', 'risks', 'epics.stories.tasks'])
                 ], 201);
             });
         } catch (\Exception $e) {
@@ -232,7 +270,7 @@ class ProjectController extends Controller
      */
     public function show($id)
     {
-        $project = Project::with(['chef', 'sprints', 'assignedEngineers.specialization', 'estimatedGains', 'infrastructureCosts', 'roiProjections', 'kpis', 'risks'])->find($id);
+        $project = Project::with(['chef', 'sprints', 'assignedEngineers.specialization', 'estimatedGains', 'infrastructureCosts', 'roiProjections', 'kpis', 'risks', 'epics.stories.tasks'])->find($id);
 
         if (!$project) {
             return response()->json(['message' => 'Project not found'], 404);

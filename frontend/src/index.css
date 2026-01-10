@@ -52,17 +52,18 @@ body {
   &:hover::-webkit-scrollbar-thumb {
     background-color: #CBD5E1;
   }
+}
 
-  @keyframes shrink {
-    from {
-      width: 100%;
-    }
-
-    to {
-      width: 0%;
-    }
+@keyframes shrink {
+  from {
+    width: 100%;
   }
 
-  .animate-shrink {
-    animation: shrink linear forwards;
+  to {
+    width: 0%;
   }
+}
+
+.animate-shrink {
+  animation: shrink linear forwards;
+}

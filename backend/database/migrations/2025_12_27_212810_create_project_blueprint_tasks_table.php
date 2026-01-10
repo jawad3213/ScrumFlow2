@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('project_blueprint_tasks', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('project_story_id')->constrained()->onDelete('cascade');
+            $table->string('role'); // Literal like "Backend Developer"
+            $table->string('title');
+            $table->text('instructions')->nullable();
+            $table->integer('hours')->default(0);
+            $table->string('external_id')->nullable(); // For AI reference like T-1.1.1
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('project_blueprint_tasks');
+    }
+};

@@ -44,7 +44,9 @@ const SpecializationTable = forwardRef(({ data, onRefresh, onSelectionChange }, 
 
     const [selectedFilter, setSelectedFilter] = useState('All');
 
-    const uniqueRoles = ['All', ...new Set((data || []).map(item => item.name))];
+    const uniqueRoles = ['All', ...new Set((data || []).map(item => item.name))].filter(role =>
+        role !== 'Software Architect' && role !== 'Software Architecture' && role !== 'QA Tester'
+    );
 
     const handleTableSelectionChange = useCallback((rows) => {
         setSelectedRowsForBulk(rows);

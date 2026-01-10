@@ -17,7 +17,8 @@ import {
     ListTodo,
     BrainCircuit,
     Folder,
-    Loader2
+    Loader2,
+    Sparkles
 } from 'lucide-react';
 import { cn } from '../utils/utils';
 import logo from '@/assets/login/logo.png';
@@ -147,7 +148,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                         {!collapsed && "Project Menu"}
                     </div>
 
-                    <SidebarItem to={`/project/${projectId}`} icon={LayoutDashboard} label="Project Hub" collapsed={collapsed} end />
+                    <SidebarItem to={`/project/${projectId}`} icon={LayoutDashboard} label="Overview" collapsed={collapsed} end />
+                    <SidebarItem to={`/project/${projectId}/hub`} icon={Sparkles} label="Strategic Blueprint" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/board`} icon={FolderKanban} label="Sprint Board" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/my-space`} icon={CheckSquare} label="My Project Tasks" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/analysis`} icon={BrainCircuit} label="AI Analysis" collapsed={collapsed} />

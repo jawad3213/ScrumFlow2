@@ -96,4 +96,9 @@ class Project extends Model
     {
         return $this->hasMany(ProjectRisk::class);
     }
+
+    public function epics()
+    {
+        return $this->hasMany(ProjectEpic::class);
+    }
 }
