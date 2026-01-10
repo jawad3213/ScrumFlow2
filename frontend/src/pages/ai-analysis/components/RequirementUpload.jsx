@@ -108,7 +108,7 @@ const RequirementUpload = ({ onFileSelected, isLoading, error }) => {
                         )}
                     >
                         <EmptyState
-                            title="Requirement Scoping"
+                            title="Project Scoping"
                             description="Upload your PRD or Project Specifications PDF.\nGemini will decompose it into a technical blueprint."
                             icons={[FileText, FileUp, Files]}
                             action={{
@@ -151,7 +151,7 @@ const RequirementUpload = ({ onFileSelected, isLoading, error }) => {
                         </div>
 
                         <div className="text-center space-y-2">
-                            <h3 className="text-2xl font-black text-neutral-900 tracking-tight">Requirement Validated</h3>
+                            <h3 className="text-2xl font-black text-neutral-900 tracking-tight">Scoping Document Validated</h3>
                             <p className="text-sm font-bold text-neutral-500 truncate max-w-[400px] bg-neutral-50 px-4 py-1.5 rounded-full border border-neutral-100 italic">{file.name}</p>
                             <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-black mt-2">Ready for Intelligence Extraction</p>
                         </div>

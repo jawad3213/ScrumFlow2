@@ -472,7 +472,7 @@ const STEPS = [
     { id: 1, title: "Intro", icon: Info },
     { id: 2, title: "Baseline", icon: Rocket },
     { id: 3, title: "Intelligence", icon: Key },
-    { id: 4, title: "Requirement", icon: FileText },
+    { id: 4, title: "Scoping", icon: FileText },
     { id: 5, title: "Blueprint", icon: TrendingUp }
 ];
 
@@ -562,6 +562,12 @@ const TechnicalBlueprintWizard = ({ initialData }) => {
             if (!apiKey) {
                 apiControls.start("shake");
                 setValidationError("Gemini API Key is required");
+                return false;
+            }
+        }
+        if (currentStep === 4) {
+            if (!staffingData) {
+                setValidationError("Please upload the Scoping PDF to proceed.");
                 return false;
             }
         }
@@ -683,7 +689,7 @@ const TechnicalBlueprintWizard = ({ initialData }) => {
 
                 <p className="text-xs text-neutral-500 font-bold leading-relaxed max-w-md mx-auto mt-4">
                     <span className="text-indigo-500 block mb-1 uppercase tracking-widest text-[9px]">Ensure Accuracy</span>
-                    To validate this data and ensure the accuracy of the breakdown, you will need to upload the <span className="text-neutral-900 border-b border-neutral-200 pb-0.5">Requirements File</span> in Step 5.
+                    To validate this data and ensure the accuracy of the breakdown, you will need to upload the <span className="text-neutral-900 border-b border-neutral-200 pb-0.5">Scoping Document</span> in Step 4.
                 </p>
             </motion.div>
         </motion.div>
@@ -1032,8 +1038,8 @@ const TechnicalBlueprintWizard = ({ initialData }) => {
                                             {currentStep === 4 && (
                                                 <div className="space-y-8">
                                                     <div className="text-center mb-8">
-                                                        <h3 className="text-2xl font-black text-neutral-900 tracking-tight">Requirement</h3>
-                                                        <p className="text-sm text-neutral-500 font-medium mt-2">Upload your requirements document.</p>
+                                                        <h3 className="text-2xl font-black text-neutral-900 tracking-tight">Scoping</h3>
+                                                        <p className="text-sm text-neutral-500 font-medium mt-2">Upload your scoping document.</p>
                                                     </div>
                                                     <motion.div
                                                         initial={{ opacity: 0, y: 20 }}
