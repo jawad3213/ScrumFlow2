@@ -15,7 +15,7 @@ def analyser_cahier_des_charges_staffing(
     
     # Configuration du client Instructor avec Gemini
     client = instructor.from_gemini(
-        client=genai.GenerativeModel(model_name="gemini-2.0-flash-exp"),
+        client=genai.GenerativeModel(model_name="gemini-2.5-flash"),
         mode=instructor.Mode.GEMINI_JSON,
     )
     

@@ -9,6 +9,7 @@ class ProjectBlueprintTask extends Model
     protected $fillable = [
         'project_story_id', 
         'role', 
+        'level',
         'title', 
         'instructions', 
         'hours', 

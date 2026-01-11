@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
     Sparkles,
@@ -13,7 +13,17 @@ import {
     ArrowUpRight,
     Clock,
     AlertTriangle,
-    Target
+    Target,
+    BookOpen,
+    Bookmark,
+    ListTodo,
+    FileText,
+    CheckCircle2,
+    Code,
+    ChevronDown,
+    ChevronUp,
+    Save,
+    RefreshCw
 } from 'lucide-react';
 import testData from '../ai-analysis/test_data.json';
 import { BlurReveal } from '@/components/ui/blur-reveal';
@@ -101,381 +111,191 @@ const NotificationFinancialCard = ({ title, value, icon: Icon, color, subtitle, 
 };
 
 const NotificationAnalysisDashboard = ({ data }) => {
-    if (!data) return null;
+    // State to track expanded epics (default: all closed)
+    const [expandedEpics, setExpandedEpics] = useState({});
 
-    const projections = data.roi_projections ? [
-        { year: 1, ...data.roi_projections.year_1 },
-        { year: 2, ...data.roi_projections.year_2 },
-        { year: 3, ...data.roi_projections.year_3 }
-    ] : [];
+    // State to track expanded user stories (default: all closed)
+    const [expandedStories, setExpandedStories] = useState({});
 
-    const finalRoi = data.roi_projections?.year_3?.roi_percentage || 0;
-    const roiColor = finalRoi > 0 ? 'emerald' : 'rose';
+    if (!data || !data.backlog) return (
+        <div className="flex flex-col items-center justify-center h-64 text-neutral-400">
+            <Layout size={48} className="mb-4 opacity-50" />
+            <p>No backlog data available to display.</p>
+        </div>
+    );
+
+    const toggleEpic = (epicId) => {
+        setExpandedEpics(prev => ({
+            ...prev,
+            [epicId]: !prev[epicId]
+        }));
+    };
+
+    const toggleStory = (storyId) => {
+        setExpandedStories(prev => ({
+            ...prev,
+            [storyId]: !prev[storyId]
+        }));
+    };
 
     return (
-        <div className="w-full space-y-8 pb-10">
-            {/* Header Summary with Magic Cards */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="grid grid-cols-1 md:grid-cols-5 gap-4"
-            >
-                <NotificationFinancialCard
-                    title="Dev Duration"
-                    value={data.estimated_duration_months ? `${data.estimated_duration_months} Months` : 'N/A'}
-                    icon={Clock}
-                    isCurrency={false}
-                    color="primary"
-                    subtitle="Estimated timeline"
-                />
-                <NotificationFinancialCard
-                    title="Total Investment"
-                    value={data.total_project_cost}
-                    icon={DollarSign}
-                    color="cyan"
-                    subtitle="Initial CAPEX + Setup"
-                />
-                <NotificationFinancialCard
-                    title="Estimated Gains"
-                    value={data.estimated_gains ? data.estimated_gains.reduce((acc, g) => acc + g.cost_mad, 0) : 0}
-                    icon={TrendingUp}
-                    color="emerald"
-                    subtitle="Annual Benefits"
-                />
-                <NotificationFinancialCard
-                    title="Break-even"
-                    value={data.roi_projections?.break_even_point_months ? `${data.roi_projections.break_even_point_months} Months` : 'N/A'}
-                    icon={Shield}
-                    isCurrency={false}
-                    color="amber"
-                    subtitle="Recovery point"
-                />
-                <MagicCard className={`rounded-2xl shadow-subtle border border-neutral-100 border-b-4 border-b-${roiColor}-500`}>
-                    <div className="p-6 relative overflow-hidden">
-                        <div className="relative z-10">
-                            <p className="text-[9px] font-black text-neutral-400 uppercase tracking-widest mb-1">3-Year ROI</p>
-                            <div className="flex items-baseline gap-2">
-                                <h3 className={`text-2xl font-black text-${roiColor}-600 tracking-tighter`}>
-                                    {finalRoi.toFixed(1)}%
-                                </h3>
-                                <ArrowUpRight size={16} className={`text-${roiColor}-500`} />
-                            </div>
-                            <p className="text-[9px] text-neutral-400 mt-2 font-medium">Net Efficiency</p>
-                        </div>
-                    </div>
-                </MagicCard>
-            </motion.div>
+        <div className="w-full space-y-4 pb-20">
+            {data.backlog.map((epic, epicIdx) => {
+                const isEpicExpanded = expandedEpics[epic.id];
 
-
-
-            {/* ROI Projections Timeline */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-            >
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-brand-primary-500/10 rounded-xl text-brand-primary-500 border border-brand-primary-500/20">
-                            <TrendingUp size={18} />
-                        </div>
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">ROI Performance Forecast</h2>
-                    </div>
-                    <div className="h-[1px] flex-grow mx-8 bg-neutral-100"></div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {projections.map((proj, idx) => {
-                        const isProfitable = proj.roi_percentage > 0;
-                        const statusColor = proj.year === 1 ? 'rose' : proj.year === 2 ? 'amber' : 'emerald';
-
-                        return (
-                            <MagicCard key={idx} className="rounded-2xl border border-neutral-100 shadow-sm relative overflow-hidden group">
-                                <div className={`absolute top-0 right-0 w-24 h-24 bg-${statusColor}-500/5 blur-2xl -mr-12 -mt-12 group-hover:bg-${statusColor}-500/10 transition-all`}></div>
-                                <div className="p-5 relative z-10 space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <span className={`text-[9px] font-black text-${statusColor}-500 uppercase tracking-widest`}>Fiscal Year 0{proj.year}</span>
-                                        <div className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-tighter ${isProfitable ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                                            {isProfitable ? 'Profit' : 'Investment'}
-                                        </div>
+                return (
+                    <motion.div
+                        key={epic.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: epicIdx * 0.1 }}
+                    >
+                        <MagicCard className="rounded-3xl border border-neutral-100 shadow-xl overflow-hidden bg-white/50 backdrop-blur-xl transition-all duration-300">
+                            {/* Epic Header */}
+                            <div
+                                onClick={() => toggleEpic(epic.id)}
+                                className="p-6 border-b border-neutral-100 bg-gradient-to-r from-brand-primary-50/50 to-transparent cursor-pointer hover:bg-neutral-50/50 transition-colors group"
+                            >
+                                <div className="flex items-start gap-5">
+                                    <div className="p-3 bg-brand-primary-500 text-white rounded-2xl shadow-lg shadow-brand-primary-500/20 mt-1">
+                                        <BookOpen size={24} />
                                     </div>
-
-                                    <div className="space-y-0.5">
-                                        <div className="flex items-baseline gap-1">
-                                            <h3 className={`text-xl font-black tracking-tight ${isProfitable ? 'text-emerald-600' : 'text-neutral-900'}`}>
-                                                {proj.roi_percentage.toFixed(1)}%
-                                            </h3>
-                                            <ArrowUpRight size={14} className={isProfitable ? 'text-emerald-500' : 'text-rose-400'} />
-                                        </div>
-                                        <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest opacity-80">Net ROI Forecast</p>
-                                    </div>
-
-                                    <div className="pt-4 border-t border-neutral-50 flex items-center justify-between">
-                                        <div className="flex flex-col">
-                                            <span className="text-[8px] text-neutral-400 font-black uppercase tracking-tighter">Net Cash Flow</span>
-                                            <span className={`text-[11px] font-black ${proj.net_cash_flow >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                                {proj.net_cash_flow >= 0 ? '+' : ''}{proj.net_cash_flow.toLocaleString()} <span className="text-[9px] opacity-50">MAD</span>
-                                            </span>
-                                        </div>
-                                        <div className="w-16 h-1 bg-neutral-100 rounded-full overflow-hidden shrink-0">
-                                            <motion.div
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${Math.min(Math.max(proj.roi_percentage + 100, 10), 100)}%` }}
-                                                className={`h-full bg-${statusColor}-500`}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </MagicCard>
-                        );
-                    })}
-                </div>
-            </motion.div>
-
-            {/* Projected Annual Gains - Separate Section */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-            >
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-500 border border-emerald-500/20">
-                            <TrendingUp size={18} />
-                        </div>
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Projected Annual Benefits</h2>
-                    </div>
-                    <div className="h-[1px] flex-grow mx-8 bg-neutral-100"></div>
-                </div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {data.estimated_gains && data.estimated_gains.map((gain, idx) => (
-                        <MagicCard key={idx} className="rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
-                            <div className="p-5 group flex flex-col justify-between h-full bg-white rounded-2xl relative">
-                                <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 blur-2xl -mr-10 -mt-10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-                                <div className="relative z-10">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div className="px-2 py-0.5 bg-neutral-50 border border-neutral-100 rounded-md">
-                                            <h5 className="text-[9px] font-black text-neutral-500 uppercase tracking-tight">{gain.item_name}</h5>
-                                        </div>
-                                        <div className="p-1.5 bg-neutral-50 rounded-lg text-neutral-400 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
-                                            <TrendingUp size={12} />
-                                        </div>
-                                    </div>
-                                    <p className="text-[11px] text-neutral-500 leading-relaxed mb-4 font-medium line-clamp-2">{gain.description}</p>
-                                </div>
-
-                                <div className="flex items-baseline gap-1.5 pt-4 border-t border-neutral-50 relative z-10">
-                                    <span className="text-xl font-black text-neutral-900 tracking-tight">
-                                        +{gain.cost_mad.toLocaleString()}
-                                    </span>
-                                    <span className="text-[9px] font-bold uppercase text-neutral-400 tracking-widest">MAD / Yr</span>
-                                </div>
-                            </div>
-                        </MagicCard>
-                    ))}
-                </div>
-            </motion.div>
-
-            <div className="grid lg:grid-cols-2 gap-8">
-                {/* CAPEX Section */}
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="bg-white rounded-[32px] border border-neutral-100 shadow-subtle overflow-hidden"
-                >
-                    <MouseEffect className="p-8">
-                        <SectionHeader title="Initial Investment (CAPEX)" icon={Shield} color="primary" />
-                        <div className="space-y-8">
-                            <div>
-                                <h4 className="text-[9px] uppercase font-black text-neutral-400 mb-4 tracking-[0.2em] flex items-center gap-2">
-                                    <div className="w-4 h-[2px] bg-neutral-200"></div>
-                                    Development Team
-                                </h4>
-                                <div className="space-y-1">
-                                    {data.selected_engineers && data.selected_engineers.map((eng, idx) => (
-                                        <TableRow
-                                            key={idx}
-                                            name={eng.role}
-                                            detail={`${eng.level} • ${eng.months_assigned} months`}
-                                            cost={eng.total_cost_mad}
-                                            formula={`${eng.monthly_salary_mad.toLocaleString()} MAD/mo • ${eng.months_assigned} mo`}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <h4 className="text-[9px] uppercase font-black text-neutral-400 mb-4 tracking-[0.2em] flex items-center gap-2">
-                                    <div className="w-4 h-[2px] bg-neutral-200"></div>
-                                    Setup & Infrastructure
-                                </h4>
-                                <div className="space-y-1">
-                                    {data.licenses_and_apis && data.licenses_and_apis.map((item, idx) => (
-                                        <TableRow
-                                            key={idx}
-                                            name={item.item_name}
-                                            detail={item.description}
-                                            cost={item.cost_mad}
-                                            formula={item.formule}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="pt-6 border-t border-neutral-50 space-y-3 relative z-20">
-                                <div className="flex justify-between items-center text-[10px] font-bold text-neutral-400">
-                                    <span className="uppercase tracking-widest">Base Investment</span>
-                                    <span>{(data.total_capex / (1 + (data.contingency_buffer_percentage || 15) / 100)).toLocaleString()} MAD</span>
-                                </div>
-                                <div className="flex justify-between items-center text-[10px] font-bold text-amber-500">
-                                    <span className="uppercase tracking-widest">Contingency Buffer ({data.contingency_buffer_percentage || 15}%)</span>
-                                    <span>{((data.total_capex / (1 + (data.contingency_buffer_percentage || 15) / 100)) * (data.contingency_buffer_percentage || 15) / 100).toLocaleString()} MAD</span>
-                                </div>
-                                <div className="flex justify-between items-center pt-2 border-t border-neutral-50">
-                                    <span className="text-[10px] font-black text-neutral-900 uppercase tracking-widest">Total Capital Expense</span>
-                                    <span className="text-lg font-black text-neutral-900 tracking-tight">{data.total_capex.toLocaleString()} MAD</span>
-                                </div>
-                            </div>
-                        </div>
-                    </MouseEffect>
-                </motion.div>
-
-                {/* OPEX Section */}
-                <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-[32px] border border-neutral-100 shadow-subtle overflow-hidden"
-                >
-                    <MouseEffect className="p-8">
-                        <SectionHeader title="Monthly Operations (OPEX)" icon={Cloud} color="amber" />
-                        <div className="space-y-8">
-                            <div>
-                                <h4 className="text-[9px] uppercase font-black text-neutral-400 mb-4 tracking-[0.2em] flex items-center gap-2">
-                                    <div className="w-4 h-[2px] bg-neutral-200"></div>
-                                    Support & Maintenance
-                                </h4>
-                                <div className="space-y-1">
-                                    {data.maintenance_engineers && data.maintenance_engineers.map((eng, idx) => (
-                                        <TableRow
-                                            key={idx}
-                                            name={eng.role}
-                                            detail={`${eng.level} • Recurring`}
-                                            cost={eng.total_cost_mad}
-                                            formula={`${eng.monthly_salary_mad.toLocaleString()} MAD/mo • ${eng.months_assigned} mo`}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <h4 className="text-[9px] uppercase font-black text-neutral-400 mb-4 tracking-[0.2em] flex items-center gap-2">
-                                    <div className="w-4 h-[2px] bg-neutral-200"></div>
-                                    Cloud Services
-                                </h4>
-                                <div className="space-y-1">
-                                    {data.cloud_subscription && data.cloud_subscription.map((item, idx) => (
-                                        <TableRow
-                                            key={idx}
-                                            name={item.item_name}
-                                            detail={item.description}
-                                            cost={item.cost_mad}
-                                            formula={item.formule}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="pt-6 border-t border-neutral-50 flex justify-between items-center relative z-20">
-                                <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Ongoing Monthly Cost</span>
-                                <span className="text-lg font-black text-neutral-900 tracking-tight">{data.total_opex.toLocaleString()} MAD</span>
-                            </div>
-                        </div>
-                    </MouseEffect>
-                </motion.div>
-            </div>
-
-            {/* Risks & KPIs */}
-            <div className="grid lg:grid-cols-2 gap-8">
-                {/* Risk Assessment */}
-                <MagicCard className="rounded-[32px] border border-neutral-100 shadow-subtle">
-                    <div className="p-8">
-                        <SectionHeader title="Risk Assessment Matrix" icon={AlertTriangle} color="amber" />
-                        <div className="space-y-4">
-                            {data.risk_assessment && data.risk_assessment.map((risk, idx) => {
-                                const impactColors = {
-                                    Critical: 'bg-red-500',
-                                    High: 'bg-orange-500',
-                                    Medium: 'bg-amber-500',
-                                    Low: 'bg-blue-500'
-                                };
-                                return (
-                                    <div key={idx} className="p-4 bg-neutral-50/50 rounded-2xl border border-neutral-100 flex gap-4">
-                                        <div className={`w-1 shrink-0 rounded-full ${impactColors[risk.impact] || 'bg-neutral-300'}`}></div>
-                                        <div className="space-y-2">
+                                    <div className="space-y-2 flex-1">
+                                        <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
-                                                <h4 className="text-[13px] font-black text-neutral-900">{risk.risk_name}</h4>
-                                                <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase text-white ${impactColors[risk.impact] || 'bg-neutral-300'}`}>
-                                                    {risk.impact} Impact
+                                                <span className="px-3 py-1 bg-brand-primary-100 text-brand-primary-700 text-[10px] font-black uppercase tracking-widest rounded-full">
+                                                    {epic.id}
                                                 </span>
+                                                <h3 className="text-xl font-black text-neutral-900 tracking-tight">{epic.title}</h3>
                                             </div>
-                                            <p className="text-[11px] text-neutral-500 font-medium leading-relaxed">
-                                                <span className="text-brand-primary-500 font-bold">Mitigation:</span> {risk.mitigation_strategy}
-                                            </p>
+                                            <div className="p-2 bg-white rounded-full text-neutral-400 group-hover:text-brand-primary-500 shadow-sm transition-colors border border-neutral-100">
+                                                {isEpicExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </MagicCard>
-
-                {/* Success Metrics (KPIs) */}
-                <MagicCard className="rounded-[32px] border border-neutral-100 shadow-subtle">
-                    <div className="p-8">
-                        <SectionHeader title="Non-Financial KPIs" icon={Target} color="cyan" />
-                        <div className="grid grid-cols-1 gap-4">
-                            {data.kpis && data.kpis.map((kpi, idx) => (
-                                <div key={idx} className="p-5 bg-cyan-50/30 rounded-2xl border border-cyan-100 flex items-center justify-between group hover:bg-cyan-50 transition-colors">
-                                    <div className="space-y-1">
-                                        <h4 className="text-[13px] font-black text-neutral-900">{kpi.metric_name}</h4>
-                                        <p className="text-[10px] text-neutral-400 font-medium">Method: {kpi.measurement_method}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-lg font-black text-cyan-600 tracking-tight group-hover:scale-110 transition-transform">{kpi.target_value}</div>
-                                        <div className="text-[8px] font-black text-cyan-400 uppercase tracking-widest">Target</div>
+                                        <p className="text-neutral-500 leading-relaxed font-medium text-sm pr-10">{epic.description}</p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                </MagicCard>
-            </div>
+                            </div>
 
-            {/* Strategy Insight */}
-            <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.6 }}
-                className="bg-neutral-900 p-10 rounded-[40px] text-white relative overflow-hidden"
-            >
-                <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary-500/10 blur-[100px] -mr-48 -mt-48"></div>
-                <div className="relative z-10 space-y-6">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-brand-primary-500/20 rounded-xl text-brand-primary-400 border border-brand-primary-500/30">
-                            <Info size={18} />
-                        </div>
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.2em]">Executive Strategy Analysis</h2>
-                    </div>
-                    <div className="bg-white/5 border border-white/10 p-8 rounded-[32px] backdrop-blur-sm">
-                        <div className="text-base text-neutral-200 leading-relaxed font-medium italic">
-                            {data.roi_analysis_summary?.split(' ').map((word, i) => (
-                                <BlurReveal key={i} delay={0.1 + i * 0.02}>
-                                    {word}&nbsp;
-                                </BlurReveal>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
+                            {/* Collapsible Epic Content */}
+                            {isEpicExpanded && (
+                                <div className="p-6 space-y-4 bg-neutral-50/30 animate-in slide-in-from-top-4 fade-in duration-300">
+                                    {epic.user_stories?.map((story) => {
+                                        const isStoryExpanded = expandedStories[story.id];
+
+                                        return (
+                                            <div key={story.id} className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300">
+                                                {/* User Story Header */}
+                                                <div
+                                                    onClick={() => toggleStory(story.id)}
+                                                    className="p-5 flex items-start gap-4 cursor-pointer hover:bg-neutral-50/50 transition-colors"
+                                                >
+                                                    <div className="mt-1 p-2 bg-indigo-50 text-indigo-500 rounded-lg">
+                                                        <Bookmark size={18} />
+                                                    </div>
+                                                    <div className="flex-1 space-y-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-3">
+                                                                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{story.id}</span>
+                                                                <h4 className="text-base font-bold text-neutral-900 group-hover:text-indigo-600 transition-colors">
+                                                                    {story.title}
+                                                                </h4>
+                                                            </div>
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-neutral-100 rounded-lg">
+                                                                    <span className="text-[11px] font-black text-neutral-600">{story.story_points}</span>
+                                                                    <span className="text-[9px] font-bold text-neutral-400 uppercase">Pts</span>
+                                                                </div>
+                                                                <div className="text-neutral-300 group-hover:text-indigo-500 transition-colors">
+                                                                    {isStoryExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-sm text-neutral-500 font-medium line-clamp-2 md:line-clamp-none">
+                                                            {story.description}
+                                                        </p>
+
+                                                        {/* Collapsible Details: Acceptance Criteria & Tasks */}
+                                                        {isStoryExpanded && (
+                                                            <div
+                                                                className="pt-4 animate-in fade-in zoom-in-95 duration-200 cursor-auto"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                {/* Acceptance Criteria */}
+                                                                {story.acceptance_criteria && (
+                                                                    <div className="mb-4 p-4 bg-emerald-50/50 rounded-xl space-y-2 border border-emerald-100/50">
+                                                                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                                            <CheckCircle2 size={12} className="text-emerald-500" />
+                                                                            Acceptance Criteria
+                                                                        </p>
+                                                                        <ul className="space-y-1.5">
+                                                                            {story.acceptance_criteria.map((criteria, idx) => (
+                                                                                <li key={idx} className="flex items-start gap-2 text-[11px] text-emerald-900/80 font-medium">
+                                                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1 shrink-0 shadow-sm shadow-emerald-200" />
+                                                                                    <span className="leading-relaxed">{criteria}</span>
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Tasks */}
+                                                                {story.tasks && story.tasks.length > 0 && (
+                                                                    <div className="space-y-3 pt-2 border-t border-neutral-100">
+                                                                        <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest flex items-center gap-2">
+                                                                            <ListTodo size={12} />
+                                                                            Technical Tasks
+                                                                        </p>
+                                                                        <div className="grid grid-cols-1 gap-3">
+                                                                            {story.tasks.map((task) => (
+                                                                                <div key={task.id} className="bg-white p-4 rounded-xl border border-neutral-100 shadow-sm flex items-start gap-4 hover:border-emerald-200 transition-colors">
+                                                                                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                                                                                        <Code size={16} />
+                                                                                    </div>
+                                                                                    <div className="flex-1">
+                                                                                        <div className="flex items-center justify-between mb-1">
+                                                                                            <h5 className="text-[13px] font-bold text-neutral-900">{task.title}</h5>
+                                                                                            <div className="flex items-center gap-2">
+                                                                                                <span className="px-2 py-0.5 bg-neutral-100 text-neutral-500 text-[9px] font-bold rounded uppercase">
+                                                                                                    {task.role}
+                                                                                                </span>
+                                                                                                {task.level && (
+                                                                                                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-bold rounded uppercase">
+                                                                                                        {task.level}
+                                                                                                    </span>
+                                                                                                )}
+                                                                                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded uppercase flex items-center gap-1">
+                                                                                                    <Clock size={10} />
+                                                                                                    {task.hours}h
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <p className="text-[11px] text-neutral-500 leading-relaxed font-mono bg-neutral-50 p-2 rounded-lg border border-neutral-100 mt-2">
+                                                                                            {task.instructions.split(/(`[^`]+`)/g).map((part, idx) =>
+                                                                                                part.startsWith('`') && part.endsWith('`')
+                                                                                                    ? <span key={idx} className="font-black text-neutral-800">{part.slice(1, -1)}</span>
+                                                                                                    : part
+                                                                                            )}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </MagicCard>
+                    </motion.div>
+                );
+            })}
         </div>
     );
 };
@@ -491,11 +311,11 @@ const NotificationsPage = () => {
                         <span>UI Sandbox</span>
                     </div>
                     <h1 className="text-4xl font-black text-neutral-900 tracking-tight flex items-center gap-3">
-                        AI Blueprint Preview
+                        Backlog Projection
                         <span className="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] rounded-full">Development Mode</span>
                     </h1>
                     <p className="text-neutral-500 text-sm font-medium">
-                        Live preview of the AI Analysis Engine output for <span className="text-brand-primary-600 font-bold">{testData.project_name}</span>.
+                        Live preview of the generated Backlog (Epics, Stories, Tasks).
                     </p>
                 </div>
 
@@ -505,10 +325,30 @@ const NotificationsPage = () => {
                             <Layout size={20} />
                         </div>
                         <div>
-                            <p className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">Target Resolution</p>
-                            <p className="text-xs font-bold text-neutral-900">Responsive Dashboard</p>
+                            <p className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">View Mode</p>
+                            <p className="text-xs font-bold text-neutral-900">Technical Blueprint</p>
                         </div>
                     </div>
+
+                    <div className="h-12 w-[1px] bg-neutral-200 mx-2"></div>
+
+                    <motion.button
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="flex items-center gap-3 px-6 py-3.5 bg-white text-neutral-900 border border-neutral-200 rounded-[20px] text-[10px] font-black uppercase tracking-[0.25em] hover:bg-neutral-50 transition-all group shadow-sm"
+                    >
+                        <RefreshCw size={18} className="text-neutral-400 group-hover:rotate-180 transition-transform duration-500" />
+                        Reanalyse
+                    </motion.button>
+
+                    <motion.button
+                        whileHover={{ y: -4, shadow: "0 25px 30px -10px rgb(0 0 0 / 0.15)" }}
+                        whileTap={{ scale: 0.96 }}
+                        className="px-8 py-3.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-[20px] text-[10px] font-black uppercase tracking-[0.25em] transition-all flex items-center gap-3 shadow-3xl"
+                    >
+                        <Save size={18} />
+                        Store it
+                    </motion.button>
                 </div>
             </div>
 

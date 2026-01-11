@@ -25,7 +25,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/utils/utils';
 
 // New Modular Components
-import GeminiAuth from './components/GeminiAuth';
 import ResourcePool from './components/ResourcePool';
 import InternalResourcePool from './components/InternalResourcePool';
 import DynamicResourcePool from './components/DynamicResourcePool';
@@ -38,11 +37,10 @@ import team1Img from '@/assets/login/team1.png';
 
 const STEPS = [
     { id: 1, title: "Identity", icon: Briefcase },
-    { id: 2, title: "Engine", icon: Key },
-    { id: 3, title: "Strategy", icon: Target },
-    { id: 4, title: "Resources", icon: Users },
-    { id: 5, title: "Scoping", icon: FileText },
-    { id: 6, title: "Blueprint", icon: TrendingUp }
+    { id: 2, title: "Strategy", icon: Target },
+    { id: 3, title: "Resources", icon: Users },
+    { id: 4, title: "Scoping", icon: FileText },
+    { id: 5, title: "Blueprint", icon: TrendingUp }
 ];
 
 const ANALYZE_API_URL = 'http://127.0.0.1:8001';
@@ -135,22 +133,13 @@ const NewProjectPage = () => {
                 return false;
             }
         }
-
-        if (currentStep === 2) {
-            if (!apiKey) {
-                apiControls.start("shake");
-                setValidationError("Gemini API Key is required to continue");
-                return false;
-            }
-        }
-
         return true;
     };
 
     const handleNext = async () => {
         if (!validateCurrentStep()) return;
 
-        if (currentStep < 6) {
+        if (currentStep < 5) {
             setDirection(1);
             setCurrentStep(prev => prev + 1);
             setValidationError(null);
@@ -172,9 +161,7 @@ const NewProjectPage = () => {
 
     const handleAnalysis = async (file) => {
         if (!apiKey) {
-            setError("Please enter your Google Gemini API Key first.");
-            setDirection(-1);
-            setCurrentStep(2);
+            setError("Please configure your Google Gemini API Key in Settings first.");
             return;
         }
 
@@ -190,7 +177,7 @@ const NewProjectPage = () => {
             const response = await axios.post(`${ANALYZE_API_URL}/analyze-staffing`, formData);
             setStaffingData(response.data);
             setDirection(1);
-            setCurrentStep(6);
+            setCurrentStep(5);
         } catch (err) {
             console.error("Analysis error:", err);
             const errorMessage = err.response?.data?.detail || err.message || "Intelligence engine failed to process requirements.";
@@ -307,7 +294,7 @@ const NewProjectPage = () => {
         </div>
     );
 
-    const showSteppers = !(currentStep === 6 && staffingData);
+    const showSteppers = !(currentStep === 5 && staffingData);
 
     return (
         <div className="max-w-7xl mx-auto space-y-6 pb-20 pt-4 px-6 overflow-x-hidden">
@@ -378,7 +365,7 @@ const NewProjectPage = () => {
                                                 <div className="flex flex-col">
                                                     <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 mb-0.5">Step 0{step.id}</span>
                                                     <span className="text-[13px] font-black uppercase tracking-widest">
-                                                        {step.id === 4 ? (staffingStrategy === 'internal' ? 'Talent Pool' : 'Resources') : step.title}
+                                                        {step.id === 3 ? (staffingStrategy === 'internal' ? 'Talent Pool' : 'Resources') : step.title}
                                                     </span>
                                                 </div>
 
@@ -415,7 +402,7 @@ const NewProjectPage = () => {
                                         className="h-full bg-gradient-to-r from-brand-primary-500 via-indigo-600 to-brand-primary-500 bg-[length:200%_auto]"
                                         initial={{ width: "20%" }}
                                         animate={{
-                                            width: `${(currentStep / 6) * 100}%`,
+                                            width: `${(currentStep / 5) * 100}%`,
                                             backgroundPosition: ["0% center", "200% center"]
                                         }}
                                         transition={{
@@ -452,15 +439,6 @@ const NewProjectPage = () => {
                                         >
                                             {currentStep === 1 && renderStep1()}
                                             {currentStep === 2 && (
-                                                <GeminiAuth
-                                                    apiKey={apiKey}
-                                                    onKeyChange={handleApiKeyChange}
-                                                    onNext={handleNext}
-                                                    validationError={validationError && !apiKey}
-                                                    shakeControls={apiControls}
-                                                />
-                                            )}
-                                            {currentStep === 3 && (
                                                 <StaffingStrategy
                                                     selected={staffingStrategy}
                                                     onSelect={setStaffingStrategy}
@@ -468,21 +446,21 @@ const NewProjectPage = () => {
                                                     teamChecklistImg={teamChecklistImg}
                                                 />
                                             )}
-                                            {currentStep === 4 && (
+                                            {currentStep === 3 && (
                                                 staffingStrategy === 'internal' ? (
                                                     <InternalResourcePool onSync={setEmployeePool} />
                                                 ) : (
                                                     <DynamicResourcePool onSync={setEmployeePool} />
                                                 )
                                             )}
-                                            {currentStep === 5 && (
+                                            {currentStep === 4 && (
                                                 <RequirementUpload
                                                     onFileSelected={handleAnalysis}
                                                     isLoading={isAnalyzing}
                                                     error={error}
                                                 />
                                             )}
-                                            {currentStep === 6 && (
+                                            {currentStep === 5 && (
                                                 <div className="space-y-10">
                                                     <div className="flex flex-col md:flex-row justify-between items-center bg-brand-primary-50/20 p-8 md:p-10 rounded-[40px] border border-brand-primary-100/50 mb-10 gap-8">
                                                         <div className="flex items-center gap-6">
@@ -524,7 +502,7 @@ const NewProjectPage = () => {
                                             )}
 
                                             {/* Unified Navigation Controllers */}
-                                            {currentStep < 6 && (
+                                            {currentStep < 5 && (
                                                 <div className={cn(
                                                     "mt-16 flex items-center border-t border-neutral-100 pt-12 gap-8",
                                                     currentStep === 1 ? "justify-end" : "justify-between"
@@ -542,7 +520,7 @@ const NewProjectPage = () => {
                                                         </motion.button>
                                                     )}
 
-                                                    {currentStep !== 5 && (
+                                                    {currentStep !== 4 && (
                                                         <motion.button
                                                             whileHover={{ y: -4 }}
                                                             whileTap={{ scale: 0.96 }}

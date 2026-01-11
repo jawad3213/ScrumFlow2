@@ -239,6 +239,7 @@ class ProjectController extends Controller
                                     foreach ($storyData['tasks'] as $taskData) {
                                         $story->tasks()->create([
                                             'role' => $taskData['role'],
+                                            'level' => $taskData['level'] ?? null,
                                             'title' => $taskData['title'],
                                             'instructions' => $taskData['instructions'],
                                             'hours' => $taskData['hours'] ?? 0,
@@ -306,9 +307,54 @@ class ProjectController extends Controller
 
         $project->update($request->all());
 
+        // Update Backlog if provided (AI Analysis result)
+        if ($request->has('backlog')) {
+            // Remove existing backlog to replace with new analysis
+            $project->epics()->each(function ($epic) {
+                $epic->stories()->each(function ($story) {
+                    $story->tasks()->delete();
+                });
+                $epic->stories()->delete();
+            });
+            $project->epics()->delete();
+
+            foreach ($request->backlog as $epicData) {
+                $epic = $project->epics()->create([
+                    'title' => $epicData['title'],
+                    'description' => $epicData['description'],
+                    'external_id' => $epicData['id'] ?? null,
+                ]);
+
+                if (isset($epicData['user_stories'])) {
+                    foreach ($epicData['user_stories'] as $storyData) {
+                        $story = $epic->stories()->create([
+                            'title' => $storyData['title'],
+                            'description' => $storyData['description'],
+                            'story_points' => $storyData['story_points'] ?? 0,
+                            'acceptance_criteria' => $storyData['acceptance_criteria'] ?? [],
+                            'external_id' => $storyData['id'] ?? null,
+                        ]);
+
+                        if (isset($storyData['tasks'])) {
+                            foreach ($storyData['tasks'] as $taskData) {
+                                $story->tasks()->create([
+                                    'role' => $taskData['role'],
+                                    'level' => $taskData['level'] ?? null,
+                                    'title' => $taskData['title'],
+                                    'instructions' => $taskData['instructions'],
+                                    'hours' => $taskData['hours'] ?? 0,
+                                    'external_id' => $taskData['id'] ?? null,
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return response()->json([
             'message' => 'Project updated successfully',
-            'project' => $project->load('chef')
+            'project' => $project->load(['chef', 'epics.stories.tasks'])
         ]);
     }
 

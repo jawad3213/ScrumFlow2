@@ -32,6 +32,9 @@ import TeamPage from './pages/team/TeamPage';
 // Pages - Reporting
 
 
+// Pages - Settings
+import SettingsPage from './pages/settings/SettingsPage';
+
 function App() {
   return (
     <div className="min-h-screen bg-surface-background font-sans antialiased text-neutral-900">
@@ -54,6 +57,7 @@ function App() {
 
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
 
           {/* --- ADMIN / MANAGER ONLY (Global) --- */}
           <Route path="/projects/new" element={

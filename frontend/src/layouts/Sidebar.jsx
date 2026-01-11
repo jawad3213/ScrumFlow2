@@ -137,6 +137,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     </div>
                     <SidebarItem to="/projects/new" icon={PlusCircle} label="New Project" collapsed={collapsed} />
                     <SidebarItem to="/team-global" icon={Users} label="Team Global" collapsed={collapsed} />
+                    <SidebarItem to="/settings" icon={Settings} label="Settings" collapsed={collapsed} />
                 </>
             );
         } else {
@@ -151,6 +152,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     <SidebarItem to={`/project/${projectId}/hub`} icon={Sparkles} label="Strategic Blueprint" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/analysis`} icon={BrainCircuit} label="AI Analysis" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/team`} icon={Users} label="Project Team" collapsed={collapsed} />
+                    <div className="my-2 mx-2 border-t border-neutral-200" />
+                    <SidebarItem to="/settings" icon={Settings} label="Global Settings" collapsed={collapsed} />
 
                 </>
             );
@@ -338,6 +341,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                                 </div>
 
                                 <SidebarItem to="/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
+                                <SidebarItem to="/settings" icon={Settings} label="Settings" collapsed={collapsed} />
                             </>
                         )}
                     </nav>

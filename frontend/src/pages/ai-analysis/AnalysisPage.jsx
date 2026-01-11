@@ -13,7 +13,6 @@ import { cn } from '@/utils/utils';
 
 // Components
 import AIDashboard from './components/AIDashboard';
-import GeminiAuth from './components/GeminiAuth';
 import RequirementUpload from './components/RequirementUpload';
 import ResourcePool from './components/ResourcePool';
 import testData from './test_data.json';
@@ -89,8 +88,8 @@ const AnalysisPage = () => {
                     title: 'Invalid API Configuration',
                     message: 'The Intelligence Engine could not verify your Gemini API key. It may be missing, expired, or mistyped.',
                     tip: 'Ensure your key is copied correctly from Google AI Studio. Check for trailing spaces.',
-                    actionLabel: 'Verify API Key',
-                    onAction: () => setSubStep('auth')
+                    actionLabel: 'Check Settings',
+                    onAction: null
                 });
             } else if (rawMsg.includes("quota") || rawMsg.includes("429")) {
                 setError({
@@ -232,7 +231,7 @@ const AnalysisPage = () => {
                                 Automation enabled for timeline and resource mapping
                             </p>
                             <Button
-                                onClick={() => setSubStep('auth')}
+                                onClick={() => setSubStep('resources')}
                                 disabled={!projectData.name || !projectData.description}
                                 className="bg-brand-primary-500 hover:bg-neutral-900 text-white rounded-2xl px-10 h-14 font-black text-[10px] uppercase tracking-[0.3em] shadow-xl transition-all flex items-center gap-3"
                             >
@@ -241,14 +240,6 @@ const AnalysisPage = () => {
                             </Button>
                         </div>
                     </motion.div>
-                )}
-
-                {subStep === 'auth' && (
-                    <GeminiAuth
-                        apiKey={apiKey}
-                        onKeyChange={handleApiKeyChange}
-                        onNext={() => setSubStep('resources')}
-                    />
                 )}
 
                 {subStep === 'resources' && (
