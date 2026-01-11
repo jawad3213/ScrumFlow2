@@ -383,10 +383,14 @@ const AIDashboard = ({ data }) => {
                     </div>
                     <div className="bg-white/5 border border-white/10 p-8 rounded-[32px] backdrop-blur-sm">
                         <div className="text-base text-neutral-200 leading-relaxed font-medium italic">
-                            {data.roi_analysis_summary.split(' ').map((word, i) => (
-                                <BlurReveal key={i} delay={0.1 + i * 0.02}>
-                                    {word}&nbsp;
-                                </BlurReveal>
+                            {data.roi_analysis_summary.replace(/\.\s*-/g, '. __BR__ -').split(' ').map((word, i) => (
+                                word === '__BR__' ? (
+                                    <div key={i} className="h-4 w-full" />
+                                ) : (
+                                    <BlurReveal key={i} delay={0.1 + i * 0.02}>
+                                        {word}&nbsp;
+                                    </BlurReveal>
+                                )
                             ))}
                         </div>
                     </div>

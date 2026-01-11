@@ -34,6 +34,7 @@ import AIDashboard from './components/AIDashboard';
 
 import teamChecklistImg from '@/assets/login/team checklist-pana.png';
 import team1Img from '@/assets/login/team1.png';
+import SiriOrb from '@/components/ui/SiriOrb';
 
 const STEPS = [
     { id: 1, title: "Identity", icon: Briefcase },
@@ -264,15 +265,8 @@ const NewProjectPage = () => {
 
     const renderAnalyzing = () => (
         <div className="flex flex-col items-center justify-center py-24 space-y-10 max-w-md mx-auto">
-            <div className="relative">
-                <motion.div
-                    animate={{ scale: [1, 1.05, 1], rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                    className="h-32 w-32 rounded-[40px] bg-brand-primary-50 flex items-center justify-center"
-                >
-                    <Sparkles className="h-14 w-14 text-brand-primary-500" />
-                </motion.div>
-                <div className="absolute -top-2 -left-2 h-36 w-36 border-2 border-brand-primary-500/20 rounded-[44px] animate-[spin_8s_linear_infinite]" />
+            <div className="relative flex items-center justify-center">
+                <SiriOrb size="192px" animationDuration={15} />
             </div>
 
             <div className="text-center space-y-3">

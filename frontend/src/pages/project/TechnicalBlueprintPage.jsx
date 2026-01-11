@@ -40,6 +40,7 @@ import axios from 'axios';
 import RequirementUpload from '../ai-analysis/components/RequirementUpload';
 import AIDashboard from '../ai-analysis/components/AIDashboard';
 import SiriOrb from '@/components/ui/SiriOrb';
+import LoadingAnimation from '@/components/ui/LoadingAnimation';
 
 // --- Shared Dashboard Components ---
 
@@ -546,6 +547,27 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
 
     return (
         <div className="w-full h-full max-w-7xl mx-auto">
+            {/* Super Header - Centered Professional Staging */}
+            {showSteppers && (
+                <div className="flex flex-col items-center justify-center space-y-3 pb-8 border-b border-neutral-100 text-center mb-8">
+                    <motion.h1
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-7xl font-black text-neutral-900 tracking-tighter leading-none"
+                    >
+                        Technical <span className="text-brand-primary-500 italic">Blueprint</span>
+                    </motion.h1>
+
+                    <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="text-neutral-400 font-bold text-[11px] uppercase tracking-[0.3em] max-w-3xl leading-relaxed"
+                    >
+                        Break requirements into backlog, user stories, epics, and tasks.
+                    </motion.p>
+                </div>
+            )}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
                 <AnimatePresence mode="wait">
                     {showSteppers && (
@@ -556,13 +578,7 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
                             className="lg:col-span-3 lg:border-r border-neutral-100 pr-8 hidden lg:block"
                         >
                             <div className="sticky top-8 space-y-8">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2">Workflow</p>
-                                    <h2 className="text-xl font-black text-neutral-900 tracking-tight">Blueprint Wizard</h2>
-                                    <p className="text-xs text-neutral-500 font-medium leading-relaxed">
-                                        Guided process to generate technical specifications.
-                                    </p>
-                                </div>
+
 
                                 <div className="space-y-3">
                                     {STEPS.map((step) => {
@@ -572,9 +588,19 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
                                         return (
                                             <motion.div
                                                 key={step.id}
+                                                onClick={() => {
+                                                    // Allow free navigation between steps 1, 2, and 3
+                                                    // Only block navigation to Step 4 if the necessary data hasn't been generated
+                                                    if (step.id === 4 && !staffingData) return;
+
+                                                    setDirection(step.id > currentStep ? 1 : -1);
+                                                    setCurrentStep(step.id);
+                                                    setValidationError(null);
+                                                }}
                                                 className={cn(
                                                     "relative flex items-center gap-4 p-3 rounded-2xl transition-all duration-300 border border-transparent",
-                                                    isActive ? "bg-white shadow-2xl shadow-neutral-900/5 text-neutral-900 border-neutral-100/50" : "text-neutral-400 hover:bg-neutral-100/30"
+                                                    (step.id === 4 && !staffingData) ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:bg-neutral-100/30",
+                                                    isActive ? "bg-white shadow-2xl shadow-neutral-900/5 text-neutral-900 border-neutral-100/50 opacity-100" : "text-neutral-400"
                                                 )}
                                             >
                                                 <div className={cn(
@@ -814,7 +840,10 @@ const TechnicalBlueprintPage = () => {
     if (loading) {
         return (
             <div className="flex h-full w-full items-center justify-center bg-surface-background">
-                <Loader2 className="h-8 w-8 animate-spin text-brand-primary-500" />
+                <LoadingAnimation
+                    className="w-64"
+                    message="Retrieving technical specifications..."
+                />
             </div>
         );
     }
@@ -832,24 +861,20 @@ const TechnicalBlueprintPage = () => {
 
     return (
         <div className="flex flex-col h-full bg-surface-background p-8 overflow-y-auto">
-            <div className="flex flex-col mb-8">
-                <h1 className="text-2xl font-bold tracking-tight text-neutral-900">Technical Blueprint</h1>
-                <p className="text-neutral-500">
-                    Systematic breakdown and verified technical specifications for <span className="font-bold text-neutral-900">{projectData?.project_name}</span>.
-                </p>
-            </div>
+            {projectData?.backlog && projectData.backlog.length > 0 && (
+                <div className="flex flex-col">
+                    <h1 className="text-3xl font-black tracking-tight text-neutral-900">Technical Blueprint</h1>
+                    <p className="text-neutral-500 font-medium mt-2">
+                        Systematic breakdown and verified technical specifications for <span className="font-bold text-neutral-900">{projectData?.project_name}</span>.
+                    </p>
+                </div>
+            )}
 
             <div className="w-full flex-1 flex flex-col space-y-8">
                 <div className="block animate-in fade-in zoom-in-95 duration-200">
                     {projectData?.backlog && projectData.backlog.length > 0 ? (
                         <div className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm mt-4">
-                            <div className="flex flex-col items-center justify-center mb-10 space-y-2">
-                                <div className="p-3 bg-brand-primary-50 text-brand-primary-600 rounded-2xl mb-2">
-                                    <Layout size={24} />
-                                </div>
-                                <h3 className="text-3xl font-black text-neutral-900 tracking-tight">Technical Blueprint</h3>
-                                <p className="text-sm text-neutral-500 font-medium uppercase tracking-widest">Verified Backlog Architecture</p>
-                            </div>
+
                             <BacklogDashboard data={projectData} />
                         </div>
                     ) : (

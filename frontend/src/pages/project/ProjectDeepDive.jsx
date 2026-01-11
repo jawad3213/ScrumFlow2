@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 
 import { getProject } from '@/api/projects';
 import AIDashboard from '../ai-analysis/components/AIDashboard';
+import LoadingAnimation from '@/components/ui/LoadingAnimation';
 
 const ProjectDeepDive = () => {
     const { id } = useParams();
@@ -91,7 +92,10 @@ const ProjectDeepDive = () => {
     if (loading) {
         return (
             <div className="flex h-full w-full items-center justify-center bg-surface-background">
-                <Loader2 className="h-8 w-8 animate-spin text-brand-primary-500" />
+                <LoadingAnimation
+                    className="w-64"
+                    message="Retrieving strategic blueprint..."
+                />
             </div>
         );
     }
