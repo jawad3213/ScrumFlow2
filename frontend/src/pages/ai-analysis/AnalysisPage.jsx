@@ -18,6 +18,8 @@ import ResourcePool from './components/ResourcePool';
 import testData from './test_data.json';
 import Toast from '@/components/ui/Toast';
 
+import SiriOrb from '@/components/ui/SiriOrb';
+
 const AnalysisPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -158,6 +160,31 @@ const AnalysisPage = () => {
         }
     };
 
+    const renderAnalyzing = () => (
+        <div className="flex flex-col items-center justify-center py-24 space-y-10 max-w-md mx-auto">
+            <div className="relative flex items-center justify-center">
+                <SiriOrb size="192px" animationDuration={15} />
+            </div>
+
+            <div className="text-center space-y-3">
+                <h2 className="text-2xl font-black text-neutral-900 tracking-tight uppercase tracking-[0.1em]">AI Synthesis In Progress</h2>
+                <p className="text-sm text-neutral-400 font-medium leading-relaxed font-mono">
+                    Decomposing specifications into high-fidelity nodes...
+                </p>
+                <div className="flex justify-center gap-1.5 pt-4">
+                    {[0, 1, 2].map(i => (
+                        <motion.div
+                            key={i}
+                            animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+                            transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.3 }}
+                            className="w-2 h-2 rounded-full bg-brand-primary-500"
+                        />
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+
     const renderHeader = () => (
         <div className="space-y-4 mb-10">
             <div className="flex items-center gap-3">
@@ -190,78 +217,91 @@ const AnalysisPage = () => {
             {renderHeader()}
 
             <AnimatePresence mode="wait">
-                {subStep === 'config' && (
+                {isAnalyzing ? (
                     <motion.div
-                        key="config"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="bg-white rounded-[40px] border border-neutral-100 shadow-super p-10 md:p-16 space-y-12"
+                        key="analyzing"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                     >
-                        <div className="space-y-8">
-                            <div className="space-y-3 text-left">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Briefcase size={14} className="text-brand-primary-500" />
-                                    <label className="text-[10px] font-black text-neutral-400 tracking-[0.2em] uppercase">Project Title</label>
-                                </div>
-                                <Input
-                                    placeholder="e.g., Enterprise SaaS Platform v2.0"
-                                    value={projectData.name}
-                                    onChange={e => setProjectData({ ...projectData, name: e.target.value })}
-                                    className="h-14 text-lg rounded-[20px] border-neutral-100 bg-neutral-50/50 focus:bg-white transition-all px-6 font-bold shadow-subtle focus:ring-8 focus:ring-brand-primary-500/5"
-                                />
-                            </div>
-
-                            <div className="space-y-3 text-left">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <FileText size={14} className="text-brand-primary-500" />
-                                    <label className="text-[10px] font-black text-neutral-400 tracking-[0.2em] uppercase">Mission Brief</label>
-                                </div>
-                                <Textarea
-                                    placeholder="Describe the core problem and high-level objectives..."
-                                    className="rounded-[24px] border-neutral-100 bg-neutral-50/50 focus:bg-white transition-all min-h-[200px] p-6 text-sm leading-relaxed shadow-subtle focus:ring-8 focus:ring-brand-primary-500/5 font-medium"
-                                    value={projectData.description}
-                                    onChange={e => setProjectData({ ...projectData, description: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-8 border-t border-neutral-50">
-                            <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest italic">
-                                Automation enabled for timeline and resource mapping
-                            </p>
-                            <Button
-                                onClick={() => setSubStep('resources')}
-                                disabled={!projectData.name || !projectData.description}
-                                className="bg-brand-primary-500 hover:bg-neutral-900 text-white rounded-2xl px-10 h-14 font-black text-[10px] uppercase tracking-[0.3em] shadow-xl transition-all flex items-center gap-3"
-                            >
-                                Start Analysis
-                                <ChevronRight size={18} />
-                            </Button>
-                        </div>
+                        {renderAnalyzing()}
                     </motion.div>
-                )}
-
-                {subStep === 'resources' && (
-                    <div className="bg-white rounded-[40px] border border-neutral-100 shadow-super p-10">
-                        <ResourcePool pool={employeePool} setPool={setEmployeePool} />
-                        <div className="mt-10 flex justify-end">
-                            <Button
-                                onClick={() => setSubStep('upload')}
-                                className="bg-brand-primary-500 hover:bg-neutral-900 text-white rounded-xl px-8 h-12 font-black text-[10px] uppercase tracking-[0.2em]"
+                ) : (
+                    <>
+                        {subStep === 'config' && (
+                            <motion.div
+                                key="config"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="bg-white rounded-[40px] border border-neutral-100 shadow-super p-10 md:p-16 space-y-12"
                             >
-                                Continue to Scoping <ChevronRight size={16} className="ml-2" />
-                            </Button>
-                        </div>
-                    </div>
-                )}
+                                <div className="space-y-8">
+                                    <div className="space-y-3 text-left">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Briefcase size={14} className="text-brand-primary-500" />
+                                            <label className="text-[10px] font-black text-neutral-400 tracking-[0.2em] uppercase">Project Title</label>
+                                        </div>
+                                        <Input
+                                            placeholder="e.g., Enterprise SaaS Platform v2.0"
+                                            value={projectData.name}
+                                            onChange={e => setProjectData({ ...projectData, name: e.target.value })}
+                                            className="h-14 text-lg rounded-[20px] border-neutral-100 bg-neutral-50/50 focus:bg-white transition-all px-6 font-bold shadow-subtle focus:ring-8 focus:ring-brand-primary-500/5"
+                                        />
+                                    </div>
 
-                {subStep === 'upload' && (
-                    <RequirementUpload
-                        onFileSelected={runAnalysis}
-                        isLoading={isAnalyzing}
-                        error={error}
-                    />
+                                    <div className="space-y-3 text-left">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <FileText size={14} className="text-brand-primary-500" />
+                                            <label className="text-[10px] font-black text-neutral-400 tracking-[0.2em] uppercase">Mission Brief</label>
+                                        </div>
+                                        <Textarea
+                                            placeholder="Describe the core problem and high-level objectives..."
+                                            className="rounded-[24px] border-neutral-100 bg-neutral-50/50 focus:bg-white transition-all min-h-[200px] p-6 text-sm leading-relaxed shadow-subtle focus:ring-8 focus:ring-brand-primary-500/5 font-medium"
+                                            value={projectData.description}
+                                            onChange={e => setProjectData({ ...projectData, description: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-8 border-t border-neutral-50">
+                                    <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest italic">
+                                        Automation enabled for timeline and resource mapping
+                                    </p>
+                                    <Button
+                                        onClick={() => setSubStep('resources')}
+                                        disabled={!projectData.name || !projectData.description}
+                                        className="bg-brand-primary-500 hover:bg-neutral-900 text-white rounded-2xl px-10 h-14 font-black text-[10px] uppercase tracking-[0.3em] shadow-xl transition-all flex items-center gap-3"
+                                    >
+                                        Start Analysis
+                                        <ChevronRight size={18} />
+                                    </Button>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {subStep === 'resources' && (
+                            <div className="bg-white rounded-[40px] border border-neutral-100 shadow-super p-10">
+                                <ResourcePool pool={employeePool} setPool={setEmployeePool} />
+                                <div className="mt-10 flex justify-end">
+                                    <Button
+                                        onClick={() => setSubStep('upload')}
+                                        className="bg-brand-primary-500 hover:bg-neutral-900 text-white rounded-xl px-8 h-12 font-black text-[10px] uppercase tracking-[0.2em]"
+                                    >
+                                        Continue to Scoping <ChevronRight size={16} className="ml-2" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+
+                        {subStep === 'upload' && (
+                            <RequirementUpload
+                                onFileSelected={runAnalysis}
+                                isLoading={isAnalyzing}
+                                error={error}
+                            />
+                        )}
+                    </>
                 )}
 
                 {subStep === 'dashboard' && (

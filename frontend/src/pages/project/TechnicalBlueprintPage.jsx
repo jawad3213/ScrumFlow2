@@ -241,17 +241,28 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
 
     // Form inputs
     const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
-    const [employeePool, setEmployeePool] = useState([
-        { role: "Backend Developer", level: "Senior", salary: 30000 },
-        { role: "Frontend Developer", level: "Mid-level", salary: 20000 },
-        { role: "UI/UX Designer", level: "Junior", salary: 18000 },
-    ]);
+    const [employeePool, setEmployeePool] = useState(
+        (initialData?.assigned_engineers && initialData.assigned_engineers.length > 0)
+            ? initialData.assigned_engineers
+            : [
+                { role: "Backend Developer", level: "Senior", salary: 30000 },
+                { role: "Frontend Developer", level: "Mid-level", salary: 20000 },
+                { role: "UI/UX Designer", level: "Junior", salary: 18000 },
+            ]
+    );
     const [staffingData, setStaffingData] = useState(null);
 
     // UI State
     const [activeAccordion, setActiveAccordion] = useState(null);
     const [isStoring, setIsStoring] = useState(false);
     const [storeMessage, setStoreMessage] = useState(null);
+
+    // Update pool if initialData changes late
+    useEffect(() => {
+        if (initialData?.assigned_engineers && initialData.assigned_engineers.length > 0) {
+            setEmployeePool(initialData.assigned_engineers);
+        }
+    }, [initialData]);
 
     const validateCurrentStep = () => {
         if (currentStep === 3) {
@@ -375,6 +386,15 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
                                 <span className="text-[11px] text-neutral-500 font-medium leading-tight block mt-0.5">Approved budget allocation and resource cost projections.</span>
                             </div>
                         </li>
+                        <li className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100">
+                                <Users size={16} className="text-indigo-600" />
+                            </div>
+                            <div className="pt-1">
+                                <span className="text-neutral-900 font-bold block text-sm">Staffing Pool</span>
+                                <span className="text-[11px] text-neutral-500 font-medium leading-tight block mt-0.5">{employeePool.length} Engineers assigned from strategic planning.</span>
+                            </div>
+                        </li>
                     </ul>
                 </div>
 
@@ -411,7 +431,7 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
                             <div>
                                 <h4 className={`text-base font-bold transition-colors ${isOpen ? 'text-neutral-900' : 'text-neutral-600'}`}>{title}</h4>
                                 <p className="text-xs text-neutral-400 font-medium mt-0.5">
-                                    {isOpen ? 'Click to collapse details' : 'Click to view baseline parameters'}
+                                    {isOpen ? 'Click to collapse details' : 'Click to view details'}
                                 </p>
                             </div>
                         </div>
@@ -461,6 +481,37 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
                     icon={DollarSign}
                 >
                     <p className="text-sm text-neutral-500 leading-relaxed">Comprehensive budget including CAPEX and OPEX.</p>
+                </AccordionItem>
+                <AccordionItem
+                    id="staffing"
+                    title="Technical Staffing"
+                    value={`${employeePool.length} Engineers`}
+                    subvalue="Resource Pool"
+                    icon={Users}
+                >
+                    <div className="space-y-3">
+                        <p className="text-xs text-neutral-400 font-bold uppercase tracking-widest mb-3">Assigned Team Members</p>
+                        <div className="grid grid-cols-1 gap-2">
+                            {employeePool.map((emp, i) => (
+                                <div key={i} className="flex items-center justify-between p-3 bg-neutral-50 rounded-xl border border-neutral-100">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-[10px] font-black text-neutral-500">
+                                            {emp.role.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-bold text-neutral-900">{emp.role}</div>
+                                            <div className="text-[10px] text-neutral-500 font-medium">{emp.level}</div>
+                                        </div>
+                                    </div>
+                                    {emp.salary > 0 && (
+                                        <div className="text-[11px] font-bold text-neutral-400">
+                                            {Number(emp.salary).toLocaleString()} MAD
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </AccordionItem>
             </motion.div>
         );
@@ -714,6 +765,13 @@ const TechnicalBlueprintPage = () => {
                     total_capex: data.total_capex,
                     total_opex: data.total_opex,
                     roi_analysis_summary: data.roi_analysis_summary,
+                    // Map assigned engineers for the pool
+                    assigned_engineers: (data.assigned_engineers || []).map(e => ({
+                        role: e.specialization?.name || e.role || 'Developer',
+                        level: e.specialization?.level || e.level || 'Mid-level',
+                        salary: e.specialization?.salary || e.monthly_salary_mad || 0,
+                        count: 1 // Default to 1 if not specified
+                    })),
                     backlog: data.epics ? data.epics.map(epic => ({
                         id: epic.id,
                         title: epic.title,
