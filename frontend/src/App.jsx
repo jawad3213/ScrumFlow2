@@ -24,6 +24,7 @@ import NotificationsPage from './pages/dashboard/NotificationsPage';
 
 import AnalysisPage from './pages/ai-analysis/AnalysisPage';
 import ProjectDeepDive from './pages/project/ProjectDeepDive';
+import TechnicalBlueprintPage from './pages/project/TechnicalBlueprintPage';
 
 // Pages - Team & Admin
 import TeamPage from './pages/team/TeamPage';
@@ -72,6 +73,7 @@ function App() {
             {/* Common Project Views */}
             <Route index element={<ProjectDashboardPage />} />
             <Route path="hub" element={<ProjectDeepDive />} />
+            <Route path="blueprint" element={<TechnicalBlueprintPage />} />
 
             {/* Manager Protected Project Views */}
             <Route path="analysis" element={

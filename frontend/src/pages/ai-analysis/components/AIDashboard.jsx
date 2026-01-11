@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { BlurReveal } from '@/components/ui/blur-reveal';
 import { MouseEffect } from '@/components/ui/mouse-effect';
 
-const FinancialCard = ({ title, value, icon: Icon, color, subtitle, isCurrency = true }) => {
+const FinancialCard = ({ title, value, icon: Icon, color, subtitle, isCurrency = true, precision = 2 }) => {
     const colorMap = {
         primary: 'brand-primary',
         brand: 'brand-primary',
@@ -19,16 +19,16 @@ const FinancialCard = ({ title, value, icon: Icon, color, subtitle, isCurrency =
     return (
         <div className="bg-white border border-neutral-100 rounded-2xl p-6 relative overflow-hidden group shadow-subtle">
             <div className={`absolute top-0 right-0 w-32 h-32 bg-${baseColor}-500/5 blur-3xl -mr-16 -mt-16 transition-all group-hover:bg-${baseColor}-500/10`}></div>
-            <div className="flex justify-between items-start relative z-10">
-                <div className="space-y-1">
-                    <p className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">{title}</p>
-                    <h3 className="text-2xl font-black text-neutral-900 tracking-tight">
-                        {typeof value === 'number' ? value.toLocaleString() : value}
+            <div className="flex justify-between items-start relative z-10 gap-4">
+                <div className="space-y-1 min-w-0 flex-1">
+                    <p className="text-[9px] font-black text-neutral-400 uppercase tracking-widest truncate">{title}</p>
+                    <h3 className="text-2xl font-black text-neutral-900 tracking-tight leading-tight">
+                        {typeof value === 'number' ? value.toLocaleString('fr-FR', { minimumFractionDigits: precision, maximumFractionDigits: precision }) : value}
                         {isCurrency && <span className="text-[10px] font-bold text-neutral-400 ml-1">MAD</span>}
                     </h3>
-                    {subtitle && <p className="text-[10px] text-neutral-400 font-medium leading-tight">{subtitle}</p>}
+                    {subtitle && <p className="text-[10px] text-neutral-400 font-medium leading-tight truncate">{subtitle}</p>}
                 </div>
-                <div className={`p-3 bg-${baseColor}-50 rounded-xl text-${baseColor}-500`}>
+                <div className={`p-3 bg-${baseColor}-50 rounded-xl text-${baseColor}-500 shrink-0`}>
                     <Icon size={20} />
                 </div>
             </div>
@@ -72,7 +72,7 @@ const TableRow = ({ name, detail, cost, formula }) => (
         <div className="text-right">
             <div className="flex flex-col items-end">
                 <span className="text-[13px] font-black text-neutral-900 group-hover:text-brand-primary-600 transition-colors tracking-tight">
-                    {cost.toLocaleString()} <span className="text-[9px] text-neutral-400 ml-0.5">MAD</span>
+                    {Number(cost).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-[9px] text-neutral-400 ml-0.5">MAD</span>
                 </span>
             </div>
         </div>
@@ -97,7 +97,7 @@ const AIDashboard = ({ data }) => {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="grid grid-cols-1 md:grid-cols-5 gap-4"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4"
             >
                 <FinancialCard
                     title="Dev Duration"
@@ -113,17 +113,19 @@ const AIDashboard = ({ data }) => {
                     icon={DollarSign}
                     color="cyan"
                     subtitle="Initial CAPEX + Setup"
+                    precision={0}
                 />
                 <FinancialCard
                     title="Estimated Gains"
-                    value={data.estimated_gains.reduce((acc, g) => acc + g.cost_mad, 0)}
+                    value={data.estimated_gains.reduce((acc, g) => acc + Number(g.cost_mad), 0)}
                     icon={TrendingUp}
                     color="emerald"
                     subtitle="Annual Benefits"
+                    precision={0}
                 />
                 <FinancialCard
                     title="Break-even"
-                    value={data.roi_projections.break_even_point_months ? `${data.roi_projections.break_even_point_months.toFixed(1)} Months` : 'N/A'}
+                    value={data.roi_projections.break_even_point_months ? `${Number(data.roi_projections.break_even_point_months).toFixed(1)} Months` : 'N/A'}
                     icon={Shield}
                     isCurrency={false}
                     color="amber"
@@ -134,7 +136,7 @@ const AIDashboard = ({ data }) => {
                         <p className="text-[9px] font-black text-neutral-400 uppercase tracking-widest mb-1">3-Year ROI</p>
                         <div className="flex items-baseline gap-2">
                             <h3 className={`text-2xl font-black text-${roiColor}-600 tracking-tighter`}>
-                                {finalRoi.toFixed(1)}%
+                                {Number(finalRoi).toFixed(1)}%
                             </h3>
                             <ArrowUpRight size={16} className={`text-${roiColor}-500`} />
                         </div>
@@ -156,22 +158,22 @@ const AIDashboard = ({ data }) => {
                             <div className="flex justify-between items-center mb-5">
                                 <span className="px-3 py-1 bg-brand-primary-500 font-black text-[9px] rounded-full text-white uppercase tracking-widest">Year {proj.year}</span>
                                 <span className={`text-sm font-black ${proj.roi_percentage > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                    {proj.roi_percentage.toFixed(1)}%
+                                    {Number(proj.roi_percentage).toFixed(1)}%
                                 </span>
                             </div>
                             <div className="space-y-3.5">
                                 <div className="flex justify-between text-[11px]">
                                     <span className="text-neutral-500 font-medium">Cumulative Cost</span>
-                                    <span className="text-neutral-900 font-black tracking-tight">{proj.cumulative_costs.toLocaleString()}</span>
+                                    <span className="text-neutral-900 font-black tracking-tight">{Number(proj.cumulative_costs).toLocaleString('fr-FR')}</span>
                                 </div>
                                 <div className="flex justify-between text-[11px]">
                                     <span className="text-neutral-500 font-medium">Cumulative Gain</span>
-                                    <span className="text-emerald-600 font-black tracking-tight">+{proj.cumulative_gains.toLocaleString()}</span>
+                                    <span className="text-emerald-600 font-black tracking-tight">+{Number(proj.cumulative_gains).toLocaleString('fr-FR')}</span>
                                 </div>
                                 <div className="pt-4 mt-1 border-t border-neutral-100 flex justify-between items-center text-xs font-black">
                                     <span className="text-neutral-400 uppercase tracking-widest text-[9px]">Net Flow</span>
                                     <span className={proj.net_cash_flow > 0 ? 'text-emerald-600' : 'text-rose-600'}>
-                                        {proj.net_cash_flow > 0 ? '+' : ''}{proj.net_cash_flow.toLocaleString()} MAD
+                                        {proj.net_cash_flow > 0 ? '+' : ''}{Number(proj.net_cash_flow).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD
                                     </span>
                                 </div>
                             </div>
@@ -214,7 +216,7 @@ const AIDashboard = ({ data }) => {
                             </div>
                             <div className="flex items-baseline gap-2 pt-4 border-t border-neutral-50">
                                 <span className="text-3xl font-black text-neutral-900 tracking-tighter">
-                                    +{gain.cost_mad.toLocaleString()}
+                                    +{Number(gain.cost_mad).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}
                                 </span>
                                 <span className="text-[10px] font-bold uppercase text-neutral-400 tracking-widest">MAD / Year</span>
                             </div>
@@ -240,13 +242,13 @@ const AIDashboard = ({ data }) => {
                                     Development Team
                                 </h4>
                                 <div className="space-y-1">
-                                    {data.selected_engineers.map((eng, idx) => (
+                                    {Array.isArray(data.selected_engineers) && data.selected_engineers.map((eng, idx) => (
                                         <TableRow
                                             key={idx}
                                             name={eng.role}
                                             detail={`${eng.level} • ${eng.months_assigned} months`}
                                             cost={eng.total_cost_mad}
-                                            formula={`${eng.monthly_salary_mad.toLocaleString()} MAD/mo • ${eng.months_assigned} mo`}
+                                            formula={`${(eng.monthly_salary_mad || 0).toLocaleString()} MAD/mo • ${eng.months_assigned} mo`}
                                         />
                                     ))}
                                 </div>
@@ -257,7 +259,7 @@ const AIDashboard = ({ data }) => {
                                     Setup & Infrastructure
                                 </h4>
                                 <div className="space-y-1">
-                                    {data.licenses_and_apis.map((item, idx) => (
+                                    {Array.isArray(data.licenses_and_apis) && data.licenses_and_apis.map((item, idx) => (
                                         <TableRow
                                             key={idx}
                                             name={item.item_name}
@@ -271,15 +273,15 @@ const AIDashboard = ({ data }) => {
                             <div className="pt-6 border-t border-neutral-50 space-y-3 relative z-20">
                                 <div className="flex justify-between items-center text-[10px] font-bold text-neutral-400">
                                     <span className="uppercase tracking-widest">Base Investment</span>
-                                    <span>{(data.total_capex / (1 + (data.contingency_buffer_percentage || 15) / 100)).toLocaleString()} MAD</span>
+                                    <span>{Number((data.total_capex || 0) / (1 + (data.contingency_buffer_percentage || 15) / 100)).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} MAD</span>
                                 </div>
                                 <div className="flex justify-between items-center text-[10px] font-bold text-amber-500">
                                     <span className="uppercase tracking-widest">Contingency Buffer ({data.contingency_buffer_percentage || 15}%)</span>
-                                    <span>{((data.total_capex / (1 + (data.contingency_buffer_percentage || 15) / 100)) * (data.contingency_buffer_percentage || 15) / 100).toLocaleString()} MAD</span>
+                                    <span>{Number(((data.total_capex || 0) / (1 + (data.contingency_buffer_percentage || 15) / 100)) * (data.contingency_buffer_percentage || 15) / 100).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} MAD</span>
                                 </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-neutral-50">
                                     <span className="text-[10px] font-black text-neutral-900 uppercase tracking-widest">Total Capital Expense</span>
-                                    <span className="text-lg font-black text-neutral-900 tracking-tight">{data.total_capex.toLocaleString()} MAD</span>
+                                    <span className="text-lg font-black text-neutral-900 tracking-tight">{Number(data.total_capex || 0).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} MAD</span>
                                 </div>
                             </div>
                         </div>
@@ -301,13 +303,13 @@ const AIDashboard = ({ data }) => {
                                     Support & Maintenance
                                 </h4>
                                 <div className="space-y-1">
-                                    {data.maintenance_engineers.map((eng, idx) => (
+                                    {Array.isArray(data.maintenance_engineers) && data.maintenance_engineers.map((eng, idx) => (
                                         <TableRow
                                             key={idx}
                                             name={eng.role}
                                             detail={`${eng.level} • Recurring`}
                                             cost={eng.total_cost_mad}
-                                            formula={`${eng.monthly_salary_mad.toLocaleString()} MAD/mo • ${eng.months_assigned} mo`}
+                                            formula={`${(eng.monthly_salary_mad || 0).toLocaleString()} MAD/mo • ${eng.months_assigned} mo`}
                                         />
                                     ))}
                                 </div>
@@ -318,7 +320,7 @@ const AIDashboard = ({ data }) => {
                                     Cloud Services
                                 </h4>
                                 <div className="space-y-1">
-                                    {data.cloud_subscription.map((item, idx) => (
+                                    {Array.isArray(data.cloud_subscription) && data.cloud_subscription.map((item, idx) => (
                                         <TableRow
                                             key={idx}
                                             name={item.item_name}
@@ -331,7 +333,7 @@ const AIDashboard = ({ data }) => {
                             </div>
                             <div className="pt-6 border-t border-neutral-50 flex justify-between items-center relative z-20">
                                 <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Ongoing Monthly Cost</span>
-                                <span className="text-lg font-black text-neutral-900 tracking-tight">{data.total_opex.toLocaleString()} MAD</span>
+                                <span className="text-lg font-black text-neutral-900 tracking-tight">{Number(data.total_opex || 0).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} MAD</span>
                             </div>
                         </div>
                     </MouseEffect>
