@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { analyzeStaffing } from '@/api/ai';
+import { createProject } from '@/api/projects';
+import StorageService from '@/utils/storage';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -38,7 +41,7 @@ const AnalysisPage = () => {
         name: 'Project Blueprint #' + (id || 'New'),
         description: '',
     });
-    const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
+    const [apiKey, setApiKey] = useState(StorageService.getGeminiKey() || '');
     const [employeePool, setEmployeePool] = useState([
         { role: "Backend Developer", level: "Senior", salary: 30000 },
         { role: "Frontend Developer", level: "Mid-level", salary: 20000 },
@@ -47,7 +50,7 @@ const AnalysisPage = () => {
 
     const handleApiKeyChange = (key) => {
         setApiKey(key);
-        localStorage.setItem('gemini_api_key', key);
+        StorageService.setGeminiKey(key);
     };
 
     const runAnalysis = async (file) => {
@@ -60,17 +63,7 @@ const AnalysisPage = () => {
             formData.append('pool_employes', JSON.stringify(employeePool));
             formData.append('api_key', apiKey);
 
-            const response = await fetch('http://localhost:8001/analyze-staffing', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Analysis failed');
-            }
-
-            const data = await response.json();
+            const data = await analyzeStaffing(formData);
             setAnalysisData(data);
             setSubStep('dashboard');
         } catch (err) {
@@ -124,28 +117,15 @@ const AnalysisPage = () => {
 
         try {
             // Send data to Laravel backend
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch('http://127.0.0.1:8000/api/projects', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                },
-                body: JSON.stringify({
-                    ...analysisData,
-                    name: projectData.name,
-                    description: projectData.description,
-                    status: 'pending' // Initialize as pending
-                }),
+            // Send data to Laravel backend
+            const result = await createProject({
+                ...analysisData,
+                name: projectData.name,
+                description: projectData.description,
+                status: 'pending' // Initialize as pending
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Synchronization failed');
-            }
 
-            const result = await response.json();
             console.log('Project Synced:', result);
 
             // Notify success instead of navigating

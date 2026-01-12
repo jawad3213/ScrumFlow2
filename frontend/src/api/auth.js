@@ -1,4 +1,5 @@
 import client from './client';
+import StorageService from '@/utils/storage';
 
 export const login = (credentials) => {
   return client('/login', { body: credentials });
@@ -13,7 +14,5 @@ export const resetPassword = (data) => {
 };
 
 export const logout = () => {
-  localStorage.removeItem('auth_token');
-  localStorage.removeItem('user_role');
-  localStorage.removeItem('user');
+  StorageService.clearAuth();
 };

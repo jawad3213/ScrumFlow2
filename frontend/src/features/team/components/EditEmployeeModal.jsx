@@ -9,7 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from 'lucide-react';
-import { getSpecializations, updateEmployee } from '@/api';
+import { useUpdateEmployee } from '@/hooks/useEmployeesQuery';
+import { useSpecializations } from '@/hooks/useSpecializationsQuery';
 import { isEmpty } from '@/utils';
 import {
     Select,
@@ -18,11 +19,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { LEVEL_ORDER } from '@/constants/roles';
+import { LEVEL_ORDER } from '@/utils/constants';
 
 const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) => {
-    const [loading, setLoading] = useState(false);
-    const [specializations, setSpecializations] = useState([]);
+    const { mutate: updateEmployeeMember, isPending: loading } = useUpdateEmployee();
+    const { data: specializations = [] } = useSpecializations();
+
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -48,21 +50,6 @@ const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) 
         }
     }, [employee]);
 
-    useEffect(() => {
-        if (open) {
-            fetchSpecializations();
-        }
-    }, [open]);
-
-    const fetchSpecializations = async () => {
-        try {
-            const data = await getSpecializations();
-            setSpecializations(data);
-        } catch (error) {
-            console.error("Error fetching specializations:", error);
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
@@ -78,7 +65,7 @@ const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) 
             return;
         }
 
-        setLoading(true);
+
         setError(null);
 
         const { email, is_engaged, ...rest } = formData;
@@ -87,15 +74,15 @@ const EditEmployeeModal = ({ employee, open, onOpenChange, onEmployeeUpdated }) 
             is_engaged: is_engaged === 'true'
         };
 
-        try {
-            await updateEmployee(employee.id, updateData);
-            onEmployeeUpdated();
-            onOpenChange(false);
-        } catch (error) {
-            setError(error || "Something went wrong");
-        } finally {
-            setLoading(false);
-        }
+        updateEmployeeMember({ id: employee.id, data: updateData }, {
+            onSuccess: () => {
+                onEmployeeUpdated?.();
+                onOpenChange(false);
+            },
+            onError: (err) => {
+                setError(err.message || err || "Something went wrong");
+            }
+        });
     };
 
     return (

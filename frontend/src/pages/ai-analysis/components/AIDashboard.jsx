@@ -3,81 +3,11 @@ import { Users, DollarSign, TrendingUp, Shield, Cloud, Settings, Info, ArrowUpRi
 import { motion } from 'framer-motion';
 import { BlurReveal } from '@/components/ui/blur-reveal';
 import { MouseEffect } from '@/components/ui/mouse-effect';
+import FinancialCard from '@/components/shared/FinancialCard';
+import SectionHeader from '@/components/shared/SectionHeader';
+import SimpleTableRow from '@/components/shared/SimpleTableRow';
 
-const FinancialCard = ({ title, value, icon: Icon, color, subtitle, isCurrency = true, precision = 2 }) => {
-    const colorMap = {
-        primary: 'brand-primary',
-        brand: 'brand-primary',
-        amber: 'amber',
-        cyan: 'cyan',
-        emerald: 'emerald',
-        rose: 'rose'
-    };
 
-    const baseColor = colorMap[color] || 'brand-primary';
-
-    return (
-        <div className="bg-white border border-neutral-100 rounded-2xl p-6 relative overflow-hidden group shadow-subtle">
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-${baseColor}-500/5 blur-3xl -mr-16 -mt-16 transition-all group-hover:bg-${baseColor}-500/10`}></div>
-            <div className="flex justify-between items-start relative z-10 gap-4">
-                <div className="space-y-1 min-w-0 flex-1">
-                    <p className="text-[9px] font-black text-neutral-400 uppercase tracking-widest truncate">{title}</p>
-                    <h3 className="text-2xl font-black text-neutral-900 tracking-tight leading-tight">
-                        {typeof value === 'number' ? value.toLocaleString('fr-FR', { minimumFractionDigits: precision, maximumFractionDigits: precision }) : value}
-                        {isCurrency && <span className="text-[10px] font-bold text-neutral-400 ml-1">MAD</span>}
-                    </h3>
-                    {subtitle && <p className="text-[10px] text-neutral-400 font-medium leading-tight truncate">{subtitle}</p>}
-                </div>
-                <div className={`p-3 bg-${baseColor}-50 rounded-xl text-${baseColor}-500 shrink-0`}>
-                    <Icon size={20} />
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const SectionHeader = ({ title, icon: Icon, color }) => {
-    const colorMap = {
-        primary: 'brand-primary',
-        brand: 'brand-primary',
-        indigo: 'indigo',
-        cyan: 'cyan',
-        amber: 'amber',
-        emerald: 'emerald'
-    };
-    const baseColor = colorMap[color] || 'brand-primary';
-
-    return (
-        <div className="flex items-center gap-3 mb-6">
-            <div className={`p-2 bg-${baseColor}-50 rounded-lg text-${baseColor}-500 shadow-sm border border-${baseColor}-100`}>
-                <Icon size={18} />
-            </div>
-            <h2 className="text-sm font-black text-neutral-900 tracking-[0.05em] uppercase">{title}</h2>
-        </div>
-    );
-};
-
-const TableRow = ({ name, detail, cost, formula }) => (
-    <div className="flex items-center justify-between py-4 border-b border-neutral-50 last:border-0 hover:bg-brand-primary-50/30 transition-all px-3 rounded-2xl group cursor-default">
-        <div className="flex flex-col gap-0.5">
-            <span className="text-[13px] font-bold text-neutral-900 leading-none">{name}</span>
-            {detail && <span className="text-[10px] text-neutral-400 font-medium">{detail}</span>}
-            {formula && (
-                <div className="flex items-center gap-1.5 mt-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <div className="w-3 h-[1px]" style={{ backgroundColor: '#5d5fef' }}></div>
-                    <span className="text-[9px] font-mono italic" style={{ color: '#5d5fef' }}>{formula}</span>
-                </div>
-            )}
-        </div>
-        <div className="text-right">
-            <div className="flex flex-col items-end">
-                <span className="text-[13px] font-black text-neutral-900 group-hover:text-brand-primary-600 transition-colors tracking-tight">
-                    {Number(cost).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-[9px] text-neutral-400 ml-0.5">MAD</span>
-                </span>
-            </div>
-        </div>
-    </div>
-);
 
 const AIDashboard = ({ data }) => {
     if (!data) return null;
@@ -243,7 +173,7 @@ const AIDashboard = ({ data }) => {
                                 </h4>
                                 <div className="space-y-1">
                                     {Array.isArray(data.selected_engineers) && data.selected_engineers.map((eng, idx) => (
-                                        <TableRow
+                                        <SimpleTableRow
                                             key={idx}
                                             name={eng.role}
                                             detail={`${eng.level} • ${eng.months_assigned} months`}
@@ -260,7 +190,7 @@ const AIDashboard = ({ data }) => {
                                 </h4>
                                 <div className="space-y-1">
                                     {Array.isArray(data.licenses_and_apis) && data.licenses_and_apis.map((item, idx) => (
-                                        <TableRow
+                                        <SimpleTableRow
                                             key={idx}
                                             name={item.item_name}
                                             detail={item.description}
@@ -304,7 +234,7 @@ const AIDashboard = ({ data }) => {
                                 </h4>
                                 <div className="space-y-1">
                                     {Array.isArray(data.maintenance_engineers) && data.maintenance_engineers.map((eng, idx) => (
-                                        <TableRow
+                                        <SimpleTableRow
                                             key={idx}
                                             name={eng.role}
                                             detail={`${eng.level} • Recurring`}
@@ -321,7 +251,7 @@ const AIDashboard = ({ data }) => {
                                 </h4>
                                 <div className="space-y-1">
                                     {Array.isArray(data.cloud_subscription) && data.cloud_subscription.map((item, idx) => (
-                                        <TableRow
+                                        <SimpleTableRow
                                             key={idx}
                                             name={item.item_name}
                                             detail={item.description}

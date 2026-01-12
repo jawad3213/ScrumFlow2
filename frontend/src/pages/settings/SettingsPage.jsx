@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import StorageService from '@/utils/storage';
 import { motion } from 'framer-motion';
 import { Save, Key, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,8 +12,8 @@ const SettingsPage = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Load key from localStorage on mount
-        const storedKey = localStorage.getItem('gemini_api_key');
+        // Load key from StorageService on mount
+        const storedKey = StorageService.getGeminiKey();
         if (storedKey) {
             setApiKey(storedKey);
         }
@@ -25,7 +26,7 @@ const SettingsPage = () => {
         }
 
         try {
-            localStorage.setItem('gemini_api_key', apiKey.trim());
+            StorageService.setGeminiKey(apiKey.trim());
             setIsSaved(true);
             setError(null);
 

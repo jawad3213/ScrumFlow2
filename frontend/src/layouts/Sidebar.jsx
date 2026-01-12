@@ -22,8 +22,8 @@ import {
     Code
 } from 'lucide-react';
 import { cn } from '../utils/utils';
-import logo from '@/assets/login/logo.png';
-import logoMini from '@/assets/login/logo-mini.png';
+import logo from '@/assets/genralLogo.png';
+import logoMini from '@/assets/MiniLogo.png';
 import {
     Command,
     CommandEmpty,
@@ -44,6 +44,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { BASE_URL } from '@/utils/api';
+import { USER_ROLES } from '@/utils/constants';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useProject } from '@/hooks/useProject';
@@ -94,7 +96,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     const [isLoadingProjects, setIsLoadingProjects] = useState(false);
 
     useEffect(() => {
-        if (userRole === 'chef') {
+        if (userRole === USER_ROLES.MANAGER) {
             const fetchProjects = async () => {
                 setIsLoadingProjects(true);
                 try {
@@ -182,7 +184,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 </div>
 
                 {/* Chef Project Switcher */}
-                {userRole === 'chef' && (
+                {userRole === USER_ROLES.MANAGER && (
                     <>
                         <div className={cn("pt-6", collapsed ? "px-2 flex justify-center" : "px-4")}>
                             {!collapsed && (
@@ -331,7 +333,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
                 <div className="flex-1 overflow-y-auto py-4 scrollbar-thin">
                     <nav className="grid items-start px-4 text-sm font-medium gap-1">
-                        {userRole === 'chef' ? (
+                        {userRole === USER_ROLES.MANAGER ? (
                             renderChefNavigation()
                         ) : (
                             <>
@@ -355,7 +357,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     )}>
                         <div className="relative">
                             <img
-                                src={user?.avatar ? `http://127.0.0.1:8000/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
+                                src={user?.avatar ? `${BASE_URL}/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
                                 alt="Avatar"
                                 className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
                             />
@@ -368,7 +370,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                                     {user?.first_name} {user?.last_name}
                                 </p>
                                 <p className="text-[10px] text-neutral-500 truncate uppercase font-black tracking-widest">
-                                    {userRole === 'chef' ? 'Manager' : 'Team'}
+                                    {userRole === USER_ROLES.MANAGER ? 'Manager' : 'Team'}
                                 </p>
                             </div>
                         )}

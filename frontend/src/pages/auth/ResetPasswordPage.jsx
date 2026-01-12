@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Activity, Eye, EyeOff, Check, X, Loader2, ArrowLeft } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { resetPassword } from '@/api';
-import logo from '@/assets/login/logo.png';
-import illustrationAlt from '@/assets/login/illustration-alt.png';
+import logo from '@/assets/genralLogo.png';
+import illustrationAlt from '@/assets/illustrationLogin2.png';
 
 const ResetPasswordPage = () => {
     const [searchParams] = useSearchParams();

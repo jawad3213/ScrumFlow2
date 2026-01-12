@@ -1,11 +1,11 @@
 import React, { useState, forwardRef, useImperativeHandle, useMemo, useCallback, useRef, useEffect } from 'react';
-import { DataTable } from './data-table';
+import { DataTable } from '@/components/shared/DataTable';
 import { specializationColumns } from './SpecializationColumns';
 import { Database, ChevronLeft, ChevronRight } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 import EditSpecializationModal from './EditSpecializationModal';
 import DeleteSpecializationModal from './DeleteSpecializationModal';
-import BulkDeleteModal from './BulkDeleteModal';
+import BulkDeleteModal from '@/components/shared/BulkDeleteModal';
 import { bulkDeleteSpecializations } from '@/api';
 
 const SpecializationTable = forwardRef(({ data, onRefresh, onSelectionChange }, ref) => {

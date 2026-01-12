@@ -4,7 +4,7 @@ export const updateAvatar = (formData) => {
     return client('/profile/avatar', {
         method: 'POST',
         body: formData,
-        headers: {}, // Let fetch set the boundary for FormData
+        headers: {}, // Let Axios/Browser set the boundary for FormData
     });
 };
 

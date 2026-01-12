@@ -1,58 +1,75 @@
+import axios from 'axios';
+import { toast } from 'sonner';
 import API_BASE_URL from '@/utils/api';
+import StorageService from '@/utils/storage';
 
-const client = async (endpoint, { body, ...customConfig } = {}) => {
-  const token = localStorage.getItem('auth_token');
-  
-  const headers = {
+const axiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-  };
+  },
+});
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+// Request Interceptor
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = StorageService.getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response Interceptor
+axiosInstance.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+       const originalRequest = error.config;
+       // Avoid infinite loops if login itself fails or we are already identifying a login attempt
+       if (originalRequest.url && !originalRequest.url.includes('/login')) {
+           StorageService.clearAuth();
+           window.location.assign('/login');
+       }
+    }
+
+    // Return a consistent error message format
+    const message = error.response?.data?.message || error.message || 'Something went wrong';
+    
+    // Global Error Toaster
+    if (error.response?.status >= 500) {
+        toast.error('Server Error', { description: message });
+    } else if (error.code === 'ERR_NETWORK') {
+        toast.error('Network Error', { description: 'Please check your connection.' });
+    }
+
+    return Promise.reject(message);
   }
+);
 
+/**
+ * Wrapper function to maintain backward compatibility with the existing client signature.
+ * @param {string} endpoint - The API endpoint (e.g., '/projects').
+ * @param {object} config - Configuration object { body, ...customConfig }.
+ */
+const client = async (endpoint, { body, ...customConfig } = {}) => {
   const config = {
-    method: body ? 'POST' : 'GET',
     ...customConfig,
-    headers: {
-      ...headers,
-      ...customConfig.headers,
-    },
+    url: endpoint,
+    method: customConfig.method || (body ? 'POST' : 'GET'),
+    data: body,
   };
 
-  if (body) {
-    if (body instanceof FormData) {
-      config.body = body;
-      // Remove Content-Type to let the browser set it with boundary
-      delete config.headers['Content-Type'];
-    } else {
-      config.body = JSON.stringify(body);
-    }
+  if (body instanceof FormData) {
+     // Let Axios/Browser handle Content-Type for FormData to strictly set the boundary
+     if (!config.headers) config.headers = {};
+     config.headers['Content-Type'] = undefined; 
   }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    
-    if (response.status === 401 && endpoint !== '/login') {
-      // Handle unauthorized
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_role');
-      localStorage.removeItem('user');
-      window.location.assign('/login');
-      return;
-    }
-
-    const data = await response.json();
-    
-    if (response.ok) {
-      return data;
-    }
-    
-    throw new Error(data.message || 'Something went wrong');
-  } catch (error) {
-    return Promise.reject(error.message || error);
-  }
+  return axiosInstance(config);
 };
 
 export default client;

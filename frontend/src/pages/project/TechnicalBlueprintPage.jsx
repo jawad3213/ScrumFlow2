@@ -30,11 +30,12 @@ import {
 } from 'lucide-react';
 
 import { getProject, updateProject } from '@/api/projects';
+import { analyzeBacklog } from '@/api/ai';
 import { BlurReveal } from '@/components/ui/blur-reveal';
 import { MouseEffect } from '@/components/ui/mouse-effect';
 import { MagicCard } from '@/components/ui/magic-card';
 import { cn } from '@/utils/utils';
-import axios from 'axios';
+import StorageService from '@/utils/storage';
 
 // AI Analysis Components
 import RequirementUpload from '../ai-analysis/components/RequirementUpload';
@@ -198,7 +199,7 @@ const STEPS = [
     { id: 4, title: "Blueprint", icon: TrendingUp }
 ];
 
-const ANALYZE_API_URL = 'http://127.0.0.1:8001';
+
 
 const slideVariants = {
     enter: (direction) => ({
@@ -241,7 +242,7 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
     const [validationError, setValidationError] = useState(null);
 
     // Form inputs
-    const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
+    const [apiKey, setApiKey] = useState(StorageService.getGeminiKey() || '');
     const [employeePool, setEmployeePool] = useState(
         (initialData?.assigned_engineers && initialData.assigned_engineers.length > 0)
             ? initialData.assigned_engineers
@@ -295,7 +296,7 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
 
     const handleApiKeyChange = (key) => {
         setApiKey(key);
-        localStorage.setItem('gemini_api_key', key);
+        StorageService.setGeminiKey(key);
     };
 
     const handleAnalysis = async (file) => {
@@ -316,8 +317,8 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
         formData.append('api_key', apiKey);
 
         try {
-            const response = await axios.post(`${ANALYZE_API_URL}/analyze-backlog`, formData);
-            setStaffingData(response.data);
+            const data = await analyzeBacklog(formData);
+            setStaffingData(data);
             setDirection(1);
             setCurrentStep(4);
         } catch (err) {

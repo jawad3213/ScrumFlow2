@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Activity, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import logo from '@/assets/login/logo.png';
-import illustrationMain from '@/assets/login/illustration-main.png';
+import logo from '@/assets/genralLogo.png';
+import illustrationMain from '@/assets/illustrationLogin1.png';
 import { isValidEmail } from '@/utils';
 
 const LoginPage = () => {

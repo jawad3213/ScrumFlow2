@@ -1,12 +1,12 @@
 import React, { useState, forwardRef, useImperativeHandle, useRef, useMemo, useCallback, useEffect } from 'react';
-import { DataTable } from './data-table';
+import { DataTable } from '@/components/shared/DataTable';
 import { columns } from './columns';
 import EditEmployeeModal from './EditEmployeeModal';
 import DeleteEmployeeModal from './DeleteEmployeeModal';
 import AddEmployeeModal from './AddEmployeeModal';
 import { Users, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
-import BulkDeleteModal from './BulkDeleteModal';
+import BulkDeleteModal from '@/components/shared/BulkDeleteModal';
 import { deleteEmployee, bulkDeleteEmployees } from '@/api';
 
 const TeamTable = forwardRef(({ data, specializations, onRefresh, onSelectionChange }, ref) => {

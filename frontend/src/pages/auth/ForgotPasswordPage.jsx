@@ -3,8 +3,8 @@ import { Activity, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '@/api';
 import { isValidEmail } from '@/utils';
-import logo from '@/assets/login/logo.png';
-import illustrationAlt from '@/assets/login/illustration-alt.png';
+import logo from '@/assets/genralLogo.png';
+import illustrationAlt from '@/assets/illustrationLogin2.png';
 
 const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');

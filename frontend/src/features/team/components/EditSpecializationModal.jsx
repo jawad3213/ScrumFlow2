@@ -19,7 +19,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-import { ROLE_LEVELS, ALL_ROLES } from '@/constants/roles';
+import { ROLE_LEVELS, ALL_ROLES } from '@/utils/constants';
 
 const EditSpecializationModal = ({ specialization, open, onOpenChange, onSpecializationUpdated }) => {
     const [loading, setLoading] = useState(false);

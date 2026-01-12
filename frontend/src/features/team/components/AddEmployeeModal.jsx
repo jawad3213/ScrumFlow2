@@ -20,7 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { LEVEL_ORDER } from '@/constants/roles';
+import { LEVEL_ORDER } from '@/utils/constants';
 
 const AddEmployeeModal = ({ onEmployeeAdded, variant = "default", open: controlledOpen, onOpenChange: setControlledOpen, showTrigger = true }) => {
     const [internalOpen, setInternalOpen] = useState(false);

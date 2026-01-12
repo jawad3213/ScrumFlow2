@@ -1,52 +1,33 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import TeamTable from '@/features/team/components/TeamTable';
 import SpecializationTable from '@/features/team/components/SpecializationTable';
 import AddEmployeeModal from '@/features/team/components/AddEmployeeModal';
 import AddSpecializationModal from '@/features/team/components/AddSpecializationModal';
-import { Plus, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { useRef } from 'react';
-import { EmployeeService } from '@/services';
+import { useEmployees } from '@/hooks/useEmployeesQuery';
+import { useSpecializations } from '@/hooks/useSpecializationsQuery';
 
 const TeamPage = () => {
     const { id } = useParams();
-    const [teamMembers, setTeamMembers] = useState([]);
-    const [specializations, setSpecializations] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("employees");
     const [selectedCount, setSelectedCount] = useState(0);
 
     const teamTableRef = useRef();
     const specializationTableRef = useRef();
 
+    const { data: teamMembers = [], isLoading: loadingEmployees, refetch: refetchEmployees } = useEmployees();
+    const { data: specializations = [], isLoading: loadingSpecs, refetch: refetchSpecializations } = useSpecializations();
+
+    const loading = loadingEmployees || loadingSpecs;
+
     const handleSelectionChange = useCallback((rows) => setSelectedCount(rows.length), []);
 
-    const loadAllData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const { employees, specializations } = await EmployeeService.getTeamData();
-            setTeamMembers(employees);
-            setSpecializations(specializations);
-        } catch (error) {
-            console.error("Error loading team data:", error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (!id) {
-            loadAllData();
-        } else {
-            setLoading(false);
-        }
-    }, [id, loadAllData]);
-
-    const handleEmployeeAdded = () => loadAllData();
-    const handleSpecializationAdded = () => loadAllData();
+    const handleEmployeeAdded = () => refetchEmployees();
+    const handleSpecializationAdded = () => refetchSpecializations();
 
     return (
         <div className="space-y-6 animate-in fade-in duration-default ease-soft">
@@ -111,7 +92,7 @@ const TeamPage = () => {
                                 ref={teamTableRef}
                                 data={teamMembers}
                                 specializations={specializations}
-                                onRefresh={loadAllData}
+                                onRefresh={refetchEmployees}
                                 onSelectionChange={handleSelectionChange}
                             />
                         </TabsContent>
@@ -120,7 +101,7 @@ const TeamPage = () => {
                             <SpecializationTable
                                 ref={specializationTableRef}
                                 data={specializations}
-                                onRefresh={loadAllData}
+                                onRefresh={refetchSpecializations}
                                 onSelectionChange={handleSelectionChange}
                             />
                         </TabsContent>

@@ -20,7 +20,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-import { ROLE_LEVELS, ALL_ROLES } from '@/constants/roles';
+import { ROLE_LEVELS, ALL_ROLES } from '@/utils/constants';
 
 const AddSpecializationModal = ({ onSpecializationAdded, variant = "default" }) => {
     const [open, setOpen] = useState(false);

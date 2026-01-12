@@ -15,14 +15,16 @@ import {
     Target
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 
 import client from '@/api/client';
+import { analyzeStaffing } from '@/api/ai';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/utils/utils';
+import StorageService from '@/utils/storage';
 
 // New Modular Components
 import ResourcePool from './components/ResourcePool';
@@ -32,8 +34,8 @@ import StaffingStrategy from './components/StaffingStrategy';
 import RequirementUpload from './components/RequirementUpload';
 import AIDashboard from './components/AIDashboard';
 
-import teamChecklistImg from '@/assets/login/team checklist-pana.png';
-import team1Img from '@/assets/login/team1.png';
+import teamChecklistImg from '@/assets/NormalSelction.png';
+import team1Img from '@/assets/AgenceSelection.png';
 import SiriOrb from '@/components/ui/SiriOrb';
 
 const STEPS = [
@@ -44,7 +46,7 @@ const STEPS = [
     { id: 5, title: "Blueprint", icon: TrendingUp }
 ];
 
-const ANALYZE_API_URL = 'http://127.0.0.1:8001';
+
 
 // --- Animation Variants ---
 const slideVariants = {
@@ -101,7 +103,7 @@ const NewProjectPage = () => {
         description: '',
     });
 
-    const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
+    const [apiKey, setApiKey] = useState(StorageService.getGeminiKey() || '');
     const [employeePool, setEmployeePool] = useState([
         { role: "Backend Developer", level: "Senior", salary: 30000 },
         { role: "Frontend Developer", level: "Mid-level", salary: 20000 },
@@ -157,7 +159,7 @@ const NewProjectPage = () => {
 
     const handleApiKeyChange = (key) => {
         setApiKey(key);
-        localStorage.setItem('gemini_api_key', key);
+        StorageService.setGeminiKey(key);
     };
 
     const handleAnalysis = async (file) => {
@@ -175,8 +177,8 @@ const NewProjectPage = () => {
         formData.append('api_key', apiKey);
 
         try {
-            const response = await axios.post(`${ANALYZE_API_URL}/analyze-staffing`, formData);
-            setStaffingData(response.data);
+            const data = await analyzeStaffing(formData);
+            setStaffingData(data);
             setDirection(1);
             setCurrentStep(5);
         } catch (err) {

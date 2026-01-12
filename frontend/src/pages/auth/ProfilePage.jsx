@@ -19,6 +19,8 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/utils/utils';
+import { BASE_URL } from '@/utils/api';
+import { USER_ROLES } from '@/utils/constants';
 
 const ProfilePage = () => {
     const { user, userRole, updateUser } = useAuth();
@@ -142,7 +144,7 @@ const ProfilePage = () => {
                                     onChange={handlePhotoUpload}
                                 />
                                 <img
-                                    src={user?.avatar ? `http://127.0.0.1:8000/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
+                                    src={user?.avatar ? `${BASE_URL}/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
                                     alt="Avatar"
                                     className="w-32 h-32 rounded-3xl object-cover bg-white border-4 border-white shadow-xl mb-4 group-hover:scale-[1.02] transition-transform duration-500"
                                 />
@@ -161,7 +163,7 @@ const ProfilePage = () => {
 
                             <div className="mt-4 flex flex-wrap justify-center gap-2">
                                 <Badge variant="secondary" className="bg-brand-primary-50 text-brand-primary-700 border-brand-primary-100 py-1 px-3 rounded-lg font-bold">
-                                    {userRole === 'chef' ? 'Project Manager' : 'Team Member'}
+                                    {userRole === USER_ROLES.MANAGER ? 'Project Manager' : 'Team Member'}
                                 </Badge>
                                 <Badge variant="secondary" className="bg-success-50 text-success-700 border-success-100 py-1 px-3 rounded-lg font-bold">
                                     Active
