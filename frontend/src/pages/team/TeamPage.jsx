@@ -8,8 +8,8 @@ import { Trash2 } from 'lucide-react';
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { useEmployees } from '@/hooks/useEmployeesQuery';
-import { useSpecializations } from '@/hooks/useSpecializationsQuery';
+import { useEmployees } from '@/features/team/api/useEmployeesQuery';
+import { useSpecializations } from '@/features/team/api/useSpecializationsQuery';
 
 const TeamPage = () => {
     const { id } = useParams();

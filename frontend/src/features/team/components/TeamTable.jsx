@@ -2,12 +2,12 @@ import React, { useState, forwardRef, useImperativeHandle, useRef, useMemo, useC
 import { DataTable } from '@/components/shared/DataTable';
 import { columns } from './columns';
 import EditEmployeeModal from './EditEmployeeModal';
-import DeleteEmployeeModal from './DeleteEmployeeModal';
 import AddEmployeeModal from './AddEmployeeModal';
+import ConfirmDeleteModal from '@/components/shared/ConfirmDeleteModal';
 import { Users, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 import BulkDeleteModal from '@/components/shared/BulkDeleteModal';
-import { deleteEmployee, bulkDeleteEmployees } from '@/api';
+import { deleteEmployee, bulkDeleteEmployees } from '@/features/team/api/employees';
 
 const TeamTable = forwardRef(({ data, specializations, onRefresh, onSelectionChange }, ref) => {
     const [editingEmployee, setEditingEmployee] = useState(null);
@@ -222,11 +222,18 @@ const TeamTable = forwardRef(({ data, specializations, onRefresh, onSelectionCha
                         onEmployeeUpdated={onRefresh}
                     />
                 )}
-                <DeleteEmployeeModal
-                    employee={deletingEmployee}
+                <ConfirmDeleteModal
                     open={isDeleteModalOpen}
                     onOpenChange={setIsDeleteModalOpen}
-                    onConfirm={handleDeleteConfirm}
+                    onConfirm={() => handleDeleteConfirm(deletingEmployee?.id)}
+                    title="Delete Member?"
+                    description={
+                        <span>
+                            This action cannot be undone. This will permanently delete <strong>{deletingEmployee?.name}</strong> and remove their data from our servers.
+                        </span>
+                    }
+                    confirmText="Confirm Deletion"
+                    cancelText="Keep User"
                 />
                 <AddEmployeeModal
                     open={isAddModalOpen}

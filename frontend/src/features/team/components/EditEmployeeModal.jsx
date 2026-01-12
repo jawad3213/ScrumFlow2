@@ -9,8 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from 'lucide-react';
-import { useUpdateEmployee } from '@/hooks/useEmployeesQuery';
-import { useSpecializations } from '@/hooks/useSpecializationsQuery';
+import { useUpdateEmployee } from '@/features/team/api/useEmployeesQuery';
+import { useSpecializations } from '@/features/team/api/useSpecializationsQuery';
 import { isEmpty } from '@/utils';
 import {
     Select,

@@ -11,7 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Loader2, CheckCircle2 } from 'lucide-react';
-import { getSpecializations, createEmployee } from '@/api';
+import { getSpecializations } from '@/features/team/api/specializations';
+import { createEmployee } from '@/features/team/api/employees';
 import { isValidEmail, isEmpty } from '@/utils';
 import {
     Select,

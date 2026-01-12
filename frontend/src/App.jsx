@@ -15,15 +15,15 @@ import ProfilePage from './pages/auth/ProfilePage';
 
 // Pages - Dashboard & Hub
 import DashboardPage from './pages/dashboard/DashboardPage';
-import NewProjectPage from './pages/ai-analysis/NewProjectPage';
+import NewProjectPage from './pages/NewProjectAnalysis/NewProjectPage';
 import ProjectDashboardPage from './pages/dashboard/ProjectDashboardPage';
 import NotificationsPage from './pages/dashboard/NotificationsPage';
 
 
 // Pages - Backlog & Analysis
 
-import AnalysisPage from './pages/ai-analysis/AnalysisPage';
-import ProjectDeepDive from './pages/project/ProjectDeepDive';
+import AnalysisPage from './pages/NewProjectAnalysis/AnalysisPage';
+import StrategicBlueprint from './pages/project/StrategicBlueprint';
 import TechnicalBlueprintPage from './pages/project/TechnicalBlueprintPage';
 
 // Pages - Team & Admin
@@ -72,7 +72,7 @@ function App() {
           <Route path="/project/:id" element={<ProjectLayout />}>
             {/* Common Project Views */}
             <Route index element={<ProjectDashboardPage />} />
-            <Route path="hub" element={<ProjectDeepDive />} />
+            <Route path="hub" element={<StrategicBlueprint />} />
             <Route path="blueprint" element={<TechnicalBlueprintPage />} />
 
             {/* Manager Protected Project Views */}

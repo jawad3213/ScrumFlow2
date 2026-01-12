@@ -4,9 +4,9 @@ import { specializationColumns } from './SpecializationColumns';
 import { Database, ChevronLeft, ChevronRight } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 import EditSpecializationModal from './EditSpecializationModal';
-import DeleteSpecializationModal from './DeleteSpecializationModal';
+import ConfirmDeleteModal from '@/components/shared/ConfirmDeleteModal';
 import BulkDeleteModal from '@/components/shared/BulkDeleteModal';
-import { bulkDeleteSpecializations } from '@/api';
+import { bulkDeleteSpecializations, deleteSpecialization } from '@/features/team/api/specializations';
 
 const SpecializationTable = forwardRef(({ data, onRefresh, onSelectionChange }, ref) => {
     const [editingSpec, setEditingSpec] = useState(null);
@@ -159,11 +159,21 @@ const SpecializationTable = forwardRef(({ data, onRefresh, onSelectionChange }, 
                 />
             )}
             {deletingSpec && (
-                <DeleteSpecializationModal
-                    specialization={deletingSpec}
+                <ConfirmDeleteModal
                     open={!!deletingSpec}
                     onOpenChange={(open) => !open && setDeletingSpec(null)}
-                    onSpecializationDeleted={onRefresh}
+                    onConfirm={async () => {
+                        await deleteSpecialization(deletingSpec.id);
+                        onRefresh();
+                    }}
+                    title="Delete Role?"
+                    description={
+                        <span>
+                            This action cannot be undone. You are deleting <span className="font-bold text-neutral-900">{deletingSpec?.name} ({deletingSpec?.level})</span>. This may affect assigned team members.
+                        </span>
+                    }
+                    confirmText="Confirm Deletion"
+                    cancelText="Keep Role"
                 />
             )}
             <BulkDeleteModal

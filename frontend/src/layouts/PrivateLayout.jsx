@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import { cn } from '../utils/utils';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 const PrivateLayout = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);

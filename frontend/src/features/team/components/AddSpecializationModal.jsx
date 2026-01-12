@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Loader2, CheckCircle2 } from 'lucide-react';
-import { createSpecialization } from '@/api';
+import { createSpecialization } from '@/features/team/api/specializations';
 import { isEmpty } from '@/utils';
 import {
     Select,

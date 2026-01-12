@@ -25,7 +25,7 @@ import {
     Save,
     RefreshCw
 } from 'lucide-react';
-import testData from '../ai-analysis/test_data.json';
+import testData from '../NewProjectAnalysis/test_data.json';
 import { BlurReveal } from '@/components/ui/blur-reveal';
 import { MouseEffect } from '@/components/ui/mouse-effect';
 import { MagicCard } from '@/components/ui/magic-card';

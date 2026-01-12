@@ -47,9 +47,9 @@ import {
 import { BASE_URL } from '@/utils/api';
 import { USER_ROLES } from '@/utils/constants';
 
-import { useAuth } from '@/hooks/useAuth';
-import { useProject } from '@/hooks/useProject';
-import { getProjects } from '@/api/projects';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useProject } from '@/features/projects/api/useProject';
+import { getProjects } from '@/features/projects/api/projects';
 
 const navLinkClass = ({ isActive }) =>
     cn(

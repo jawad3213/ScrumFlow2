@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Search, Bell, User, Settings, LogOut, ChevronRight, Menu } from 'lucide-react';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { BASE_URL } from '@/utils/api';
 
 const Navbar = () => {
