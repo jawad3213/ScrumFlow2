@@ -22,7 +22,7 @@ const STEPS = [
     { id: 1, title: "Intro", icon: Info },
     { id: 2, title: "Baseline", icon: Rocket },
     { id: 3, title: "Scoping", icon: FileText },
-    { id: 4, title: "Blueprint", icon: TrendingUp }
+    { id: 4, title: "Analysis", icon: TrendingUp }
 ];
 
 const slideVariants = {
@@ -380,7 +380,7 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
                         animate={{ opacity: 1, scale: 1 }}
                         className="text-7xl font-black text-neutral-900 tracking-tighter leading-none"
                     >
-                        Technical <span className="text-brand-primary-500 italic">Blueprint</span>
+                        Technical <span className="text-brand-primary-500 italic">Analysis</span>
                     </motion.h1>
 
                     <motion.p
@@ -522,7 +522,7 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
                                                         <div className="bg-white/50 p-6 rounded-3xl">
                                                             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
                                                                 <div>
-                                                                    <h3 className="text-2xl font-black text-neutral-900 tracking-tight">Technical Blueprint Generated</h3>
+                                                                    <h3 className="text-2xl font-black text-neutral-900 tracking-tight">Technical Analysis Generated</h3>
                                                                     <p className="text-sm text-neutral-500 font-medium mt-2">Breakdown of Epics and User Stories.</p>
                                                                 </div>
                                                                 <motion.button
@@ -533,7 +533,7 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
                                                                     className="px-8 py-4 bg-brand-primary-500 hover:bg-brand-primary-600 text-white rounded-[20px] text-[11px] font-black uppercase tracking-[0.2em] shadow-lg shadow-brand-primary-500/30 transition-all flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                                                 >
                                                                     {isStoring ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                                                                    {isStoring ? 'Storing...' : 'Commit Blueprint'}
+                                                                    {isStoring ? 'Storing...' : 'Commit Analysis'}
                                                                 </motion.button>
                                                             </div>
                                                             {storeMessage && (

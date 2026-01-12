@@ -1,82 +1,107 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Wallet, Clock, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, Wallet, Clock, Target, Users, Award } from 'lucide-react';
 
-const StatCard = ({ title, value, subtext, icon: Icon, trend, trendValue, colorClass }) => (
-    <motion.div
-        whileHover={{ y: -2 }}
-        className="bg-white rounded-2xl p-5 border border-neutral-100 shadow-sm relative overflow-hidden group"
-    >
-        <div className={`absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity ${colorClass}`}>
-            <Icon size={48} />
-        </div>
-        <div className="flex justify-between items-start mb-4">
-            <div className={`p-2.5 rounded-xl ${colorClass} bg-opacity-10 text-opacity-100`}>
-                <Icon size={20} className={colorClass.replace('bg-', 'text-')} />
-            </div>
-            {trend && (
-                <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full ${trend === 'up' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                    {trend === 'up' ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                    {trendValue}
+const StatCard = ({ title, value, subtext, icon: Icon, color }) => {
+    const colorStyles = {
+        primary: { bg: 'bg-brand-primary-50', text: 'text-brand-primary-600', blob: 'bg-brand-primary-500/5' },
+        violet: { bg: 'bg-violet-50', text: 'text-violet-600', blob: 'bg-violet-500/5' },
+        emerald: { bg: 'bg-emerald-50', text: 'text-emerald-600', blob: 'bg-emerald-500/5' },
+        amber: { bg: 'bg-amber-50', text: 'text-amber-600', blob: 'bg-amber-500/5' },
+        rose: { bg: 'bg-rose-50', text: 'text-rose-600', blob: 'bg-rose-500/5' },
+        cyan: { bg: 'bg-cyan-50', text: 'text-cyan-600', blob: 'bg-cyan-500/5' },
+    }[color] || { bg: 'bg-brand-primary-50', text: 'text-brand-primary-600', blob: 'bg-brand-primary-500/5' };
+
+    return (
+        <motion.div
+            whileHover={{ y: -2 }}
+            className="bg-white border border-neutral-100 rounded-2xl p-4 relative overflow-hidden group shadow-sm hover:shadow-md transition-all h-full"
+        >
+            <div className={`absolute top-0 right-0 w-24 h-24 ${colorStyles.blob} blur-2xl -mr-10 -mt-10 transition-all group-hover:bg-opacity-100`} />
+
+            <div className="flex justify-between items-start relative z-10 gap-3">
+                <div className="flex-1 min-w-0">
+                    <p className="text-[9px] font-black text-neutral-400 uppercase tracking-widest truncate mb-1">{title}</p>
+                    <h3 className="text-xl font-black text-neutral-900 tracking-tight leading-none truncate" title={value}>
+                        {value}
+                    </h3>
+                    <p className="text-[10px] text-neutral-400 font-medium leading-tight mt-1.5 truncate" title={subtext}>{subtext}</p>
                 </div>
-            )}
-        </div>
-        <div>
-            <h4 className="text-neutral-500 text-xs font-bold uppercase tracking-wider mb-1">{title}</h4>
-            <div className="text-2xl font-black text-neutral-900 tracking-tight">{value}</div>
-            {subtext && <p className="text-[11px] text-neutral-400 font-medium mt-1">{subtext}</p>}
-        </div>
-    </motion.div>
-);
+
+                <div className={`p-2.5 rounded-xl ${colorStyles.bg} ${colorStyles.text} shrink-0`}>
+                    <Icon size={18} strokeWidth={2.5} />
+                </div>
+            </div>
+        </motion.div>
+    );
+};
 
 const ExecutivePulse = ({ project }) => {
     // Calculations
     const totalCost = parseFloat(project.total_project_cost || 0);
-    const totalGain = parseFloat(project.total_gain_value || 0);
-    const roi = parseFloat(project.roi_percentage || 0);
-    const efficiency = totalCost > 0 ? (totalGain / totalCost).toFixed(2) : "0.00";
 
-    // Duration
-    const startDate = new Date(project.start_date);
-    const endDate = new Date(project.actual_end_date);
-    const durationMonths = project.estimated_duration_months || 0;
+    // Calculate Gains from items to match Hub page
+    const estimatedGainsList = project.estimated_gains || project.estimatedGains || [];
+    const totalGain = estimatedGainsList.length > 0
+        ? estimatedGainsList.reduce((acc, item) => acc + parseFloat(item.cost_mad || 0), 0)
+        : parseFloat(project.total_gain_value || 0);
+
+    const breakEven = parseFloat(project.break_even_point_months || 0).toFixed(1);
+    const roi = parseFloat(project.roi_percentage || 0);
+    const duration = project.estimated_duration_months || 0;
+
+    // Team Size Calc
+    const engineers = project.assigned_engineers || project.assignedEngineers || [];
+    const teamSize = Array.isArray(engineers) ? engineers.length : 0;
+
+    // Formatting Helpers
+    const formatCurrency = (val) => val.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' MAD';
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             <StatCard
-                title="Project ROI"
-                value={`${roi}%`}
-                subtext={`Break-even in ${project.break_even_point_months || '?'} months`}
-                icon={TrendingUp}
-                trend={roi > 0 ? 'up' : 'down'}
-                trendValue="High Yield"
-                colorClass="bg-brand-primary-500 text-brand-primary-500"
+                title="Dev Duration"
+                value={`${duration} Months`}
+                subtext="Estimated timeline"
+                icon={Clock}
+                color="cyan"
             />
             <StatCard
                 title="Total Investment"
-                value={`$${(totalCost / 1000).toFixed(1)}k`}
-                subtext={`Capex: $${(project.total_capex / 1000).toFixed(0)}k | Opex: $${(project.total_opex / 1000).toFixed(0)}k`}
+                value={formatCurrency(totalCost)}
+                subtext="Initial CAPEX + Setup"
                 icon={Wallet}
-                colorClass="bg-violet-500 text-violet-500"
+                color="violet"
             />
             <StatCard
-                title="Efficiency Score"
-                value={`${efficiency}x`}
-                subtext={`$${(totalGain / 1000).toFixed(1)}k Total Value Generated`}
-                icon={Activity}
-                trend="up"
-                trendValue="Multiplier"
-                colorClass="bg-emerald-500 text-emerald-500"
+                title="Estimated Gains"
+                value={formatCurrency(totalGain)}
+                subtext="Annual Benefits"
+                icon={TrendingUp}
+                color="emerald"
             />
             <StatCard
-                title="Timeline"
-                value={`${durationMonths} Mo`}
-                subtext={`End: ${endDate.toLocaleDateString()}`}
-                icon={Clock}
-                colorClass="bg-amber-500 text-amber-500"
+                title="Break-even Point"
+                value={`${breakEven} Months`}
+                subtext="Recovery point"
+                icon={Target}
+                color="amber"
+            />
+            <StatCard
+                title="3-Year ROI"
+                value={`${roi}%`}
+                subtext="Net Efficiency"
+                icon={Award}
+                color={roi > 0 ? 'emerald' : 'rose'}
+            />
+            <StatCard
+                title="Team Dimension"
+                value={`${teamSize} Engineers`}
+                subtext="Active members"
+                icon={Users}
+                color="primary"
             />
         </div>
     );
 };
-
 export default ExecutivePulse;
