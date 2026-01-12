@@ -5,10 +5,10 @@ import json
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from staffing_service import generer_plan_staffing
-from staffing_schemas import ProjectFinancialPlan
-from backlog_service import analyser_cahier_des_charges_staffing
-from backlog_schemas import RapportAnalyseStaffing
+from services.staffing_service import generer_plan_staffing
+from schemas.staffing_schemas import ProjectFinancialPlan
+from services.backlog_service import analyser_cahier_des_charges_staffing
+from schemas.backlog_schemas import RapportAnalyseStaffing
 
 app = FastAPI()
 

@@ -19,7 +19,8 @@ import {
     Folder,
     Loader2,
     Sparkles,
-    Code
+    Code,
+    Layers
 } from 'lucide-react';
 import { cn } from '../utils/utils';
 import logo from '@/assets/genralLogo.png';
@@ -154,6 +155,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     <SidebarItem to={`/project/${projectId}`} icon={LayoutDashboard} label="Overview" collapsed={collapsed} end />
                     <SidebarItem to={`/project/${projectId}/hub`} icon={Sparkles} label="Strategic Blueprint" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/blueprint`} icon={Code} label="Technical Blueprint" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/stack`} icon={Layers} label="Stack Choice" collapsed={collapsed} />
 
 
                 </>

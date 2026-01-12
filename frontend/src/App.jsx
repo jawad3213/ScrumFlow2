@@ -25,6 +25,7 @@ import NotificationsPage from './pages/dashboard/NotificationsPage';
 import AnalysisPage from './pages/NewProjectAnalysis/AnalysisPage';
 import StrategicBlueprint from './pages/project/StrategicBlueprint';
 import TechnicalBlueprintPage from './pages/project/TechnicalBlueprintPage';
+import StackChoicePage from './pages/project/StackChoicePage';
 
 // Pages - Team & Admin
 import TeamPage from './pages/team/TeamPage';
@@ -74,6 +75,7 @@ function App() {
             <Route index element={<ProjectDashboardPage />} />
             <Route path="hub" element={<StrategicBlueprint />} />
             <Route path="blueprint" element={<TechnicalBlueprintPage />} />
+            <Route path="stack" element={<StackChoicePage />} />
 
             {/* Manager Protected Project Views */}
             <Route path="analysis" element={

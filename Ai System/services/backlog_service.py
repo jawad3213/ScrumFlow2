@@ -1,6 +1,6 @@
 import instructor
 import google.generativeai as genai
-from backlog_schemas import RapportAnalyseStaffing
+from schemas.backlog_schemas import RapportAnalyseStaffing
 
 def analyser_cahier_des_charges_staffing(
     text_content: str, 

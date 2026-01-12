@@ -1,7 +1,7 @@
 
 import instructor
 import google.generativeai as genai
-from staffing_schemas import ProjectFinancialPlan
+from schemas.staffing_schemas import ProjectFinancialPlan
 
 def generer_plan_staffing(project_text: str, employee_pool: str, api_key: str) -> ProjectFinancialPlan:
     print(">>> Generation du plan de staffing et financier (Gemini)...")
