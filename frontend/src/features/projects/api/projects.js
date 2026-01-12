@@ -12,3 +12,8 @@ export const updateProject = (id, data) => client(`/projects/${id}`, {
 });
 
 export const deleteProject = (id) => client(`/projects/${id}`, { method: 'DELETE' });
+
+export const saveProjectStack = (id, data) => client(`/projects/${id}/stack`, {
+    method: 'POST',
+    body: data
+});

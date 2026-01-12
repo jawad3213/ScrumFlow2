@@ -102,7 +102,7 @@ const TechnicalBlueprintPage = () => {
                 </div>
             )}
 
-            <div className="w-full flex-1 flex flex-col space-y-8">
+            <div className="w-full flex-1 flex flex-col space-y-8 bg-none">
                 <div className="block animate-in fade-in zoom-in-95 duration-200">
                     {projectData?.backlog && projectData.backlog.length > 0 ? (
                         <div className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm mt-4">

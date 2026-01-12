@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/projects', [\App\Http\Controllers\ProjectController::class, 'store']);
     Route::get('/projects/{id}', [\App\Http\Controllers\ProjectController::class, 'show']);
     Route::put('/projects/{id}', [\App\Http\Controllers\ProjectController::class, 'update']);
+    Route::post('/projects/{id}/stack', [\App\Http\Controllers\ProjectController::class, 'saveStack']);
     Route::delete('/projects/{id}', [\App\Http\Controllers\ProjectController::class, 'destroy']);
 
     // Juste pour tester que le token fonctionne

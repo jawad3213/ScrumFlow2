@@ -1,9 +1,11 @@
-import React from 'react';
+import { useParams } from 'react-router-dom';
 import StackChoiceView from '@/features/projects/components/StackChoiceView';
 
 const StackChoicePage = () => {
+    const { id } = useParams();
+
     return (
-        <StackChoiceView />
+        <StackChoiceView projectId={id} />
     );
 };
 

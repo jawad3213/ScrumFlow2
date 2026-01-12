@@ -199,7 +199,21 @@ const ProjectGenesisWizard = () => {
             }, 2000);
         } catch (err) {
             console.error('Store error:', err);
-            const errorMsg = err.response?.data?.message || 'Failed to synchronize with central database.';
+            // The client interceptor returns the error message string directly in 'err'
+            // But we handle both object (just in case) and string cases
+            let errorMsg = typeof err === 'string' ? err : (err.message || 'Failed to synchronize with central database.');
+
+            if (typeof err === 'object' && err.response?.data) {
+                const serverError = err.response.data.error; // The detailed exception from catch block
+                const serverMessage = err.response.data.message;
+
+                if (serverError) {
+                    errorMsg = `${serverMessage}: ${serverError}`;
+                } else if (serverMessage) {
+                    errorMsg = serverMessage;
+                }
+            }
+
             setStoreMessage({ type: 'error', text: errorMsg });
         } finally {
             setIsStoring(false);

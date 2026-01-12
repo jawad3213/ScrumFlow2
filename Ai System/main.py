@@ -9,6 +9,8 @@ from services.staffing_service import generer_plan_staffing
 from schemas.staffing_schemas import ProjectFinancialPlan
 from services.backlog_service import analyser_cahier_des_charges_staffing
 from schemas.backlog_schemas import RapportAnalyseStaffing
+from services.stackchoice_service import generate_stack_recommendation
+from schemas.stackchoice_schemas import ArchitectureAnalysisResponse
 
 app = FastAPI()
 
@@ -127,6 +129,50 @@ async def analyze_backlog(
         import traceback
         error_traceback = traceback.format_exc()
         print(f"FAILED Backlog Analysis Error:\n{error_traceback}")
+        detail_msg = f"[{type(e).__name__}] {str(e)}"
+        raise HTTPException(status_code=500, detail=detail_msg)
+
+@app.post("/analyze-stack")
+async def analyze_stack(
+    file: UploadFile = File(..., description="JSON file containing the project backlog"),
+    api_key: str = Form(...),
+):
+    """
+    Endpoint: Backlog JSON -> Architecture & Tech Stack Recommendations
+    """
+    if not api_key:
+        raise HTTPException(status_code=400, detail="API Key is required")
+
+    try:
+        # Read the uploaded JSON file content
+        content_bytes = await file.read()
+        try:
+            backlog_content = content_bytes.decode("utf-8")
+            # Quick validation that it is at least loadable json (optional but good practice)
+            json.loads(backlog_content) 
+        except Exception:
+             raise HTTPException(status_code=400, detail="Invalid JSON file provided.")
+
+        if not backlog_content.strip():
+             raise HTTPException(status_code=400, detail="Backlog file is empty.")
+
+        # 3. Generate Stack Recommendation
+        result: ArchitectureAnalysisResponse = generate_stack_recommendation(
+            backlog_json=backlog_content, 
+            api_key=api_key
+        )
+
+        output_dict = result.model_dump()
+        print("\n=== GEMINI STACK RESPONSE ===")
+        print(json.dumps(output_dict, indent=2))
+        print("=============================\n")
+
+        return output_dict
+
+    except Exception as e:
+        import traceback
+        error_traceback = traceback.format_exc()
+        print(f"FAILED Stack Analysis Error:\n{error_traceback}")
         detail_msg = f"[{type(e).__name__}] {str(e)}"
         raise HTTPException(status_code=500, detail=detail_msg)
 

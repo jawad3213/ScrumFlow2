@@ -23,7 +23,17 @@ class Project extends Model
         'annual_opex_value',
         'roi_percentage',
         'break_even_point_months',
-        'roi_analysis_summary'
+        'roi_analysis_summary',
+        'architecture_plan',
+        'recommended_stack',
+        'stack_name',
+        'stack_analysis_data'
+    ];
+
+    protected $casts = [
+        'architecture_plan' => 'array',
+        'recommended_stack' => 'array',
+        'stack_analysis_data' => 'array',
     ];
 
     /**

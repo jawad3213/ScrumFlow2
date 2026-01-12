@@ -22,3 +22,14 @@ export const analyzeBacklog = (formData) => {
         body: formData
     });
 };
+
+/**
+ * Sends a stack analysis request to the AI engine.
+ * @param {FormData} formData - The form data containing the file (backlog json) and api key.
+ * @returns {Promise<Object>} - The response data from the AI service.
+ */
+export const analyzeStack = (formData) => {
+    return client(`${AI_SERVICE_URL}/analyze-stack`, {
+        body: formData
+    });
+};

@@ -69,6 +69,11 @@ class ProjectController extends Controller
                     'roi_analysis_summary'
                 ]);
 
+                // Ensure roi_analysis_summary is a string
+                if (isset($projectData['roi_analysis_summary']) && is_array($projectData['roi_analysis_summary'])) {
+                    $projectData['roi_analysis_summary'] = implode("\n", $projectData['roi_analysis_summary']); 
+                }
+
                 // Map project_name to name if name is missing (for AI compatibility)
                 $projectData['name'] = ($request->name && strlen($request->name) > 0) ? $request->name : $request->project_name;
                 
@@ -207,11 +212,16 @@ class ProjectController extends Controller
                 // 9. Save Risks
                 if ($request->has('risk_assessment')) {
                     foreach ($request->risk_assessment as $risk) {
+                        $mitigation = $risk['mitigation_strategy'] ?? '';
+                        if (is_array($mitigation)) {
+                            $mitigation = implode("\n", $mitigation);
+                        }
+
                         $project->risks()->create([
                             'risk_name' => $risk['risk_name'],
                             'impact' => $risk['impact'],
                             'probability' => $risk['probability'],
-                            'mitigation_strategy' => $risk['mitigation_strategy']
+                            'mitigation_strategy' => $mitigation
                         ]);
                     }
                 }
@@ -237,11 +247,16 @@ class ProjectController extends Controller
 
                                 if (isset($storyData['tasks'])) {
                                     foreach ($storyData['tasks'] as $taskData) {
+                                        $instructions = $taskData['instructions'] ?? '';
+                                        if (is_array($instructions)) {
+                                            $instructions = implode("\n", $instructions);
+                                        }
+
                                         $story->tasks()->create([
                                             'role' => $taskData['role'],
                                             'level' => $taskData['level'] ?? null,
                                             'title' => $taskData['title'],
-                                            'instructions' => $taskData['instructions'],
+                                            'instructions' => $instructions,
                                             'hours' => $taskData['hours'] ?? 0,
                                             'external_id' => $taskData['id'] ?? null,
                                         ]);
@@ -279,7 +294,7 @@ class ProjectController extends Controller
 
         return response()->json($project);
     }
-
+    
     /**
      * Update the specified project in storage.
      */
@@ -358,6 +373,58 @@ class ProjectController extends Controller
         ]);
     }
 
+    /**
+     * Save the Stack Analysis Configuration for a Project
+     */
+    public function saveStack(Request $request, $id)
+    {
+        $project = Project::find($id);
+
+        if (!$project) {
+            return response()->json(['message' => 'Project not found'], 404);
+        }
+
+        // Expanded validation
+        $validator = Validator::make($request->all(), [
+            'stack_analysis_data' => 'nullable|array', // The new full JSON
+            'stack_name' => 'nullable|string|max:255',
+            // Legacy/Partial support
+            'architecture_plan' => 'nullable', 
+            'recommended_stack' => 'nullable',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // If strict stack_analysis_data is passed, use it
+        if ($request->has('stack_analysis_data')) {
+            $project->stack_analysis_data = $request->stack_analysis_data;
+
+            // Auto-extract stack name from the primary recommendation if not explicitly passed
+            if (!$request->has('stack_name') && isset($request->stack_analysis_data['primary_recommendation']['strategy_name'])) {
+                $project->stack_name = $request->stack_analysis_data['primary_recommendation']['strategy_name'];
+            }
+        }
+
+        // Allow manual overrides or legacy saving
+        if ($request->has('stack_name')) {
+            $project->stack_name = $request->stack_name;
+        }
+        if ($request->has('architecture_plan')) {
+            $project->architecture_plan = $request->architecture_plan;
+        }
+        if ($request->has('recommended_stack')) {
+            $project->recommended_stack = $request->recommended_stack;
+        }
+        
+        $project->save();
+
+        return response()->json([
+            'message' => 'Stack strategy saved successfully.',
+            'project' => $project
+        ]);
+    }
     /**
      * Remove the specified project from storage.
      */

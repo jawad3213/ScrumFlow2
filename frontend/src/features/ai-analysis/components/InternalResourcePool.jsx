@@ -173,7 +173,11 @@ const InternalResourcePool = ({ onSync }) => {
                                                     : specColors[spec] || "bg-neutral-50/20"
                                             )}
                                         >
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 relative">
+                                                {/* Selection Gloss */}
+                                                {isSelected && (
+                                                    <div className="absolute inset-y-0 left-0 w-1.5 bg-brand-primary-500"></div>
+                                                )}
                                                 <div className={cn(
                                                     "w-5 h-5 rounded-lg border-2 transition-all duration-300 flex items-center justify-center",
                                                     isSelected
@@ -203,10 +207,7 @@ const InternalResourcePool = ({ onSync }) => {
                                                 </div>
                                             </td>
 
-                                            {/* Selection Gloss */}
-                                            {isSelected && (
-                                                <div className="absolute inset-y-0 left-0 w-1.5 bg-brand-primary-500"></div>
-                                            )}
+
                                         </motion.tr>
                                     );
                                 })}
