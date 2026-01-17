@@ -7,6 +7,7 @@ import ProjectLayout from './layouts/ProjectLayout';
 // Features
 import RoleGuard from './features/auth/components/RoleGuard';
 
+
 // Pages - Auth
 import LoginPage from './pages/auth/LoginPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
@@ -26,6 +27,7 @@ import AnalysisPage from './pages/NewProjectAnalysis/AnalysisPage';
 import StrategicBlueprint from './pages/project/StrategicBlueprint';
 import TechnicalBlueprintPage from './pages/project/TechnicalBlueprintPage';
 import StackChoicePage from './pages/project/StackChoicePage';
+import ProjectTeamPage from './pages/project/ProjectTeamPage';
 
 // Pages - Team & Admin
 import TeamPage from './pages/team/TeamPage';
@@ -37,10 +39,13 @@ import TeamPage from './pages/team/TeamPage';
 // Pages - Settings
 import SettingsPage from './pages/settings/SettingsPage';
 
+
 function App() {
   return (
     <div className="min-h-screen bg-surface-background font-sans antialiased text-neutral-900">
+
       <Routes>
+
         {/* ==========================================
             PUBLIC ROUTES
            ========================================== */}
@@ -76,6 +81,7 @@ function App() {
             <Route path="hub" element={<StrategicBlueprint />} />
             <Route path="blueprint" element={<TechnicalBlueprintPage />} />
             <Route path="stack" element={<StackChoicePage />} />
+            <Route path="project-team" element={<ProjectTeamPage />} />
 
             {/* Manager Protected Project Views */}
             <Route path="analysis" element={

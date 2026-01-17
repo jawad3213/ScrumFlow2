@@ -4,9 +4,10 @@ import { Search, Bell, User, Settings, LogOut, ChevronRight, Menu } from 'lucide
 
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { BASE_URL } from '@/utils/api';
+import { USER_ROLES } from '@/utils/constants';
 
 const Navbar = () => {
-    const { user, logout } = useAuth();
+    const { user, userRole, logout } = useAuth();
     const [showUserMenu, setShowUserMenu] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
@@ -49,37 +50,31 @@ const Navbar = () => {
             </nav>
 
             <div className="ml-auto flex items-center gap-5">
-                {/* Search Input */}
-                <div className="relative hidden sm:block group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 group-focus-within:text-brand-primary-500 transition-colors" />
-                    <input
-                        type="search"
-                        placeholder="Search workspace..."
-                        className="h-10 w-72 rounded-xl border border-surface-border bg-surface-background/50 pl-10 pr-4 text-sm font-medium outline-none placeholder:text-neutral-400 focus:bg-white focus:border-brand-primary-500 focus:ring-4 focus:ring-brand-primary-500/10 transition-ui duration-default ease-soft"
-                    />
-                </div>
-
-                {/* Notifications */}
-                <button className="relative rounded-xl p-2.5 bg-surface-background border border-surface-border hover:bg-white hover:text-brand-primary-500 hover:border-brand-primary-500/20 transition-ui duration-default ease-soft text-neutral-500 shadow-subtle">
-                    <Bell className="h-5 w-5" />
-                    <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-danger-default border-2 border-white animate-pulse"></span>
-                </button>
-
                 {/* User Dropdown */}
                 <div className="relative" ref={menuRef}>
                     <button
                         onClick={() => setShowUserMenu(!showUserMenu)}
-                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-background border border-surface-border hover:bg-white hover:border-brand-primary-500/20 transition-ui duration-default ease-soft focus:outline-none focus:ring-4 focus:ring-brand-primary-500/10 shadow-subtle"
+                        className="group flex items-center gap-3 pl-5 pr-1.5 py-1.5 bg-white border border-surface-border rounded-full hover:border-brand-primary-500/20 hover:shadow-subtle transition-all duration-default ease-soft focus:outline-none ring-offset-2 focus:ring-2 focus:ring-brand-primary-500/20"
                     >
-                        <img
-                            src={user?.avatar ? `${BASE_URL}/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
-                            alt="Avatar"
-                            className="h-8 w-8 rounded-full object-cover"
-                        />
+                        <div className="hidden sm:flex flex-col items-end">
+                            <span className="text-sm font-black text-neutral-900 leading-none tracking-tight">
+                                {user?.first_name} {user?.last_name}
+                            </span>
+                            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide mt-1">
+                                {userRole === USER_ROLES.MANAGER ? 'Manager' : 'Team Member'}
+                            </span>
+                        </div>
+                        <div className="relative">
+                            <img
+                                src={user?.avatar ? `${BASE_URL}/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
+                                alt="Avatar"
+                                className="h-9 w-9 rounded-full object-cover border-2 border-surface-background group-hover:border-brand-primary-50"
+                            />
+                        </div>
                     </button>
 
                     {showUserMenu && (
-                        <div className="absolute right-0 top-12 w-64 origin-top-right rounded-2xl border border-surface-border bg-white shadow-dropdown ring-1 ring-black/5 focus:outline-none animate-in fade-in zoom-in-95 duration-default ease-soft p-1.5 z-50">
+                        <div className="absolute right-0 top-14 w-64 origin-top-right rounded-2xl border border-surface-border bg-white shadow-dropdown ring-1 ring-black/5 focus:outline-none animate-in fade-in zoom-in-95 duration-default ease-soft p-1.5 z-50">
                             <div className="px-4 py-4 bg-surface-muted/50 rounded-xl mb-1.5 border border-surface-border/50">
                                 <p className="text-sm font-black text-neutral-900 tracking-tight">{user?.first_name} {user?.last_name}</p>
                                 <p className="text-[11px] font-bold text-neutral-400 truncate mt-0.5">{user?.email || 'user@example.com'}</p>

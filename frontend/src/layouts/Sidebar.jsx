@@ -132,13 +132,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                         {!collapsed && "Main Menu"}
                     </div>
                     <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Overview" collapsed={collapsed} />
-
-                    <SidebarItem to="/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
-
-                    <div className="my-2 mx-2 border-t border-neutral-200" />
-                    <div className="px-2 py-1.5 text-xs font-semibold text-brand-primary-500 uppercase tracking-wider">
-                        {!collapsed && "Management"}
-                    </div>
                     <SidebarItem to="/projects/new" icon={PlusCircle} label="New Project" collapsed={collapsed} />
                     <SidebarItem to="/team-global" icon={Users} label="Team Global" collapsed={collapsed} />
                     <SidebarItem to="/settings" icon={Settings} label="Settings" collapsed={collapsed} />
@@ -156,6 +149,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     <SidebarItem to={`/project/${projectId}/hub`} icon={Sparkles} label="Strategic Blueprint" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/blueprint`} icon={Code} label="Technical Blueprint" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/stack`} icon={Layers} label="Stack Choice" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/project-team`} icon={Users} label="Project Team" collapsed={collapsed} />
 
 
                 </>
@@ -353,22 +347,25 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {/* Footer / User Profile & Toggle */}
                 <div className="border-t border-neutral-200 p-4 space-y-4">
                     {/* User Profile Section */}
-                    <div className={cn(
-                        "flex items-center gap-3 rounded-xl border border-surface-border bg-surface-background p-3 shadow-subtle",
-                        collapsed ? "justify-center border-none bg-transparent shadow-none px-0" : ""
-                    )}>
+                    <div
+                        onClick={() => navigate('/profile')}
+                        className={cn(
+                            "flex items-center gap-3 rounded-xl border border-surface-border bg-surface-background p-3 shadow-subtle cursor-pointer hover:bg-brand-primary-50/50 hover:border-brand-primary-200 transition-all group",
+                            collapsed ? "justify-center border-none bg-transparent shadow-none px-0" : ""
+                        )}
+                    >
                         <div className="relative">
                             <img
                                 src={user?.avatar ? `${BASE_URL}/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
                                 alt="Avatar"
-                                className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
+                                className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm group-hover:border-brand-primary-100 transition-colors"
                             />
                             <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success-default border-2 border-white" />
                         </div>
 
                         {!collapsed && (
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-neutral-900 truncate tracking-tight">
+                                <p className="text-sm font-bold text-neutral-900 truncate tracking-tight group-hover:text-brand-primary-700 transition-colors">
                                     {user?.first_name} {user?.last_name}
                                 </p>
                                 <p className="text-[10px] text-neutral-500 truncate uppercase font-black tracking-widest">
@@ -381,7 +378,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                             <Tooltip delayDuration={0}>
                                 <TooltipTrigger asChild>
                                     <button
-                                        onClick={handleLogout}
+                                        onClick={(e) => { e.stopPropagation(); handleLogout(); }}
                                         className="text-neutral-400 hover:text-danger-default transition-colors p-1.5 hover:bg-danger-lighter rounded-lg"
                                     >
                                         <LogOut className="h-4 w-4" />
@@ -393,7 +390,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                             </Tooltip>
                         ) : (
                             <button
-                                onClick={handleLogout}
+                                onClick={(e) => { e.stopPropagation(); handleLogout(); }}
                                 className="text-neutral-400 hover:text-danger-default transition-colors p-1.5 hover:bg-danger-lighter rounded-lg"
                                 title="Logout"
                             >

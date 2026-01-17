@@ -1,10 +1,10 @@
 import React from 'react';
-import { User, Shield, Bell } from 'lucide-react';
+import { User, Shield } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import ProfileHeader from '@/features/auth/components/ProfileHeader';
 import UpdateProfileForm from '@/features/auth/components/UpdateProfileForm';
 import UpdatePasswordForm from '@/features/auth/components/UpdatePasswordForm';
-import NotificationSettings from '@/features/auth/components/NotificationSettings';
+
 
 const ProfilePage = () => {
     return (
@@ -39,13 +39,7 @@ const ProfilePage = () => {
                                 <Shield className="h-4 w-4" />
                                 Security
                             </TabsTrigger>
-                            <TabsTrigger
-                                value="notifications"
-                                className="flex-1 lg:flex-none gap-2 py-3 px-6 rounded-xl data-[state=active]:bg-white data-[state=active]:text-brand-primary-600 data-[state=active]:shadow-subtle transition-all duration-300 font-bold"
-                            >
-                                <Bell className="h-4 w-4" />
-                                Notifications
-                            </TabsTrigger>
+
                         </TabsList>
 
                         {/* Personal Info Content */}
@@ -59,9 +53,7 @@ const ProfilePage = () => {
                         </TabsContent>
 
                         {/* Notifications Content */}
-                        <TabsContent value="notifications" className="mt-0">
-                            <NotificationSettings />
-                        </TabsContent>
+
                     </Tabs>
                 </div>
             </div>

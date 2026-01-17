@@ -179,26 +179,7 @@ const TeamTable = forwardRef(({ data, specializations, onRefresh, onSelectionCha
                         />
                     </div>
 
-                    <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-surface-border shadow-subtle self-end sm:self-auto">
-                        <button
-                            onClick={() => setStatusFilter('all')}
-                            className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200 ${statusFilter === 'all' ? 'bg-neutral-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'}`}
-                        >
-                            All
-                        </button>
-                        <button
-                            onClick={() => setStatusFilter('active')}
-                            className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200 ${statusFilter === 'active' ? 'bg-success-default text-white shadow-sm' : 'text-neutral-500 hover:text-success-default hover:bg-success-lighter/30'}`}
-                        >
-                            Active
-                        </button>
-                        <button
-                            onClick={() => setStatusFilter('banned')}
-                            className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200 ${statusFilter === 'banned' ? 'bg-danger-default text-white shadow-sm' : 'text-neutral-500 hover:text-danger-default hover:bg-danger-lighter/30'}`}
-                        >
-                            Banned
-                        </button>
-                    </div>
+
                 </div>
 
                 <DataTable

@@ -74,22 +74,7 @@ const ProfileHeader = () => {
                 </div>
             </div>
 
-            <div className="h-px bg-surface-border my-6" />
 
-            <div className="space-y-4 text-left">
-                <div className="flex items-center gap-3 text-neutral-600">
-                    <div className="p-2 rounded-lg bg-neutral-100">
-                        <BadgeCheck className="h-4 w-4 text-brand-primary-500" />
-                    </div>
-                    <span className="text-xs font-bold uppercase tracking-wider">Verified Account</span>
-                </div>
-                <div className="flex items-center gap-3 text-neutral-600">
-                    <div className="p-2 rounded-lg bg-neutral-100">
-                        <UserCircle className="h-4 w-4 text-brand-primary-500" />
-                    </div>
-                    <span className="text-xs font-bold uppercase tracking-wider">Member since 2024</span>
-                </div>
-            </div>
         </div>
     );
 };

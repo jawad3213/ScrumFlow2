@@ -13,8 +13,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { BASE_URL } from '@/utils/api';
 
 const getInitials = (name) => {
+    if (!name) return '??';
     return name
         .split(' ')
         .map(n => n[0])
@@ -24,6 +26,7 @@ const getInitials = (name) => {
 };
 
 const getRandomColor = (name) => {
+    if (!name) return 'bg-neutral-100 text-neutral-500 border-neutral-200';
     const colors = [
         'bg-blue-100 text-blue-700 border-blue-200',
         'bg-purple-100 text-purple-700 border-purple-200',
@@ -69,7 +72,8 @@ export const columns = [
         enableHiding: false,
     },
     {
-        accessorKey: "name",
+        id: "name",
+        accessorFn: row => `${row.first_name || ''} ${row.last_name || ''}`.trim(),
         header: ({ column }) => {
             return (
                 <Button
@@ -83,19 +87,27 @@ export const columns = [
             )
         },
         cell: ({ row }) => {
-            const name = row.getValue("name");
-            const email = row.original.email;
+            const name = row.getValue("name") || "Unknown Member";
+            const { email, avatar } = row.original;
 
             return (
-                <div className="flex items-center gap-2">
-                    <div className={`flex h-9 w-9 items-center justify-center rounded-full border text-[13px] font-bold ${getRandomColor(name)}`}>
-                        {getInitials(name)}
-                    </div>
+                <div className="flex items-center gap-3">
+                    {avatar ? (
+                        <img
+                            src={`${BASE_URL}/storage/${avatar}`}
+                            alt={name}
+                            className="h-9 w-9 rounded-full object-cover border-2 border-white shadow-sm"
+                        />
+                    ) : (
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-full border text-[13px] font-bold shadow-sm ${getRandomColor(name)}`}>
+                            {getInitials(name)}
+                        </div>
+                    )}
                     <div className="flex flex-col">
-                        <span className="font-bold text-neutral-900 group-hover:text-brand-primary-500 transition-colors cursor-pointer">
+                        <span className="font-bold text-neutral-900 group-hover:text-brand-primary-500 transition-colors cursor-pointer truncate">
                             {name}
                         </span>
-                        <span className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider">
+                        <span className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider truncate">
                             {email}
                         </span>
                     </div>
@@ -104,71 +116,44 @@ export const columns = [
         },
     },
     {
-        accessorKey: "role",
+        id: "specialization",
+        accessorFn: (row) => row.specialization?.name || "Unassigned",
         header: () => <div className="text-left">Specialization</div>,
         cell: ({ row }) => {
-            const role = row.getValue("role");
+            const specialization = row.getValue("specialization");
             return (
                 <div className="flex items-center gap-2 whitespace-nowrap">
                     <div className="h-2 w-2 rounded-full bg-brand-primary-500/30" />
-                    <span className="capitalize text-neutral-600 font-bold text-sm tracking-tight">{role}</span>
+                    <span className="capitalize text-neutral-600 font-bold text-sm tracking-tight">{specialization}</span>
                 </div>
             );
         },
     },
     {
-        accessorKey: "status",
-        header: "Status",
+        id: "level",
+        accessorFn: (row) => row.specialization?.level || "N/A",
+        header: "Level",
         cell: ({ row }) => {
-            const status = row.getValue("status") || "Unknown";
-
-            const getStatusStyles = (status) => {
-                const normalized = status.toLowerCase();
-                if (normalized === 'active') return {
-                    bg: 'bg-success-lighter/50',
-                    text: 'text-success-darker',
-                    border: 'border-success-default/20',
-                    dot: 'bg-success-default'
-                };
-                if (normalized === 'on leave' || normalized === 'pending') return {
-                    bg: 'bg-warning-lighter/50',
-                    text: 'text-warning-darker',
-                    border: 'border-warning-default/20',
-                    dot: 'bg-warning-default'
-                };
-                if (normalized === 'banned' || normalized === 'terminated') return {
-                    bg: 'bg-danger-lighter/50',
-                    text: 'text-danger-darker',
-                    border: 'border-danger-default/20',
-                    dot: 'bg-danger-default'
-                };
-                return {
-                    bg: 'bg-neutral-50',
-                    text: 'text-neutral-500',
-                    border: 'border-neutral-200',
-                    dot: 'bg-neutral-400'
-                };
+            const level = row.getValue("level");
+            const colors = {
+                'Junior': 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                'Mid': 'bg-blue-100 text-blue-700 border-blue-200',
+                'Senior': 'bg-purple-100 text-purple-700 border-purple-200',
+                'Lead': 'bg-amber-100 text-amber-700 border-amber-200',
+                'Architect': 'bg-rose-100 text-rose-700 border-rose-200'
             };
-
-            const styles = getStatusStyles(status);
+            // Helper to match partial/case-insensitive if needed, or just use strict map
+            // Assuming backend sends Title Case usually.
+            const colorClass = colors[level] || 'bg-neutral-100 text-neutral-600 border-neutral-200';
 
             return (
-                <div className="flex items-center whitespace-nowrap">
-                    <div className={`inline-flex items-center px-2 py-0.5 rounded-pill text-[10px] font-black border ${styles.bg} ${styles.text} ${styles.border} gap-1.5 shadow-subtle`}>
-                        {status.toLowerCase() === 'active' ? (
-                            <span className="relative flex h-1.5 w-1.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-default opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success-default"></span>
-                            </span>
-                        ) : (
-                            <div className={`h-1.5 w-1.5 rounded-full ${styles.dot}`} />
-                        )}
-                        <span className="uppercase tracking-widest">{status}</span>
-                    </div>
+                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-lg border text-xs font-bold ${colorClass} shadow-sm`}>
+                    {level}
                 </div>
             );
         },
     },
+
     {
         accessorKey: "is_engaged",
         header: () => <div className="text-right pr-4">Engagement</div>,
