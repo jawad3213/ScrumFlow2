@@ -1,6 +1,6 @@
 import React from 'react';
 import { Key, AlertCircle, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+//import { motion } from 'framer-motion';
 import { cn } from '@/utils/utils';
 
 const cascadeContainer = {
@@ -19,7 +19,7 @@ const cascadeItem = {
     show: { opacity: 1, y: 0 }
 };
 
-const GeminiAuth = ({ apiKey, onKeyChange, onNext, validationError, shakeControls }) => {
+const GeminiAuth = ({ apiKey, onKeyChange,  validationError, shakeControls }) => {
     return (
         <motion.div
             variants={cascadeContainer}
