@@ -566,34 +566,63 @@ const TechnicalBlueprintWizard = ({ initialData, projectId }) => {
                                                                 onClick={handleBack}
                                                                 className="group flex items-center gap-4 text-neutral-400 hover:text-neutral-900 transition-all text-[11px] font-black uppercase tracking-[0.2em] h-12"
                                                             >
-                                                                <div className="w-11 h-11 rounded-xl border border-neutral-100 group-hover:bg-neutral-50 transition-all flex items-center justify-center shadow-sm">
+                                                              <div className="w-11 h-11 rounded-xl border border-neutral-100 group-hover:bg-neutral-50 transition-all flex items-center justify-center shadow-sm">
+
                                                                     <ChevronLeft size={18} />
+
                                                                 </div>
+
                                                                 Back to {STEPS[currentStep - 2].title}
+
                                                             </motion.button>
+
                                                         )}
+
                                                         <motion.button
+
                                                             whileHover={{ y: -4 }}
+
                                                             whileTap={{ scale: 0.96 }}
+
                                                             onClick={handleNext}
+
                                                             className="bg-neutral-900 hover:bg-brand-primary-500 text-white rounded-[24px] px-10 h-14 font-black text-[11px] uppercase tracking-[0.25em] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] hover:shadow-brand-primary-500/25 transition-all flex items-center gap-4 group"
+
                                                         >
+
                                                             Progress to {STEPS[currentStep].title}
+
                                                             <ChevronRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
+
                                                         </motion.button>
+
                                                     </div>
+
                                                 </div>
+
                                             )}
+
                                         </motion.div>
+
                                     )}
+
                                 </AnimatePresence>
+
                             </div>
+
                         </div>
+
                     </motion.div>
+
                 </div>
+
             </div>
+
         </div>
+
     );
+
 };
+
 
 export default TechnicalBlueprintWizard;

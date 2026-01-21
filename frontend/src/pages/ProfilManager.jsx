@@ -1,7 +1,7 @@
 import React, { useState ,useRef } from 'react';
 import { User, Briefcase, Shield, Bell, Eye, EyeOff, Camera, UploadCloud, Check } from 'lucide-react';
 import styles from './ProfilManager.module.css';
-import api from '../api';
+import api from '../lib/axios';
 
 
 export default function ProfilManager() {
