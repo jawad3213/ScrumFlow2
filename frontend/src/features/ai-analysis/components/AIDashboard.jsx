@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users, DollarSign, TrendingUp, Shield, Cloud, Settings, Info, ArrowUpRight, Clock, AlertTriangle, Target } from 'lucide-react';
-
+import { motion } from 'framer-motion';
 import { BlurReveal } from '@/components/ui/blur-reveal';
 import { MouseEffect } from '@/components/ui/mouse-effect';
 import FinancialCard from '@/components/shared/FinancialCard';

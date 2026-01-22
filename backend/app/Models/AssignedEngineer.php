@@ -11,6 +11,7 @@ class AssignedEngineer extends Model
     protected $fillable = [
         'project_id',
         'specialization_id',
+        'user_id',
         'phase',
         'months_assigned'
     ];
@@ -25,6 +26,11 @@ class AssignedEngineer extends Model
     public function specialization()
     {
         return $this->belongsTo(Specialization::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     // Accessor to calculate cost on the fly

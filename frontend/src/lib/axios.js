@@ -110,17 +110,20 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    // Return a consistent error message format
-    const message = error.response?.data?.message || error.message || 'Something went wrong';
+    // Return a consistent error message object
+    const errorMessage = error.response?.data?.message || error.response?.data?.detail || error.message || 'Something went wrong';
     
     // Global Error Toaster
     if (error.response?.status >= 500) {
-        toast.error('Server Error', { description: message });
+        toast.error('Server Error', { description: errorMessage });
     } else if (error.code === 'ERR_NETWORK') {
         toast.error('Network Error', { description: 'Please check your connection.' });
     }
 
-    return Promise.reject(message);
+    // Reject with a proper Error-like object
+    const errorObj = new Error(errorMessage);
+    errorObj.response = error.response;
+    return Promise.reject(errorObj);
   }
 );
 

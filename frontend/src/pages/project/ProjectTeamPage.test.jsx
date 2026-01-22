@@ -1,31 +1,82 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { vi, expect, it, describe } from 'vitest';
+import { vi, expect, it, describe, beforeEach } from 'vitest';
 import ProjectTeamPage from './ProjectTeamPage';
+import client from '@/lib/axios';
 
 // --- CONFIGURATION DE L'ENVIRONNEMENT ---
 
-// 1. Mock IntersectionObserver (pour éviter les erreurs avec les animations Tailwind/Lottie)
+// 1. Mock client axios
+vi.mock('@/lib/axios', () => ({
+    default: vi.fn(),
+}));
+
+// 2. Mock framer-motion (évite les avertissements et simplifie le rendu)
+vi.mock('framer-motion', () => ({
+    motion: {
+        div: ({ children, ...props }) => <div {...props}>{children}</div>,
+        button: ({ children, ...props }) => <button {...props}>{children}</button>,
+    },
+    AnimatePresence: ({ children }) => <>{children}</>,
+}));
+
+// 3. Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
-    constructor() {}
+    constructor() { }
     observe() { return null; }
     unobserve() { return null; }
     disconnect() { return null; }
 };
 
-// 2. Mock Canvas (si des composants enfants utilisent des graphiques ou animations)
-HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
-    fillRect: vi.fn(),
-    measureText: vi.fn(() => ({ width: 0 })),
-}));
+const mockTeam = [
+    {
+        id: 1,
+        user_id: 10,
+        phase: 'development',
+        months_assigned: 6,
+        specialization: { name: 'Frontend Engineer', level: 'Senior' },
+        user: { id: 10, first_name: 'John', last_name: 'Doe' }
+    },
+    {
+        id: 2,
+        user_id: null,
+        phase: 'development',
+        months_assigned: 3,
+        specialization: { name: 'Backend Engineer', level: 'Mid-level' },
+        user: null
+    }
+];
+
+const mockTalent = [
+    {
+        id: 20,
+        first_name: 'Jane',
+        last_name: 'Smith',
+        specialization: { name: 'Backend Engineer', level: 'Mid-level' }
+    }
+];
 
 describe('Integration Test: ProjectTeamPage', () => {
 
-    // Utilitaire pour injecter un ID de projet spécifique dans les paramètres d'URL
-    const renderWithRouter = (initialId = '123') => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+
+        // Mock successful API responses
+        client.mockImplementation((url) => {
+            if (url === '/projects/3/team') {
+                return Promise.resolve({ team: mockTeam });
+            }
+            if (url === '/employees/available') {
+                return Promise.resolve(mockTalent);
+            }
+            return Promise.resolve({});
+        });
+    });
+
+    const renderWithRouter = (projectId = '3') => {
         return render(
-            <MemoryRouter initialEntries={[`/projects/${initialId}/team`]}>
+            <MemoryRouter initialEntries={[`/projects/${projectId}/team`]}>
                 <Routes>
                     <Route path="/projects/:id/team" element={<ProjectTeamPage />} />
                 </Routes>
@@ -33,33 +84,80 @@ describe('Integration Test: ProjectTeamPage', () => {
         );
     };
 
-   it('doit rendre correctement l’en-tête de la page et le titre', () => {
+    it('should render the team page and list requirement cards', async () => {
         renderWithRouter();
 
-        // ✅ Solution 1 : Cibler par rôle (recommandé pour l'accessibilité)
-        // On cherche un titre (h1-h6) qui contient exactement ce texte
-        expect(screen.getByRole('heading', { name: /Project Team$/i })).toBeInTheDocument();
-        
-        // ✅ Solution 2 : Si vous préférez rester sur getByText, utilisez une string exacte
-        // Au lieu de la regex /Project Team/i qui matche tout, on cherche le texte précis du titre
-        expect(screen.getByText('Project Team')).toBeInTheDocument();
+        // Check header
+        expect(screen.getByText(/Project Team/i)).toBeInTheDocument();
 
-        // Vérification de la description
-        expect(screen.getByText(/Manage members assigned to this specific project/i)).toBeInTheDocument();
+        // Wait for data to load
+        await waitFor(() => {
+            expect(screen.getByText('Frontend Engineer')).toBeInTheDocument();
+            expect(screen.getByText('Backend Engineer')).toBeInTheDocument();
+        });
+
+        // Check filled requirement
+        expect(screen.getByText('John Doe')).toBeInTheDocument();
+        expect(screen.getByText('Deployed')).toBeInTheDocument();
+
+        // Check empty requirement
+        expect(screen.getByText('Critical Need')).toBeInTheDocument();
     });
 
-    it('doit afficher le conteneur de contenu vide temporaire', () => {
+    it('should show count of roles filled', async () => {
         renderWithRouter();
 
-        // Vérification de la présence du texte placeholder
-        expect(screen.getByText(/Project Team management content will go here/i)).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText('1 / 2')).toBeInTheDocument();
+        });
     });
 
-    it('doit posséder l’icône Users (accessibilité)', () => {
+    it('should identify and assign talent to a requirement', async () => {
         renderWithRouter();
-        
-        // Comme Users est un composant lucide-react, on vérifie la présence du SVG ou de sa classe
-        const icon = document.querySelector('.lucide-users');
-        expect(icon).toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(screen.getByText('Backend Engineer')).toBeInTheDocument();
+        });
+
+        // Click "Identify Talent" on the Backend requirement
+        const backendCard = screen.getByText('Backend Engineer').closest('.group');
+        const identifyBtn = within(backendCard).getByRole('button', { name: /Identify Talent/i });
+        fireEvent.click(identifyBtn);
+
+        // Should show search and talent match
+        expect(screen.getByPlaceholderText(/Search by name/i)).toBeInTheDocument();
+        expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+
+        // Click on Jane Smith to assign
+        fireEvent.click(screen.getByText('Jane Smith'));
+
+        // Check if API was called correctly
+        expect(client).toHaveBeenCalledWith('/projects/3/team/assign', expect.objectContaining({
+            body: {
+                assigned_engineer_id: 2,
+                user_id: 20
+            }
+        }));
+    });
+
+    it('should unassign a team member', async () => {
+        renderWithRouter();
+
+        await waitFor(() => {
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
+        });
+
+        // The unassign button is hidden by default (opacity-0 in JSX)
+        // In JSDOM we can still find it and click it
+        const frontendCard = screen.getByText('Frontend Engineer').closest('.group');
+
+        // Since frontendCard is a DOM element in JSDOM
+        const unassignBtn = frontendCard.querySelector('button');
+        fireEvent.click(unassignBtn);
+
+        // Check if API was called
+        expect(client).toHaveBeenCalledWith('/projects/3/team/unassign', expect.objectContaining({
+            body: { assigned_engineer_id: 1 }
+        }));
     });
 });

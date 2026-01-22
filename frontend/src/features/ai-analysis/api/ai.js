@@ -8,7 +8,8 @@ import { AI_SERVICE_URL } from '@/utils/api';
  */
 export const analyzeStaffing = (formData) => {
     return client(`${AI_SERVICE_URL}/analyze-staffing`, {
-        body: formData
+        body: formData,
+        withCredentials: false
     });
 };
 
@@ -19,7 +20,8 @@ export const analyzeStaffing = (formData) => {
  */
 export const analyzeBacklog = (formData) => {
     return client(`${AI_SERVICE_URL}/analyze-backlog`, {
-        body: formData
+        body: formData,
+        withCredentials: false
     });
 };
 
@@ -30,6 +32,7 @@ export const analyzeBacklog = (formData) => {
  */
 export const analyzeStack = (formData) => {
     return client(`${AI_SERVICE_URL}/analyze-stack`, {
-        body: formData
+        body: formData,
+        withCredentials: false
     });
 };
