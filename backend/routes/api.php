@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 
 // Groupe de routes protégées (nécessite un token valide)
 Route::middleware('auth:sanctum')->group(function () {

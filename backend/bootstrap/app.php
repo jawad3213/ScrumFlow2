@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'is_chef' => IsChef::class,
         ]);
+        $middleware->encryptCookies(except: [
+            'refresh_token',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -13,7 +13,7 @@ use App\Models\RoiProjection;
 use App\Models\ProjectKpi;
 use App\Models\ProjectRisk;
 use App\Models\User;
-use App\Models\Sprint;
+// removed Sprint import
 use App\Models\ProjectEpic;
 use App\Models\ProjectStory;
 use App\Models\ProjectBlueprintTask;
@@ -286,7 +286,7 @@ class ProjectController extends Controller
      */
     public function show($id)
     {
-        $project = Project::with(['chef', 'sprints', 'assignedEngineers.specialization', 'estimatedGains', 'infrastructureCosts', 'roiProjections', 'kpis', 'risks', 'epics.stories.tasks'])->find($id);
+        $project = Project::with(['chef', 'assignedEngineers.specialization', 'estimatedGains', 'infrastructureCosts', 'roiProjections', 'kpis', 'risks', 'epics.stories.tasks'])->find($id);
 
         if (!$project) {
             return response()->json(['message' => 'Project not found'], 404);
