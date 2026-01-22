@@ -11,8 +11,8 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      // Utilise maintenant la variable __dirname simulée plus haut
       '@': path.resolve(__dirname, './src'),
+      "motion/react": "framer-motion",
     },
   },
   test: {
@@ -20,22 +20,5 @@ export default defineConfig({
     environment: 'jsdom',
     // Charge directement les matchers DOM sans fichier setup intermédiaire
     setupFiles: ['@testing-library/jest-dom/vitest'],
-  },
-});
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react'; // Importez le plugin
-import path from 'path';
-
-export default defineConfig({
-  plugins: [react()], // Ajoutez-le ici
-  test: {
-    environment: 'jsdom',
-    globals: true,
-  },
-  resolve: {
-    alias: {
-      "motion/react": "framer-motion",
-      '@': path.resolve(__dirname, './src'),
-    },
   },
 });
