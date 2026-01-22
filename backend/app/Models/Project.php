@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 
 class Project extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'name', 
         'description', 
@@ -69,12 +71,6 @@ class Project extends Model
     public function chef()
     {
         return $this->belongsTo(User::class, 'user_id');
-    }
-
-    // Un projet a plusieurs Sprints
-    public function sprints()
-    {
-        return $this->hasMany(Sprint::class);
     }
 
     public function assignedEngineers()

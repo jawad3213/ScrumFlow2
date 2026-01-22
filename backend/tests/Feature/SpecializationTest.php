@@ -76,4 +76,22 @@ class SpecializationTest extends TestCase
         $response->assertStatus(204);
         $this->assertDatabaseMissing('specializations', ['id' => $spec->id]);
     }
+
+    public function test_can_bulk_delete_specializations()
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $specs = Specialization::factory()->count(3)->create();
+        $ids = $specs->pluck('id')->toArray();
+
+        $response = $this->postJson('/api/specializations/bulk-delete', [
+            'ids' => $ids
+        ]);
+
+        $response->assertStatus(204);
+        foreach ($ids as $id) {
+            $this->assertDatabaseMissing('specializations', ['id' => $id]);
+        }
+    }
 }

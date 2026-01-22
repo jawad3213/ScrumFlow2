@@ -13,6 +13,10 @@ export const resetPassword = (data) => {
   return client('/reset-password', { body: data });
 };
 
+export const refreshToken = () => {
+  return client('/refresh-token', { method: 'POST' });
+};
+
 export const logout = () => {
   StorageService.clearAuth();
 };

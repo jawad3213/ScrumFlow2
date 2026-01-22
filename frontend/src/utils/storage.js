@@ -1,5 +1,4 @@
 const STORAGE_KEYS = {
-    AUTH_TOKEN: 'auth_token',
     USER_ROLE: 'user_role',
     USER_DATA: 'user',
     GEMINI_API_KEY: 'gemini_api_key',
@@ -7,11 +6,6 @@ const STORAGE_KEYS = {
 };
 
 const StorageService = {
-    // Token Management
-    getToken: () => localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN),
-    setToken: (token) => localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token),
-    removeToken: () => localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN),
-
     // User Data Management
     getUser: () => {
         const user = localStorage.getItem(STORAGE_KEYS.USER_DATA);
@@ -35,7 +29,6 @@ const StorageService = {
 
     // Clear Authentication
     clearAuth: () => {
-        localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER_ROLE);
         localStorage.removeItem(STORAGE_KEYS.USER_DATA);
     }

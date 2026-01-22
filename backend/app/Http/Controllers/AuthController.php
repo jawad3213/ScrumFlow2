@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Models\User;
+use App\Models\RefreshToken;
 use App\Mail\ResetPasswordMail;
+use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Support\Facades\Cookie;
 
 class AuthController extends Controller
 {
@@ -31,32 +34,97 @@ class AuthController extends Controller
         // 3. Récupération de l'utilisateur directement depuis l'auth
         $user = Auth::user();
 
-        // CHECK: Si l'utilisateur est banni
-        if ($user->status === 'banned') {
-            // on pourrait faire Auth::logout(); pour être sûr
-            return response()->json([
-                'message' => 'Votre compte est banni. Veuillez contacter l\'administrateur.'
-            ], 403);
-        }
+        // 4. Création des Tokens
+        // Access Token: court terme (60 min)
+        $accessToken = $user->createToken('access_token', ['*'], now()->addMinutes(60))->plainTextToken;
+        
+        // Refresh Token: dédié et séparé des tokens Sanctum
+        $rawRefreshToken = Str::random(64);
+        RefreshToken::create([
+            'user_id' => $user->id,
+            'token' => hash('sha256', $rawRefreshToken),
+            'expires_at' => now()->addDays(30),
+        ]);
 
-        // 4. Création du Token (Jeton d'accès)
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Préparation du cookie sécurisé (HttpOnly, SameSite=Strict)
+        $refreshCookie = cookie(
+            'refresh_token',
+            $rawRefreshToken,
+            60 * 24 * 30, // 30 jours
+            '/', null, null, true, false, 'Strict'
+        );
 
-        // 5. Retourner la réponse JSON
+        // 5. Retourner la réponse JSON avec le cookie
         return response()->json([
             'message' => 'Connexion réussie',
-            'access_token' => $token,
+            'access_token' => $accessToken,
             'token_type' => 'Bearer',
-            'user' => $user, // On renvoie aussi les infos du user (rôle, nom, etc.)
+            'user' => $user,
             'role' => $user->role,
+        ])->withCookie($refreshCookie);
+    }
+
+    /**
+     * Refresh the access token using a valid refresh token from cookie.
+     */
+    public function refreshToken(Request $request)
+    {
+        $rawToken = $request->cookie('refresh_token');
+
+        if (!$rawToken) {
+            return response()->json(['message' => 'Token de rafraîchissement absent.'], 401);
+        }
+
+        $tokenRecord = RefreshToken::where('token', hash('sha256', $rawToken))->first();
+
+        if (!$tokenRecord || $tokenRecord->isExpired()) {
+            return response()->json(['message' => 'Token de rafraîchissement invalide ou expiré.'], 401);
+        }
+
+        $user = $tokenRecord->user;
+
+        // Rotation du refresh token
+        $tokenRecord->delete();
+        $newRawRefreshToken = Str::random(64);
+        RefreshToken::create([
+            'user_id' => $user->id,
+            'token' => hash('sha256', $newRawRefreshToken),
+            'expires_at' => now()->addDays(30),
         ]);
+
+        $newAccessToken = $user->createToken('access_token', ['*'], now()->addMinutes(60))->plainTextToken;
+
+        $refreshCookie = cookie(
+            'refresh_token',
+            $newRawRefreshToken,
+            60 * 24 * 30,
+            '/', null, null, true, false, 'Strict'
+        );
+
+        return response()->json([
+            'access_token' => $newAccessToken,
+            'token_type' => 'Bearer',
+        ])->withCookie($refreshCookie);
     }
     
     // Optionnel : Logout
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Déconnexion réussie']);
+        $user = $request->user();
+        
+        // Supprimer le token d'accès actuel
+        $user->currentAccessToken()->delete();
+
+        // Supprimer le refresh token de la DB s'il existe dans le cookie
+        $rawToken = $request->cookie('refresh_token');
+        if ($rawToken) {
+            RefreshToken::where('token', hash('sha256', $rawToken))->delete();
+        }
+
+        // Supprimer le cookie
+        $forgetCookie = cookie()->forget('refresh_token');
+
+        return response()->json(['message' => 'Déconnexion réussie'])->withCookie($forgetCookie);
     }
 
     // 1. Demande de réinitialisation de mot de passe

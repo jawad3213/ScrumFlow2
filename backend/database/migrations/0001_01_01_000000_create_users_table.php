@@ -19,7 +19,6 @@ return new class extends Migration
         $table->string('avatar')->nullable();
         $table->string('password');
         $table->enum('role', ['chef', 'employee'])->default('employee'); 
-        $table->enum('status', ['active', 'banned'])->default('active'); 
         $table->foreignId('specialization_id')->nullable()->constrained('specializations')->onDelete('set null'); 
         $table->boolean('is_engaged')->default(false); 
         $table->rememberToken();

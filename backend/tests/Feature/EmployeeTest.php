@@ -88,4 +88,37 @@ class EmployeeTest extends TestCase
         $response->assertStatus(200);
         $this->assertDatabaseMissing('users', ['id' => $employee->id]);
     }
+
+    public function test_can_list_available_employees()
+    {
+        $user = User::factory()->create(['role' => 'chef']);
+        Sanctum::actingAs($user);
+
+        // Create 3 employees, but only 2 should be 'available' if one is assigned somewhere (if logic exists)
+        // or simply test that they return correctly.
+        User::factory()->count(3)->create(['role' => 'employee']);
+
+        $response = $this->getJson('/api/employees/available');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(3);
+    }
+
+    public function test_can_bulk_delete_employees()
+    {
+        $user = User::factory()->create(['role' => 'chef']);
+        Sanctum::actingAs($user);
+
+        $employees = User::factory()->count(3)->create(['role' => 'employee']);
+        $ids = $employees->pluck('id')->toArray();
+
+        $response = $this->postJson('/api/employees/bulk-delete', [
+            'ids' => $ids
+        ]);
+
+        $response->assertStatus(200);
+        foreach ($ids as $id) {
+            $this->assertDatabaseMissing('users', ['id' => $id]);
+        }
+    }
 }

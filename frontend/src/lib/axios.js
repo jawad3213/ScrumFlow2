@@ -3,20 +3,45 @@ import { toast } from 'sonner';
 import API_BASE_URL from '@/utils/api';
 import StorageService from '@/utils/storage';
 
+let accessToken = null;
+
+export const setAccessToken = (token) => {
+  accessToken = token;
+};
+
+export const clearAccessToken = () => {
+  accessToken = null;
+};
+
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true, // Crucial for reading/sending HttpOnly cookies
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
 });
 
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
 // Request Interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = StorageService.getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
@@ -26,14 +51,63 @@ axiosInstance.interceptors.request.use(
 // Response Interceptor
 axiosInstance.interceptors.response.use(
   (response) => response.data,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-       const originalRequest = error.config;
-       // Avoid infinite loops if login itself fails or we are already identifying a login attempt
-       if (originalRequest.url && !originalRequest.url.includes('/login')) {
-           StorageService.clearAuth();
-           window.location.assign('/login');
-       }
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Handle 401 Unauthorized
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      
+      // Don't refresh if the error is from login or refresh-token itself
+      if (originalRequest.url.includes('/login') || originalRequest.url.includes('/refresh-token')) {
+        StorageService.clearAuth();
+        // Only redirect if not already on login page to avoid loops
+        if (!window.location.pathname.includes('/login')) {
+          window.location.assign('/login');
+        }
+        return Promise.reject(error.response?.data?.message || 'Unauthorized');
+      }
+
+      if (isRefreshing) {
+        return new Promise(function(resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers['Authorization'] = 'Bearer ' + token;
+          return axiosInstance(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const response = await axios({
+          method: 'POST',
+          url: `${API_BASE_URL}/refresh-token`,
+          withCredentials: true
+        });
+
+        const { access_token } = response.data;
+        accessToken = access_token; // Mettre à jour la variable locale
+        
+        // Notifier le AuthContext du changement de token
+        window.dispatchEvent(new CustomEvent('auth-token-refreshed', { detail: access_token }));
+        
+        axiosInstance.defaults.headers.common['Authorization'] = 'Bearer ' + access_token;
+        originalRequest.headers['Authorization'] = 'Bearer ' + access_token;
+        
+        processQueue(null, access_token);
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        StorageService.clearAuth();
+        accessToken = null; // Important
+        window.location.assign('/login');
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
     }
 
     // Return a consistent error message format

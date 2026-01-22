@@ -22,7 +22,6 @@ class UserSeeder extends Seeder
                 'last_name' => 'Chef',
                 'password' => Hash::make('password123'),
                 'role' => 'chef',
-                'status' => 'active',
             ]
         );
 
@@ -33,7 +32,6 @@ class UserSeeder extends Seeder
                 'last_name' => 'Aelhail',
                 'password' => Hash::make('Password123'),
                 'role' => 'chef',
-                'status' => 'active',
             ]
         );
 
@@ -69,7 +67,6 @@ class UserSeeder extends Seeder
                         'password' => Hash::make('password123'),
                         'role' => 'employee',
                         'specialization_id' => $specialization->id,
-                        'status' => $cleanStatus,
                     ]
                 );
             }

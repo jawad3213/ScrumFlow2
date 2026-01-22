@@ -69,7 +69,6 @@ class EmployeeController extends Controller
             'specialization_id' => $specialization->id,
             'role' => 'employee', // Rôle forcé à 'employee'
             'password' => Hash::make($generatedPassword),
-            'status' => 'active', // Par défaut actif
         ]);
 
          //Envoyer l'email de bienvenue (Commenté pour découpler du template Blade comme demandé)
@@ -99,11 +98,10 @@ class EmployeeController extends Controller
             'last_name' => 'sometimes|required|string|max:255',
             'specialization_name' => 'sometimes|required|string|exists:specializations,name',
             'level' => 'sometimes|required|string|exists:specializations,level',
-            'status' => 'sometimes|required|in:active,banned',
             'is_engaged' => 'sometimes|boolean',
         ]);
 
-        $data = $request->only(['first_name', 'last_name', 'status', 'is_engaged']);
+        $data = $request->only(['first_name', 'last_name', 'is_engaged']);
 
         if ($request->has('specialization_name') && $request->has('level')) {
              $specialization = Specialization::where('name', $request->specialization_name)
@@ -130,9 +128,7 @@ class EmployeeController extends Controller
         // Laravel gère la cascade si les migrations sont bien faites (ON DELETE CASCADE)
         // Sinon, il faudrait supprimer manuellement les relations ici.
         // Vu les migrations :
-        // - tasks.assigned_to -> set null
         // - ai_analyses -> cascade
-        // - projects/sprints -> cascade (si l'employé est owner, ce qui est rare pour un simple employé)
         
         $user->delete();
 

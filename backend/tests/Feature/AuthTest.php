@@ -65,4 +65,44 @@ class AuthTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['message' => 'Déconnexion réussie']);
     }
+
+    public function test_user_can_request_password_reset()
+    {
+        $user = User::factory()->create(['email' => 'reset@example.com']);
+
+        $response = $this->postJson('/api/forgot-password', [
+            'email' => 'reset@example.com',
+        ]);
+
+        // Laravel's default forgot password might return different things based on implementation.
+        // Assuming your controller returns a simple success message for now.
+        $response->assertStatus(200);
+    }
+
+    public function test_user_can_reset_password_with_token()
+    {
+        $user = User::factory()->create([
+            'email' => 'reset@example.com',
+            'password' => Hash::make('oldpassword'),
+        ]);
+
+        $token = 'valid-token';
+        \Illuminate\Support\Facades\DB::table('password_reset_tokens')->insert([
+            'email' => 'reset@example.com',
+            'token' => $token,
+            'created_at' => now(),
+        ]);
+
+        $response = $this->postJson('/api/reset-password', [
+            'token' => $token,
+            'email' => 'reset@example.com',
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson(['message' => 'Mot de passe réinitialisé avec succès.']);
+        
+        $this->assertTrue(Hash::check('newpassword123', $user->fresh()->password));
+    }
 }
