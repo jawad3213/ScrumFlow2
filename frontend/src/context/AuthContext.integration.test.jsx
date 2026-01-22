@@ -9,26 +9,31 @@ import { AuthProvider, AuthContext } from "./AuthContext"
    MOCKS DES DÉPENDANCES
 ========================= */
 
-// Mock API login
-vi.mock("@/features/auth/api/auth", () => ({
-  login: vi.fn(),
-}))
-
 // Mock StorageService
 vi.mock("@/utils/storage", () => ({
   default: {
-    getToken: vi.fn(),
     getUser: vi.fn(),
     getRole: vi.fn(),
-    setToken: vi.fn(),
     setUser: vi.fn(),
     setRole: vi.fn(),
     clearAuth: vi.fn(),
   },
 }))
 
-import { login as apiLogin } from "@/features/auth/api/auth"
+// Mock Axios token management
+vi.mock("@/lib/axios", () => ({
+  setAccessToken: vi.fn(),
+  clearAccessToken: vi.fn(),
+}))
+
+vi.mock("@/features/auth/api/auth", () => ({
+  login: vi.fn(),
+  refreshToken: vi.fn(),
+}))
+
+import { login as apiLogin, refreshToken as apiRefresh } from "@/features/auth/api/auth"
 import StorageService from "@/utils/storage"
+import { setAccessToken, clearAccessToken } from "@/lib/axios"
 
 /* =========================
    COMPOSANT DE TEST
@@ -73,14 +78,15 @@ describe("AuthContext – integration tests", () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    StorageService.getToken.mockReturnValue(null)
     StorageService.getUser.mockReturnValue(null)
     StorageService.getRole.mockReturnValue(null)
+    apiRefresh.mockResolvedValue({}) // Default silent refresh failure/empty
   })
 
-  it("initializes from storage", async () => {
+  it("initializes from storage with silent refresh", async () => {
     StorageService.getUser.mockReturnValue({ name: "John" })
     StorageService.getRole.mockReturnValue("admin")
+    apiRefresh.mockResolvedValue({ access_token: "refreshed-token" })
 
     render(
       <AuthProvider>
@@ -94,9 +100,10 @@ describe("AuthContext – integration tests", () => {
 
     expect(screen.getByTestId("user").textContent).toBe("John")
     expect(screen.getByTestId("role").textContent).toBe("admin")
+    expect(setAccessToken).toHaveBeenCalledWith("refreshed-token")
   })
 
-  it("logs in and updates context + storage", async () => {
+  it("logs in and updates context + storage (no token in storage)", async () => {
     apiLogin.mockResolvedValue({
       access_token: "token123",
       role: "user",
@@ -115,17 +122,15 @@ describe("AuthContext – integration tests", () => {
       expect(screen.getByTestId("auth").textContent).toBe("yes")
     )
 
-    expect(StorageService.setToken).toHaveBeenCalledWith("token123")
     expect(StorageService.setRole).toHaveBeenCalledWith("user")
     expect(StorageService.setUser).toHaveBeenCalledWith({ name: "Alice" })
+    expect(setAccessToken).toHaveBeenCalledWith("token123")
 
     expect(screen.getByTestId("user").textContent).toBe("Alice")
     expect(screen.getByTestId("token").textContent).toBe("token123")
   })
 
   it("logs out and clears context + storage", async () => {
-    StorageService.getToken.mockReturnValue("token123")
-
     render(
       <AuthProvider>
         <TestComponent />
@@ -135,6 +140,7 @@ describe("AuthContext – integration tests", () => {
     await userEvent.click(screen.getByText("logout"))
 
     expect(StorageService.clearAuth).toHaveBeenCalled()
+    expect(clearAccessToken).toHaveBeenCalled()
     expect(screen.getByTestId("auth").textContent).toBe("no")
     expect(screen.getByTestId("user").textContent).toBe("no-user")
   })

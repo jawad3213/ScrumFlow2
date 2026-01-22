@@ -43,6 +43,8 @@ import SettingsPage from './pages/settings/SettingsPage';
 function App() {
   return (
     <div className="min-h-screen bg-surface-background font-sans antialiased text-neutral-900">
+      {/* Debug Marker */}
+      <span className="sr-only">App Rendered</span>
 
       <Routes>
 

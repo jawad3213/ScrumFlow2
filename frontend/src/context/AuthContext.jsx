@@ -13,27 +13,52 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const silentRefresh = async () => {
-            const storedUser = StorageService.getUser();
-            const storedRole = StorageService.getRole();
-
-            // S'il n'y a pas d'utilisateur stocké, on ne tente pas de refresh (session inexistante)
-            if (!storedUser) {
-                setLoading(false);
-                return;
-            }
+            const isLoginPage = window.location.pathname.includes('/login');
 
             try {
-                const data = await apiRefresh();
-                if (data.access_token) {
+                const storedUser = StorageService.getUser();
+                const storedRole = StorageService.getRole();
+
+                // S'il n'y a pas d'utilisateur stocké, on arrête
+                if (!storedUser) {
+                    setLoading(false);
+                    return;
+                }
+
+                // Pour éviter de bloquer la page de login, on lance le refresh sans bloquer si on y est déjà
+                const refreshPromise = apiRefresh();
+
+                if (isLoginPage) {
+                    setLoading(false);
+                    // On laisse le refresh continuer en arrière-plan
+                    refreshPromise.then(data => {
+                        if (data && data.access_token) {
+                            setAccessToken(data.access_token);
+                            setToken(data.access_token);
+                            setUser(storedUser);
+                            setUserRole(storedRole);
+                        }
+                    }).catch(() => { });
+                    return;
+                }
+
+                // Pour éviter de bloquer indéfiniment, on met un timeout de 5 secondes sur le refresh
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("Refresh timeout")), 5000)
+                );
+
+                const data = await Promise.race([refreshPromise, timeoutPromise]);
+
+                if (data && data.access_token) {
                     setAccessToken(data.access_token);
                     setToken(data.access_token);
                     setUser(storedUser);
                     setUserRole(storedRole);
                 }
             } catch (error) {
-                console.error("Silent refresh failed:", error);
-                StorageService.clearAuth();
-                clearAccessToken();
+                console.warn("Auth initialization failed or timed out:", error);
+                // Si on a timeout ou échoué, on laisse l'utilisateur aller vers le login
+                setLoading(false);
             } finally {
                 setLoading(false);
             }
