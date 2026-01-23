@@ -15,7 +15,6 @@ return new class extends Migration {
             $table->date('planned_end_date')->nullable();  // The goal/deadline
             $table->date('actual_end_date')->nullable();
             $table->text('description')->nullable();
-            $table->enum('status', ['pending', 'active', 'completed'])->default('pending'); // pending, active, completed
 
             // AI Analysis Attributes
             $table->decimal('estimated_duration_months', 8, 2)->nullable();

@@ -52,8 +52,13 @@ vi.mock('@/features/ai-analysis/components/ResourcePool', () => ({
     )
 }));
 
-vi.mock('@/components/ui/SiriOrb', () => ({
-    default: () => <div data-testid="siri-orb" />
+vi.mock('@/components/ui/LoadingAnimation', () => ({
+    default: ({ message }) => (
+        <div data-testid="loading-animation">
+            <div data-testid="lottie-animation" />
+            {message}
+        </div>
+    )
 }));
 
 // Mock des APIs et Services
@@ -86,7 +91,7 @@ describe('ProjectAnalysisView Component', () => {
 
     it('affiche le formulaire de configuration par défaut', () => {
         render(<ProjectAnalysisView />);
-        
+
         expect(screen.getByText(/Configure/i)).toBeDefined();
         expect(screen.getByPlaceholderText(/e.g., Enterprise SaaS Platform/i)).toBeDefined();
         expect(screen.getByPlaceholderText(/Describe the core problem/i)).toBeDefined();
@@ -95,19 +100,19 @@ describe('ProjectAnalysisView Component', () => {
     it('le bouton "Start Analysis" est désactivé si les champs sont vides', () => {
         render(<ProjectAnalysisView />);
         const btn = screen.getByRole('button', { name: /Start Analysis/i });
-        
+
         expect(btn.getAttribute('disabled')).toBeDefined();
     });
 
     it('permet de naviguer vers la sélection des ressources après saisie', async () => {
         render(<ProjectAnalysisView />);
-        
+
         const nameInput = screen.getByPlaceholderText(/e.g., Enterprise SaaS Platform/i);
         const descInput = screen.getByPlaceholderText(/Describe the core problem/i);
-        
+
         fireEvent.change(nameInput, { target: { value: 'Projet Alpha' } });
         fireEvent.change(descInput, { target: { value: 'Description du projet Alpha' } });
-        
+
         const btn = screen.getByRole('button', { name: /Start Analysis/i });
         fireEvent.click(btn);
 
@@ -130,8 +135,8 @@ describe('ProjectAnalysisView Component', () => {
         const uploadBtn = screen.getByText(/Simulate Upload/i);
         fireEvent.click(uploadBtn);
 
-        // Vérifie l'état de chargement (SiriOrb)
-        expect(screen.getByTestId('siri-orb')).toBeDefined();
+        // Vérifie l'état de chargement
+        expect(screen.getByTestId('lottie-animation')).toBeDefined();
         expect(screen.getByText(/AI Synthesis In Progress/i)).toBeDefined();
 
         // 4. Dashboard final
@@ -142,7 +147,7 @@ describe('ProjectAnalysisView Component', () => {
 
     it('permet de réinitialiser la configuration via le bouton Reset', async () => {
         render(<ProjectAnalysisView />);
-        
+
         // Passer à l'étape ressources
         fireEvent.change(screen.getByPlaceholderText(/e.g., Enterprise SaaS Platform/i), { target: { value: 'X' } });
         fireEvent.change(screen.getByPlaceholderText(/Describe the core problem/i), { target: { value: 'Y' } });

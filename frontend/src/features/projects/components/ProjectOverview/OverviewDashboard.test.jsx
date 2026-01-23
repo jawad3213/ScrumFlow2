@@ -9,8 +9,8 @@ import { deleteProject } from '@/features/projects/api/projects';
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
     const actual = await vi.importActual('react-router-dom');
-    return { 
-        ...actual, 
+    return {
+        ...actual,
         useNavigate: () => mockNavigate,
         useParams: () => ({ id: '1' }) // <--- Force l'ID à '1' pour le test
     };
@@ -35,7 +35,7 @@ vi.mock('./TechStackSnapshot', () => ({ default: () => <div>Tech Widget</div> })
 vi.mock('./ProjectProgressStepper', () => ({ default: () => <div>Stepper</div> }));
 
 describe('OverviewDashboard Component', () => {
-    const mockProject = { id: '1', name: 'Apollo Mission', status: 'active' };
+    const mockProject = { id: '1', name: 'Apollo Mission' };
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -44,7 +44,7 @@ describe('OverviewDashboard Component', () => {
     it('affiche l\'animation de chargement au début', () => {
         useProjectDetails.mockReturnValue({ isLoading: true });
         render(<OverviewDashboard />, { wrapper: MemoryRouter });
-        
+
         // On vérifie notre "stub" de chargement plutôt que le vrai composant Lottie
         expect(screen.getByTestId('loading-stub')).toBeInTheDocument();
         expect(screen.getByText(/Setting up your mission control/i)).toBeInTheDocument();

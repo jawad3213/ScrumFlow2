@@ -32,6 +32,65 @@ class ProjectController extends Controller
     }
 
     /**
+     * Get dashboard summary and project listing for system overview.
+     */
+    public function dashboard()
+    {
+        $projects = Project::with(['epics.stories', 'chef'])->latest()->get();
+        
+        $totalProjects = $projects->count();
+        
+        $totalCost = $projects->sum('total_project_cost');
+        $totalGains = $projects->sum('total_gain_value');
+        $averageRoi = $projects->avg('roi_percentage') ?? 0;
+
+        // Calculate unique engineers assigned across all projects
+        $engineerCount = AssignedEngineer::whereNotNull('user_id')->distinct('user_id')->count();
+
+        // Prepare project data with progress calculation
+        $projectsData = $projects->map(function ($project) {
+            $totalStories = 0;
+            $completedStories = 0; // In a real app, you'd have a 'status' on stories
+
+            foreach ($project->epics as $epic) {
+                $totalStories += $epic->stories->count();
+            }
+
+            $progress = 0; // Reset progress logic as it relied on status
+
+            return [
+                'id' => $project->id,
+                'name' => $project->name,
+                'progress' => $progress,
+                'roi' => $project->roi_percentage,
+                'cost' => $project->total_project_cost,
+                'chef' => $project->chef ? $project->chef->first_name . ' ' . $project->chef->last_name : 'Unassigned',
+                'has_strategic' => !!$project->roi_analysis_summary,
+                'has_technical' => $project->epics->count() > 0 || !empty($project->architecture_plan),
+                'has_stack' => !!$project->stack_name,
+                'steps' => $project->epics->map(function ($epic) {
+                    return [
+                        'title' => $epic->title,
+                        'stories' => $epic->stories->map(fn($s) => $s->title)
+                    ];
+                })
+            ];
+        });
+
+        return response()->json([
+            'stats' => [
+                'total_projects' => $totalProjects,
+                'total_budget' => $totalCost,
+                'total_gains' => $totalGains,
+                'average_roi' => round($averageRoi, 2),
+                'engineer_count' => $engineerCount,
+                'talent_utilization' => $engineerCount > 0 ? round(($engineerCount / max(User::count(), 1)) * 100) : 0,
+            ],
+            'projects' => $projectsData
+        ]);
+    }
+
+    /**
      * Store a newly created project in storage.
      */
     public function store(Request $request)
@@ -47,7 +106,6 @@ class ProjectController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'status' => 'nullable|string',
             'user_id' => 'nullable|exists:users,id',
         ]);
 
@@ -62,7 +120,7 @@ class ProjectController extends Controller
             return DB::transaction(function () use ($request) {
                 // 1. Prepare Project Data
                 $projectData = $request->only([
-                    'name', 'description', 'status',
+                    'name', 'description',
                     'start_date', 'actual_end_date',
                     'estimated_duration_months', 'total_capex', 'total_opex',
                     'total_project_cost', 'total_gain_value', 'annual_opex_value',
@@ -83,7 +141,6 @@ class ProjectController extends Controller
                 }
 
                 // Default values if missing
-                $projectData['status'] = $request->status ?? 'pending';
                 $projectData['user_id'] = $request->user()?->id ?? $request->user_id;
 
                 // Handle nested ROI data mapping
@@ -309,7 +366,6 @@ class ProjectController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
-            'status' => 'nullable|string|in:pending,active,completed',
             'user_id' => 'nullable|exists:users,id',
             'start_date' => 'nullable|date',
             'planned_end_date' => 'nullable|date|after_or_equal:start_date',

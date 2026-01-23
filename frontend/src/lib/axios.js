@@ -64,7 +64,11 @@ axiosInstance.interceptors.response.use(
         if (!window.location.pathname.includes('/login')) {
           window.location.assign('/login');
         }
-        return Promise.reject(error.response?.data?.message || 'Unauthorized');
+        
+        const errorMessage = error.response?.data?.message || 'Unauthorized';
+        const errorObj = new Error(errorMessage);
+        errorObj.response = error.response;
+        return Promise.reject(errorObj);
       }
 
       if (isRefreshing) {
@@ -101,9 +105,19 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        StorageService.clearAuth();
-        accessToken = null; // Important
-        window.location.assign('/login');
+        
+        // Only clear auth if it's a 401 (Refresh token expired/invalid)
+        if (refreshError.response?.status === 401) {
+            console.log('[Axios] Refresh token invalid (401), clearing auth');
+            StorageService.clearAuth();
+            accessToken = null;
+            if (!window.location.pathname.includes('/login')) {
+                window.location.assign('/login');
+            }
+        } else {
+            console.warn('[Axios] Refresh failed due to network/server error. Keeping tokens.');
+        }
+        
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

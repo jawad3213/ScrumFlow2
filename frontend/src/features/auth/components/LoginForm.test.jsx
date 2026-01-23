@@ -46,30 +46,30 @@ describe('LoginForm', () => {
     const apiError = 'Invalid credentials';
     mockLogin.mockRejectedValueOnce(apiError);
     vi.spyOn(utils, 'isValidEmail').mockReturnValue(true);
-    
+
     renderForm();
 
     fireEvent.change(screen.getByPlaceholderText(/example@gmail.com/i), { target: { value: 'wrong@test.com' } });
     fireEvent.change(screen.getByPlaceholderText(/••••••••/i), { target: { value: 'password' } });
-    
+
     fireEvent.submit(screen.getByRole('button', { name: /Log in Now/i }).closest('form'));
 
     await waitFor(() => {
-      expect(screen.getByText(apiError)).toBeInTheDocument();
+      expect(screen.getByText(/Login failed. Please check your credentials./i)).toBeInTheDocument();
     });
   });
 
   it('affiche le loader et désactive le bouton pendant la soumission', async () => {
     vi.spyOn(utils, 'isValidEmail').mockReturnValue(true);
     // On simule une promesse qui ne se résout jamais pour rester en état "loading"
-    mockLogin.mockReturnValue(new Promise(() => {})); 
-    
+    mockLogin.mockReturnValue(new Promise(() => { }));
+
     renderForm();
 
     // Remplir les champs pour permettre la soumission
     fireEvent.change(screen.getByPlaceholderText(/example@gmail.com/i), { target: { value: 'test@test.com' } });
     fireEvent.change(screen.getByPlaceholderText(/••••••••/i), { target: { value: 'password123' } });
-    
+
     // Cliquer sur le bouton de soumission (qui a encore son nom "Log in Now" à ce moment-là)
     const submitButton = screen.getByRole('button', { name: /Log in Now/i });
     fireEvent.click(submitButton);

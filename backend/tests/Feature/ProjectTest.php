@@ -26,12 +26,10 @@ class ProjectTest extends TestCase
         Project::create([
             'name' => 'Project A',
             'user_id' => $user->id,
-            'status' => 'pending'
         ]);
         Project::create([
             'name' => 'Project B',
             'user_id' => $user->id,
-            'status' => 'active'
         ]);
 
         // Hit the endpoint
@@ -53,7 +51,6 @@ class ProjectTest extends TestCase
         $payload = [
             'name' => 'New Awesome Project',
             'description' => 'A test description',
-            'status' => 'pending',
             'start_date' => '2024-01-01',
             'user_id' => $user->id
         ];
@@ -77,7 +74,6 @@ class ProjectTest extends TestCase
         $project = Project::create([
             'name' => 'Single Project',
             'user_id' => $user->id,
-            'status' => 'active'
         ]);
 
         $response = $this->getJson("/api/projects/{$project->id}");

@@ -15,7 +15,6 @@ class ProjectFactory extends Factory
         return [
             'name' => $this->faker->catchPhrase,
             'description' => $this->faker->paragraph,
-            'status' => 'pending',
             'user_id' => User::factory(),
         ];
     }

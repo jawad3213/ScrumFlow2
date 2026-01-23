@@ -6,33 +6,21 @@
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 
-// 1. On crée le mock
-const MockComponent = ({ children, ...props }) => React.createElement('div', props, children);
-
-const motionMock = {
-    div: MockComponent,
-    h2: MockComponent,
-    p: MockComponent,
-    section: MockComponent,
-    header: MockComponent,
-    span: MockComponent,
-};
-
-// 2. On attache proprement au global pour éviter les erreurs de l'éditeur
-Object.defineProperty(global, 'motion', { value: motionMock });
-
-// 3. Mock du module
+// Mock framer-motion FIRST (before any imports that might use it)
 vi.mock('framer-motion', () => ({
-    motion: motionMock,
+    motion: {
+        div: ({ children, ...props }) => React.createElement('div', props, children),
+        h2: ({ children, ...props }) => React.createElement('h2', props, children),
+        p: ({ children, ...props }) => React.createElement('p', props, children),
+        section: ({ children, ...props }) => React.createElement('section', props, children),
+        header: ({ children, ...props }) => React.createElement('header', props, children),
+        span: ({ children, ...props }) => React.createElement('span', props, children),
+    },
     AnimatePresence: ({ children }) => children,
     useInView: () => [null, true],
 }));
 
-// 4. Imports des composants (On peut les laisser ici, Vitest gère le "hoisting")
-import { render, screen } from '@testing-library/react';
-import AIDashboard from './AIDashboard';
-
-// Mocks des icônes (Simplifié)
+// Mock icons
 vi.mock('lucide-react', () => ({
     Users: () => <div />, DollarSign: () => <div />, TrendingUp: () => <div />,
     Shield: () => <div />, Cloud: () => <div />, Info: () => <div />,
@@ -40,12 +28,16 @@ vi.mock('lucide-react', () => ({
     Target: () => <div />,
 }));
 
-// Mocks des composants UI (Regroupés pour la clarté)
+// Mock UI components
 vi.mock('@/components/ui/blur-reveal', () => ({ BlurReveal: ({ children }) => <div>{children}</div> }));
 vi.mock('@/components/ui/mouse-effect', () => ({ MouseEffect: ({ children, className }) => <div className={className}>{children}</div> }));
 vi.mock('@/components/shared/FinancialCard', () => ({ default: ({ title, value }) => <div>{title} {value}</div> }));
 vi.mock('@/components/shared/SectionHeader', () => ({ default: ({ title }) => <h2>{title}</h2> }));
 vi.mock('@/components/shared/SimpleTableRow', () => ({ default: ({ name, detail, cost }) => <div>{name} {detail} {cost}</div> }));
+
+// Now import component
+import { render, screen } from '@testing-library/react';
+import AIDashboard from './AIDashboard';
 
 describe('AIDashboard Component', () => {
     const mockData = {
@@ -63,7 +55,7 @@ describe('AIDashboard Component', () => {
         roi_analysis_summary: "Analyse OK"
     };
 
-    it('doit s’afficher sans erreur', () => {
+    it('doit s\'afficher sans erreur', () => {
         render(<AIDashboard data={mockData} />);
         expect(screen.getByText(/Dev Duration/i)).toBeInTheDocument();
     });

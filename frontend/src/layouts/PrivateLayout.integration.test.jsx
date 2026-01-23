@@ -57,8 +57,9 @@ describe("PrivateLayout – integration tests", () => {
       loading: true,
     })
 
-    // Spinner présent
-    expect(document.querySelector(".animate-spin")).toBeTruthy()
+    // Loading animation present
+    expect(screen.getByText(/Securing your session/i)).toBeTruthy()
+    expect(screen.getByTestId("lottie-animation")).toBeTruthy()
   })
 
   it("redirects to /login when user is not authenticated", () => {

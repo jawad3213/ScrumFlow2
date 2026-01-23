@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import { cn } from '../utils/utils';
 
+import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 
 const PrivateLayout = () => {
@@ -11,9 +12,11 @@ const PrivateLayout = () => {
     const { isAuthenticated, loading } = useAuth();
 
     if (loading) {
-        return <div className="min-h-screen flex items-center justify-center bg-surface-background">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary-500"></div>
-        </div>;
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-surface-background">
+                <LoadingAnimation message="Securing your session..." />
+            </div>
+        );
     }
 
     if (!isAuthenticated) {

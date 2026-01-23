@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AddSpecializationModal from './AddSpecializationModal';
@@ -19,12 +20,12 @@ beforeEach(() => {
   HTMLElement.prototype.scrollIntoView = vi.fn();
   HTMLElement.prototype.hasPointerCapture = vi.fn();
   HTMLElement.prototype.releasePointerCapture = vi.fn();
-  
+
   // Correction ici : On utilise une classe pour le constructeur
   global.ResizeObserver = class ResizeObserver {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
+    observe() { }
+    unobserve() { }
+    disconnect() { }
   };
 });
 
@@ -43,23 +44,26 @@ describe('AddSpecializationModal', () => {
 
     // 3. Sélectionner le Rôle
     const roleTrigger = screen.getAllByRole('combobox')[0];
-    await user.click(roleTrigger);
+    fireEvent.click(roleTrigger);
 
     const roleOption = await screen.findByRole('option', { name: 'Fullstack Developer' });
-    await user.click(roleOption);
+    fireEvent.click(roleOption);
 
     // 4. Sélectionner le Niveau
-    const levelTrigger = screen.getAllByRole('combobox')[1];
     // On attend que l'état React débloque le champ
-    await waitFor(() => expect(levelTrigger).not.toBeDisabled());
-    
-    await user.click(levelTrigger);
+    await waitFor(() => {
+      const levelTrigger = screen.getAllByRole('combobox')[1];
+      expect(levelTrigger).not.toBeDisabled();
+    });
+
+    const levelTrigger = screen.getAllByRole('combobox')[1];
+    fireEvent.click(levelTrigger);
     const levelOption = await screen.findByRole('option', { name: 'Junior' });
-    await user.click(levelOption);
+    fireEvent.click(levelOption);
 
     // 5. Soumission
     const submitBtn = screen.getByRole('button', { name: /Create Role/i });
-    await user.click(submitBtn);
+    fireEvent.click(submitBtn);
 
     // 6. Vérification du message d'erreur
     // On cherche spécifiquement le texte complet de l'erreur pour ne pas confondre avec le label du champ

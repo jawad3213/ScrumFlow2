@@ -28,7 +28,8 @@ const LoginForm = () => {
             await login({ email, password });
             navigate('/dashboard');
         } catch (err) {
-            setError(err || 'Login failed. Please check your credentials.');
+            const message = err.message || 'Login failed. Please check your credentials.';
+            setError(message);
             console.error('Login error:', err);
         } finally {
             setIsLoading(false);

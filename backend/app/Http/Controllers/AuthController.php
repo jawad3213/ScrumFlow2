@@ -46,12 +46,17 @@ class AuthController extends Controller
             'expires_at' => now()->addDays(30),
         ]);
 
-        // Préparation du cookie sécurisé (HttpOnly, SameSite=Strict)
+        // Création du cookie
         $refreshCookie = cookie(
             'refresh_token',
             $rawRefreshToken,
             60 * 24 * 30, // 30 jours
-            '/', null, null, true, false, 'Strict'
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'Lax'
         );
 
         // 5. Retourner la réponse JSON avec le cookie
@@ -71,6 +76,11 @@ class AuthController extends Controller
     {
         $rawToken = $request->cookie('refresh_token');
 
+        \Log::info('[Auth] Refresh token request received', [
+            'has_cookie' => !!$rawToken,
+            'cookie_val_snippet' => $rawToken ? substr($rawToken, 0, 10) . '...' : 'NONE'
+        ]);
+
         if (!$rawToken) {
             return response()->json(['message' => 'Token de rafraîchissement absent.'], 401);
         }
@@ -78,8 +88,11 @@ class AuthController extends Controller
         $tokenRecord = RefreshToken::where('token', hash('sha256', $rawToken))->first();
 
         if (!$tokenRecord || $tokenRecord->isExpired()) {
+            \Log::warning('[Auth] Refresh token invalid or expired');
             return response()->json(['message' => 'Token de rafraîchissement invalide ou expiré.'], 401);
         }
+
+        \Log::info('[Auth] Token validated, rotating session for User: ' . $tokenRecord->user_id);
 
         $user = $tokenRecord->user;
 
@@ -97,8 +110,13 @@ class AuthController extends Controller
         $refreshCookie = cookie(
             'refresh_token',
             $newRawRefreshToken,
-            60 * 24 * 30,
-            '/', null, null, true, false, 'Strict'
+            60 * 24 * 30, // 30 jours
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'Lax'
         );
 
         return response()->json([

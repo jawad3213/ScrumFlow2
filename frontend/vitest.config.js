@@ -19,6 +19,6 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     // Charge directement les matchers DOM sans fichier setup intermédiaire
-    setupFiles: ['@testing-library/jest-dom/vitest'],
+    setupFiles: ['./src/test/setup.jsx'],
   },
 });

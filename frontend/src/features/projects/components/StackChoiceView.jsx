@@ -16,8 +16,7 @@ import { saveProjectStack } from '@/features/projects/api/projects';
 import StorageService from '@/utils/storage';
 import { cn } from '@/utils/utils';
 
-// Reuse SiriOrb for consistency
-import SiriOrb from '@/components/ui/SiriOrb';
+// Unified loading for consistency
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
 
 const STEPS = [
@@ -484,11 +483,7 @@ const StackChoiceView = ({ projectId }) => {
 
     const renderAnalyzing = () => (
         <div className="flex flex-col items-center justify-center py-20 space-y-8">
-            <SiriOrb size="160px" />
-            <div className="text-center">
-                <h3 className="text-xl font-black text-neutral-900 uppercase tracking-widest">Architecting Solution</h3>
-                <p className="text-sm text-neutral-400 mt-2 font-mono">Comparing 50+ Modern Tech Stacks...</p>
-            </div>
+            <LoadingAnimation message="Architecting Solution... Comparing 50+ Modern Tech Stacks" />
         </div>
     );
 

@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar']);
 
     // Project Routes
+    Route::get('/projects/dashboard', [\App\Http\Controllers\ProjectController::class, 'dashboard']); // Add this line
     Route::get('/projects', [\App\Http\Controllers\ProjectController::class, 'index']);
     Route::post('/projects', [\App\Http\Controllers\ProjectController::class, 'store']);
     Route::get('/projects/{id}', [\App\Http\Controllers\ProjectController::class, 'show']);

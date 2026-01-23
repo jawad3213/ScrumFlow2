@@ -17,6 +17,10 @@ export const refreshToken = () => {
   return client('/refresh-token', { method: 'POST' });
 };
 
+export const getMe = () => {
+  return client('/me');
+};
+
 export const logout = () => {
-  StorageService.clearAuth();
+  return client('/logout', { method: 'POST' });
 };

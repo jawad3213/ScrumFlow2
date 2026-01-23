@@ -20,7 +20,7 @@ import testData from '@/pages/NewProjectAnalysis/test_data.json';
 import AIDashboard from '@/features/ai-analysis/components/AIDashboard';
 import RequirementUpload from '@/features/ai-analysis/components/RequirementUpload';
 import ResourcePool from '@/features/ai-analysis/components/ResourcePool';
-import SiriOrb from '@/components/ui/SiriOrb';
+import LoadingAnimation from '@/components/ui/LoadingAnimation';
 
 const ProjectAnalysisView = () => {
     const { id } = useParams();
@@ -119,7 +119,6 @@ const ProjectAnalysisView = () => {
                 ...analysisData,
                 name: projectData.name,
                 description: projectData.description,
-                status: 'pending' // Initialize as pending
             });
 
             console.log('Project Synced:', result);
@@ -137,27 +136,8 @@ const ProjectAnalysisView = () => {
     };
 
     const renderAnalyzing = () => (
-        <div className="flex flex-col items-center justify-center py-24 space-y-10 max-w-md mx-auto">
-            <div className="relative flex items-center justify-center">
-                <SiriOrb size="192px" animationDuration={15} />
-            </div>
-
-            <div className="text-center space-y-3">
-                <h2 className="text-2xl font-black text-neutral-900 tracking-tight uppercase tracking-[0.1em]">AI Synthesis In Progress</h2>
-                <p className="text-sm text-neutral-400 font-medium leading-relaxed font-mono">
-                    Decomposing specifications into high-fidelity nodes...
-                </p>
-                <div className="flex justify-center gap-1.5 pt-4">
-                    {[0, 1, 2].map(i => (
-                        <motion.div
-                            key={i}
-                            animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
-                            transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.3 }}
-                            className="w-2 h-2 rounded-full bg-brand-primary-500"
-                        />
-                    ))}
-                </div>
-            </div>
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[48px]">
+            <LoadingAnimation message="AI Synthesis In Progress... Decomposing specifications into high-fidelity nodes" />
         </div>
     );
 

@@ -16,6 +16,8 @@ import client from '@/lib/axios';
 import { cn } from '@/utils/utils';
 import { toast } from 'sonner';
 
+import LoadingAnimation from '@/components/ui/LoadingAnimation';
+
 /**
  * High-end Project Team Management Interface
  */
@@ -82,9 +84,8 @@ const ProjectTeamManager = ({ projectId }) => {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center py-32 space-y-4">
-                <Loader2 className="h-10 w-10 text-brand-primary-500 animate-spin" />
-                <p className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Assembling Project Matrix...</p>
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[32px] border border-neutral-100 shadow-elevation">
+                <LoadingAnimation message="Assembling Project Matrix..." />
             </div>
         );
     }
