@@ -16,10 +16,11 @@ return new class extends Migration
         $table->string('first_name');
         $table->string('last_name');
         $table->string('email')->unique();
+        $table->string('avatar')->nullable();
         $table->string('password');
         $table->enum('role', ['chef', 'employee'])->default('employee'); 
-        $table->string('job_title')->nullable(); 
-        $table->decimal('daily_rate', 8, 2)->nullable(); // Pour le calcul de coût par AI
+        $table->foreignId('specialization_id')->nullable()->constrained('specializations')->onDelete('set null'); 
+        $table->boolean('is_engaged')->default(false); 
         $table->rememberToken();
         $table->timestamps();
     });

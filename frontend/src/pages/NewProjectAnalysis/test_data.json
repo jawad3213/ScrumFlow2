@@ -1,0 +1,475 @@
+{
+    "backlog": [
+        {
+            "id": "E-1",
+            "title": "Authentification et S\u00e9curit\u00e9",
+            "description": "G\u00e9rer l'acc\u00e8s s\u00e9curis\u00e9 \u00e0 l'application pour tous les utilisateurs, incluant la connexion, la r\u00e9initialisation de mot de passe et la g\u00e9n\u00e9ration automatique des identifiants.",
+            "user_stories": [
+                {
+                    "id": "US-1.1",
+                    "title": "Connexion Utilisateur S\u00e9curis\u00e9e",
+                    "story_points": 5,
+                    "description": "En tant qu'utilisateur, je veux me connecter de mani\u00e8re s\u00e9curis\u00e9e avec mon email et mot de passe, afin d'acc\u00e9der \u00e0 l'application.",
+                    "acceptance_criteria": [
+                        "Le formulaire de connexion affiche les champs 'Email' et 'Mot de passe'.",
+                        "La validation des champs (format email, mot de passe non vide) est effectu\u00e9e c\u00f4t\u00e9 client et serveur.",
+                        "Apr\u00e8s une connexion r\u00e9ussie, l'utilisateur est redirig\u00e9 vers son tableau de bord appropri\u00e9 (Chef ou Employ\u00e9).",
+                        "En cas d'\u00e9chec de connexion (mauvais identifiants), un message d'erreur clair est affich\u00e9.",
+                        "Le mot de passe est hach\u00e9 avant d'\u00eatre stock\u00e9 en base de donn\u00e9es.",
+                        "La session utilisateur est g\u00e9r\u00e9e via un token s\u00e9curis\u00e9 (Laravel Sanctum).",
+                        "Apr\u00e8s 3 tentatives \u00e9chou\u00e9es en moins de 5 minutes, le compte est temporairement bloqu\u00e9 pendant 15 minutes."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-1.1.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Impl\u00e9mentation API de connexion s\u00e9curis\u00e9e",
+                            "instructions": "Utilise Laravel Sanctum pour l'authentification. Cr\u00e9e l'endpoint POST `/api/login` acceptant email et mot de passe. Assure le hachage des mots de passe avec Bcrypt et la v\u00e9rification. G\u00e8re les r\u00e9ponses d'erreur (401 Unauthorized, 422 Unprocessable Entity pour validation). Impl\u00e9mente le 'throttle' (limitation de requ\u00eates) pour 3 tentatives toutes les 5 minutes.",
+                            "hours": 24
+                        },
+                        {
+                            "id": "T-1.1.2",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "D\u00e9veloppement interface de connexion",
+                            "instructions": "Cr\u00e9e le composant React pour la page de connexion. Impl\u00e9mente un formulaire contr\u00f4l\u00e9 avec validation. Utilise Axios pour la requ\u00eate POST vers `/api/login`. G\u00e8re la redirection apr\u00e8s succ\u00e8s et l'affichage des messages d'erreur. Stocke le token re\u00e7u (JWT) dans le localStorage.",
+                            "hours": 16
+                        }
+                    ]
+                },
+                {
+                    "id": "US-1.2",
+                    "title": "Mot de passe oubli\u00e9 / R\u00e9initialisation",
+                    "story_points": 8,
+                    "description": "En tant qu'utilisateur, je veux pouvoir r\u00e9initialiser mon mot de passe si je l'ai oubli\u00e9, afin de retrouver l'acc\u00e8s \u00e0 mon compte.",
+                    "acceptance_criteria": [
+                        "Un lien 'Mot de passe oubli\u00e9 ?' est pr\u00e9sent sur la page de connexion.",
+                        "La saisie d'un email envoie un lien unique et temporaire par email pour la r\u00e9initialisation.",
+                        "Le lien de r\u00e9initialisation expire apr\u00e8s un temps d\u00e9fini (ex: 60 minutes) ou apr\u00e8s utilisation.",
+                        "La page de r\u00e9initialisation demande un nouveau mot de passe et sa confirmation.",
+                        "Le nouveau mot de passe respecte des r\u00e8gles de complexit\u00e9 (min 8 caract\u00e8res, maj/min, chiffre, symbole).",
+                        "Apr\u00e8s r\u00e9initialisation r\u00e9ussie, l'utilisateur est inform\u00e9 et peut se connecter avec le nouveau mot de passe.",
+                        "L'email de r\u00e9initialisation est envoy\u00e9 via un service SMTP configur\u00e9."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-1.2.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Impl\u00e9mentation API de demande/r\u00e9initialisation de mot de passe",
+                            "instructions": "Configure le m\u00e9canisme de 'password reset' de Laravel. Cr\u00e9e les endpoints POST `/api/forgot-password` (pour envoyer le mail) et POST `/api/reset-password` (pour valider le token et changer le mot de passe). Assure la s\u00e9curit\u00e9 du token (expiration, utilisation unique). Configure le service mailer de Laravel pour l'envoi d'emails.",
+                            "hours": 32
+                        },
+                        {
+                            "id": "T-1.2.2",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "D\u00e9veloppement interfaces 'Mot de passe oubli\u00e9' et 'R\u00e9initialisation'",
+                            "instructions": "D\u00e9veloppe les composants React pour la demande d'email (page 'Forgot Password') et la saisie du nouveau mot de passe (page 'Reset Password'). Impl\u00e9mente les validations c\u00f4t\u00e9 client. G\u00e8re l'envoi des requ\u00eates aux APIs correspondantes et affiche les retours (succ\u00e8s/erreur).",
+                            "hours": 20
+                        }
+                    ]
+                },
+                {
+                    "id": "US-1.3",
+                    "title": "G\u00e9n\u00e9ration automatique de credentials",
+                    "story_points": 5,
+                    "description": "En tant que Chef, je veux que le syst\u00e8me g\u00e9n\u00e8re automatiquement un mot de passe provisoire et envoie un email de bienvenue \u00e0 un nouvel employ\u00e9, afin qu'il puisse se connecter pour la premi\u00e8re fois.",
+                    "acceptance_criteria": [
+                        "Lors de la cr\u00e9ation d'un employ\u00e9 par le Chef, un mot de passe provisoire (8-12 caract\u00e8res, complexe) est g\u00e9n\u00e9r\u00e9 automatiquement.",
+                        "Ce mot de passe provisoire est hach\u00e9 et stock\u00e9 en base de donn\u00e9es.",
+                        "Un email de bienvenue est automatiquement envoy\u00e9 \u00e0 l'adresse email de l'employ\u00e9, contenant son email et son mot de passe provisoire.",
+                        "L'email de bienvenue inclut un lien direct vers la page de connexion de l'application.",
+                        "L'employ\u00e9 est invit\u00e9 \u00e0 modifier son mot de passe lors de sa premi\u00e8re connexion ou peu apr\u00e8s."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-1.3.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Impl\u00e9mentation API de g\u00e9n\u00e9ration de mot de passe et envoi email",
+                            "instructions": "Int\u00e8gre la logique de g\u00e9n\u00e9ration de mot de passe al\u00e9atoire au processus de cr\u00e9ation d'utilisateur (via l'API CRUD employ\u00e9). Utilise `Str::random()` de Laravel. Hache le mot de passe avant stockage. Cr\u00e9e une 'Mailable' Laravel pour l'email de bienvenue, incluant les identifiants g\u00e9n\u00e9r\u00e9s et un lien de connexion. Utilise les queues si n\u00e9cessaire pour l'envoi d'emails.",
+                            "hours": 28
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "E-2",
+            "title": "Gestion des Utilisateurs (Espace Chef)",
+            "description": "Permettre aux Chefs de g\u00e9rer les comptes des employ\u00e9s de mani\u00e8re administrative.",
+            "user_stories": [
+                {
+                    "id": "US-2.1",
+                    "title": "CRUD Employ\u00e9",
+                    "story_points": 8,
+                    "description": "En tant que Chef, je veux pouvoir cr\u00e9er, consulter, modifier et d\u00e9sactiver les comptes employ\u00e9s, afin de g\u00e9rer l'acc\u00e8s et les informations de mon \u00e9quipe.",
+                    "acceptance_criteria": [
+                        "Une interface d\u00e9di\u00e9e (page 'Gestion des Employ\u00e9s') est accessible uniquement par les Chefs.",
+                        "Le Chef peut cr\u00e9er un nouvel employ\u00e9 en saisissant Nom, Pr\u00e9nom, Email.",
+                        "Le Chef peut consulter la liste des employ\u00e9s avec leurs informations principales.",
+                        "Le Chef peut modifier les informations d'un employ\u00e9 existant (Nom, Pr\u00e9nom).",
+                        "Le Chef peut d\u00e9sactiver un compte employ\u00e9, le rendant incapable de se connecter sans supprimer son historique de t\u00e2ches.",
+                        "La validation des donn\u00e9es est effectu\u00e9e c\u00f4t\u00e9 client et serveur (unicit\u00e9 de l'email, formats valides).",
+                        "Un message de confirmation visuel est affich\u00e9 apr\u00e8s chaque op\u00e9ration r\u00e9ussie."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-2.1.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Impl\u00e9mentation API CRUD Employ\u00e9",
+                            "instructions": "D\u00e9veloppe les endpoints RESTful pour le mod\u00e8le `User` (`GET /api/employees`, `POST /api/employees`, `PUT /api/employees/{id}`, `DELETE /api/employees/{id}`). Mets en place des politiques d'autorisation (Laravel Policies) pour que seul le r\u00f4le 'Chef' puisse acc\u00e9der \u00e0 ces endpoints. Impl\u00e9mente la validation des requ\u00eates (Laravel Form Requests) pour les donn\u00e9es des employ\u00e9s. G\u00e8re la g\u00e9n\u00e9ration de credentials via le hook T-1.3.1 lors de la cr\u00e9ation.",
+                            "hours": 40
+                        },
+                        {
+                            "id": "T-2.1.2",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "D\u00e9veloppement interface de gestion des employ\u00e9s",
+                            "instructions": "Cr\u00e9e le composant React pour la page de gestion des employ\u00e9s. Affiche une table pagin\u00e9e des employ\u00e9s avec des options de tri. D\u00e9veloppe les formulaires Modaux pour la cr\u00e9ation et la modification d'employ\u00e9s. Int\u00e8gre les appels Axios aux APIs CRUD Backend. Impl\u00e9mente les messages de succ\u00e8s/erreur pour les op\u00e9rations.",
+                            "hours": 32
+                        }
+                    ]
+                },
+                {
+                    "id": "US-2.2",
+                    "title": "Gestion du statut Actif/Inactif d'un employ\u00e9",
+                    "story_points": 3,
+                    "description": "En tant que Chef, je veux pouvoir activer ou d\u00e9sactiver le statut d'un employ\u00e9, afin de g\u00e9rer leurs acc\u00e8s temporaires sans perdre leur historique.",
+                    "acceptance_criteria": [
+                        "Un bouton ou un interrupteur (toggle) est disponible dans la liste des employ\u00e9s pour changer leur statut (Actif/Inactif).",
+                        "Le changement de statut est persistant en base de donn\u00e9es.",
+                        "Un employ\u00e9 avec le statut 'Inactif' ne peut pas se connecter \u00e0 l'application.",
+                        "Un employ\u00e9 d\u00e9sactiv\u00e9 ne re\u00e7oit plus de notifications li\u00e9es aux t\u00e2ches."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-2.2.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Impl\u00e9mentation API de gestion de statut d'employ\u00e9",
+                            "instructions": "Ajoute une colonne `is_active` (boolean) au mod\u00e8le `User` via une migration. Cr\u00e9e un endpoint PATCH `/api/employees/{id}/status` pour basculer ce statut. Met \u00e0 jour la logique d'authentification pour refuser la connexion aux utilisateurs `is_active = false`. Applique une politique d'autorisation Chef.",
+                            "hours": 16
+                        },
+                        {
+                            "id": "T-2.2.2",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "Ajout fonctionnalit\u00e9 de gestion de statut \u00e0 l'interface",
+                            "instructions": "Dans le tableau de bord de gestion des employ\u00e9s, ajoute un composant UI (ex: un interrupteur, un bouton) pour changer le statut 'Actif'/'Inactif' d'un employ\u00e9. Int\u00e8gre l'appel API PATCH vers `/api/employees/{id}/status`. Mets \u00e0 jour l'interface utilisateur en temps r\u00e9el apr\u00e8s la modification.",
+                            "hours": 12
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "E-3",
+            "title": "Gestion des T\u00e2ches (Espace Chef)",
+            "description": "Permettre aux Chefs de cr\u00e9er, assigner et suivre l'avancement des t\u00e2ches de l'entreprise.",
+            "user_stories": [
+                {
+                    "id": "US-3.1",
+                    "title": "Cr\u00e9ation de T\u00e2che",
+                    "story_points": 5,
+                    "description": "En tant que Chef, je veux pouvoir cr\u00e9er une nouvelle t\u00e2che avec un titre, une description et une date limite, afin de d\u00e9finir clairement le travail \u00e0 effectuer.",
+                    "acceptance_criteria": [
+                        "Une interface de cr\u00e9ation de t\u00e2che est disponible pour le Chef.",
+                        "Les champs 'Titre', 'Description' et 'Date limite' sont obligatoires.",
+                        "La 'Date limite' doit \u00eatre une date future ou \u00e9gale au jour courant.",
+                        "La validation des champs est effectu\u00e9e c\u00f4t\u00e9 client et serveur.",
+                        "La t\u00e2che est enregistr\u00e9e en base de donn\u00e9es avec un statut initial 'Assign\u00e9 / Re\u00e7u'."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-3.1.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Impl\u00e9mentation API de cr\u00e9ation de t\u00e2che",
+                            "instructions": "Cr\u00e9e le mod\u00e8le `Task` avec les attributs `title`, `description`, `deadline`, `assigned_to_user_id`, `status` (valeur par d\u00e9faut 'assigned'). D\u00e9veloppe l'endpoint POST `/api/tasks`. Impl\u00e9mente la validation des requ\u00eates (titre, description non vides; deadline format date et future/pr\u00e9sente). Assure l'autorisation 'Chef'.",
+                            "hours": 20
+                        },
+                        {
+                            "id": "T-3.1.2",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "D\u00e9veloppement interface de cr\u00e9ation de t\u00e2che",
+                            "instructions": "Cr\u00e9e le composant React pour le formulaire de cr\u00e9ation de t\u00e2che. Utilise un `input type='date'` ou un date-picker pour la date limite. G\u00e8re l'\u00e9tat du formulaire et la soumission via Axios \u00e0 l'API `/api/tasks`. Affiche les messages de succ\u00e8s ou les erreurs de validation.",
+                            "hours": 16
+                        }
+                    ]
+                },
+                {
+                    "id": "US-3.2",
+                    "title": "Assignation de T\u00e2che",
+                    "story_points": 5,
+                    "description": "En tant que Chef, je veux pouvoir affecter une t\u00e2che \u00e0 un employ\u00e9 sp\u00e9cifique lors de la cr\u00e9ation ou ult\u00e9rieurement, afin de r\u00e9partir le travail.",
+                    "acceptance_criteria": [
+                        "Lors de la cr\u00e9ation de t\u00e2che, une liste d\u00e9roulante contient tous les employ\u00e9s actifs disponibles pour l'assignation.",
+                        "Il est possible de modifier l'employ\u00e9 assign\u00e9 \u00e0 une t\u00e2che existante via l'interface de gestion des t\u00e2ches.",
+                        "Une t\u00e2che doit toujours \u00eatre assign\u00e9e \u00e0 un employ\u00e9 actif.",
+                        "L'employ\u00e9 re\u00e7oit une notification (ex: via email) lorsque une t\u00e2che lui est assign\u00e9e ou r\u00e9assign\u00e9e."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-3.2.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Impl\u00e9mentation API d'assignation/r\u00e9assignation de t\u00e2che",
+                            "instructions": "Modifie l'API de cr\u00e9ation de t\u00e2che pour inclure l'assignation imm\u00e9diate. Cr\u00e9e un endpoint PATCH `/api/tasks/{id}/assign` acceptant un `user_id`. V\u00e9rifie que `user_id` correspond \u00e0 un employ\u00e9 actif. Impl\u00e9mente un \u00e9v\u00e9nement Laravel pour l'envoi d'emails de notification \u00e0 l'employ\u00e9 assign\u00e9.",
+                            "hours": 24
+                        },
+                        {
+                            "id": "T-3.2.2",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "Int\u00e9gration de l'assignation dans l'interface de gestion de t\u00e2ches",
+                            "instructions": "Ajoute un champ de s\u00e9lection d'employ\u00e9 (liste d\u00e9roulante, ex: un `select` peupl\u00e9 par une API `GET /api/employees` filtr\u00e9e par actif) au formulaire de cr\u00e9ation/modification de t\u00e2che. Affiche l'employ\u00e9 assign\u00e9 clairement dans la vue du Chef. Permet de changer l'assignation d'une t\u00e2che existante via un composant d\u00e9di\u00e9.",
+                            "hours": 20
+                        }
+                    ]
+                },
+                {
+                    "id": "US-3.3",
+                    "title": "Suivi global des T\u00e2ches (Dashboard Chef)",
+                    "story_points": 8,
+                    "description": "En tant que Chef, je veux avoir une vue d'ensemble de toutes les t\u00e2ches et de leurs \u00e9tats actuels, afin de superviser rapidement l'avancement du projet.",
+                    "acceptance_criteria": [
+                        "Un tableau de bord sp\u00e9cifique au Chef affiche une liste pagin\u00e9e de toutes les t\u00e2ches.",
+                        "Chaque t\u00e2che affiche son titre, description abr\u00e9g\u00e9e, date limite, employ\u00e9 assign\u00e9 et statut actuel.",
+                        "Des filtres sont disponibles par statut (Assign\u00e9, En cours, Fini), par employ\u00e9 (liste d\u00e9roulante) et par date limite (range de dates).",
+                        "Les t\u00e2ches en retard (deadline d\u00e9pass\u00e9e et statut non 'Fini') sont visuellement mises en \u00e9vidence (ex: couleur rouge).",
+                        "Le tableau de bord se rafra\u00eechit automatiquement toutes les 30 secondes pour les mises \u00e0 jour."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-3.3.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Impl\u00e9mentation API de lecture et filtrage des t\u00e2ches",
+                            "instructions": "D\u00e9veloppe l'endpoint GET `/api/tasks` pour r\u00e9cup\u00e9rer toutes les t\u00e2ches. Impl\u00e9mente la pagination, le tri par d\u00e9faut par date limite, et des filtres par `status`, `assigned_to_user_id`, et `deadline` (min/max). Ajoute une logique de calcul pour identifier les t\u00e2ches 'en retard'. Assure l'optimisation des requ\u00eates SQL pour \u00e9viter les N+1.",
+                            "hours": 36
+                        },
+                        {
+                            "id": "T-3.3.2",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "D\u00e9veloppement tableau de bord Chef",
+                            "instructions": "Cr\u00e9e le composant React pour le tableau de bord Chef. Int\u00e8gre une table pour afficher les t\u00e2ches. Impl\u00e9mente les composants de filtrage et de pagination. Utilise des styles CSS pour mettre en \u00e9vidence les t\u00e2ches en retard. Configure un m\u00e9canisme de rafra\u00eechissement p\u00e9riodique (ex: `setInterval`).",
+                            "hours": 28
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "E-4",
+            "title": "Ex\u00e9cution des T\u00e2ches (Espace Employ\u00e9)",
+            "description": "Fournir aux employ\u00e9s une interface simple et claire pour consulter et mettre \u00e0 jour leurs t\u00e2ches.",
+            "user_stories": [
+                {
+                    "id": "US-4.1",
+                    "title": "Tableau de bord personnel de l'Employ\u00e9",
+                    "story_points": 5,
+                    "description": "En tant qu'Employ\u00e9, je veux voir une liste filtr\u00e9e de toutes les t\u00e2ches qui me sont assign\u00e9es, afin de me concentrer sur mon travail.",
+                    "acceptance_criteria": [
+                        "Le tableau de bord de l'employ\u00e9 n'affiche que les t\u00e2ches qui lui sont assign\u00e9es.",
+                        "Chaque t\u00e2che affiche son titre, description, date limite et statut actuel.",
+                        "Les t\u00e2ches sont tri\u00e9es par date limite (les plus proches en premier) par d\u00e9faut.",
+                        "Possibilit\u00e9 de filtrer les t\u00e2ches par statut (Assign\u00e9, En cours, Fini) et de rechercher par titre.",
+                        "Le tableau de bord est accessible via une URL d\u00e9di\u00e9e \u00e0 l'employ\u00e9 connect\u00e9."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-4.1.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Impl\u00e9mentation API de lecture des t\u00e2ches de l'employ\u00e9",
+                            "instructions": "Cr\u00e9e un endpoint GET `/api/me/tasks` qui retourne uniquement les t\u00e2ches o\u00f9 `assigned_to_user_id` correspond \u00e0 l'ID de l'utilisateur authentifi\u00e9. Impl\u00e9mente la pagination et le tri par `deadline`. Ajoute des filtres optionnels par `status` et `title` (recherche partielle).",
+                            "hours": 20
+                        },
+                        {
+                            "id": "T-4.1.2",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "D\u00e9veloppement tableau de bord Employ\u00e9",
+                            "instructions": "Cr\u00e9e le composant React pour le tableau de bord Employ\u00e9. Affiche les t\u00e2ches sous forme de cartes ou de liste simple. Int\u00e8gre l'appel API \u00e0 `/api/me/tasks`. Impl\u00e9mente des filtres pour le statut et une barre de recherche pour le titre. Assure le tri par date limite par d\u00e9faut.",
+                            "hours": 24
+                        }
+                    ]
+                },
+                {
+                    "id": "US-4.2",
+                    "title": "Workflow de statut de T\u00e2che",
+                    "story_points": 8,
+                    "description": "En tant qu'Employ\u00e9, je veux pouvoir modifier l'\u00e9tat de mes t\u00e2ches (Assign\u00e9, En cours, Fini), afin de suivre leur avancement.",
+                    "acceptance_criteria": [
+                        "Pour chaque t\u00e2che affich\u00e9e dans son tableau de bord, l'employ\u00e9 peut choisir un nouveau statut parmi 'En cours' ou 'Fini / Termin\u00e9'.",
+                        "Le statut 'Assign\u00e9 / Re\u00e7u' est l'\u00e9tat initial et ne peut pas \u00eatre modifi\u00e9 directement par l'employ\u00e9.",
+                        "Le changement de statut est enregistr\u00e9 en base de donn\u00e9es.",
+                        "Une t\u00e2che pass\u00e9e \u00e0 'Fini / Termin\u00e9' ne peut plus \u00eatre modifi\u00e9e par l'employ\u00e9.",
+                        "Une notification (ex: email) est envoy\u00e9e au Chef lorsque le statut d'une t\u00e2che passe \u00e0 'Fini / Termin\u00e9'."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-4.2.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Impl\u00e9mentation API de mise \u00e0 jour de statut de t\u00e2che par l'employ\u00e9",
+                            "instructions": "Cr\u00e9e un endpoint PATCH `/api/tasks/{id}/status` qui accepte un nouveau statut. Impl\u00e9mente une logique de 'state machine' pour les transitions de statut : 'assigned' -> 'in_progress' -> 'finished'. Refuse les transitions ill\u00e9gales ou les tentatives de modification d'une t\u00e2che 'finished'. V\u00e9rifie que l'employ\u00e9 authentifi\u00e9 est bien assign\u00e9 \u00e0 la t\u00e2che. Envoie une notification au Chef lors du passage \u00e0 'finished'.",
+                            "hours": 28
+                        },
+                        {
+                            "id": "T-4.2.2",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "Ajout fonctionnalit\u00e9 de changement de statut \u00e0 l'interface Employ\u00e9",
+                            "instructions": "Pour chaque t\u00e2che dans le tableau de bord de l'employ\u00e9, ajoute un bouton ou un menu d\u00e9roulant pour changer le statut. Adapte les options disponibles en fonction du statut actuel de la t\u00e2che. Int\u00e8gre l'appel API PATCH vers `/api/tasks/{id}/status`. Mets \u00e0 jour l'UI apr\u00e8s succ\u00e8s.",
+                            "hours": 16
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "E-5",
+            "title": "Infrastructure & DevOps",
+            "description": "Mettre en place l'environnement technique, la base de donn\u00e9es, les tests automatis\u00e9s et le pipeline CI/CD pour le d\u00e9ploiement sur Azure.",
+            "user_stories": [
+                {
+                    "id": "US-5.1",
+                    "title": "Initialisation Backend & BD",
+                    "story_points": 3,
+                    "description": "En tant qu'\u00e9quipe de d\u00e9veloppement, nous voulons un environnement Backend Laravel fonctionnel avec une base de donn\u00e9es PostgreSQL, afin de commencer le d\u00e9veloppement des fonctionnalit\u00e9s.",
+                    "acceptance_criteria": [
+                        "Un projet Laravel est initialis\u00e9 et configur\u00e9.",
+                        "Une base de donn\u00e9es PostgreSQL est install\u00e9e et accessible par l'application Laravel.",
+                        "Les migrations de base (users, tasks, roles) et les seeders de donn\u00e9es initiales sont mis en place.",
+                        "Les premiers endpoints d'API REST (ex: `GET /api/status`) sont fonctionnels et testables.",
+                        "Le fichier `.env` est configur\u00e9 pour les environnements de d\u00e9veloppement et de production."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-5.1.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Initialisation projet Laravel et configuration DB",
+                            "instructions": "Installe Laravel via Composer. Configure la connexion \u00e0 PostgreSQL dans `config/database.php` et `.env`. Cr\u00e9e les migrations pour les tables `users`, `tasks`, et `roles`. D\u00e9veloppe des seeders pour les donn\u00e9es de test initiales (Chef, Employ\u00e9, t\u00e2ches). V\u00e9rifie la connexion DB via `php artisan migrate` et `php artisan db:seed`.",
+                            "hours": 20
+                        }
+                    ]
+                },
+                {
+                    "id": "US-5.2",
+                    "title": "Initialisation Frontend",
+                    "story_points": 3,
+                    "description": "En tant qu'\u00e9quipe de d\u00e9veloppement, nous voulons un projet React fonctionnel, afin de commencer le d\u00e9veloppement des interfaces.",
+                    "acceptance_criteria": [
+                        "Un projet React est initialis\u00e9 avec un bundler moderne (ex: Vite).",
+                        "Les d\u00e9pendances de base (React Router, Axios) sont install\u00e9es et configur\u00e9es.",
+                        "Une page d'accueil simple et un syst\u00e8me de routage basique sont mis en place.",
+                        "La configuration d'Axios permet de se connecter \u00e0 l'API Backend (URL de base, gestion des tokens)."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-5.2.1",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "Initialisation projet React et configuration d'acc\u00e8s API",
+                            "instructions": "Initialise un nouveau projet React (Vite recommand\u00e9). Installe `react-router-dom` et `axios`. Configure les routes principales de l'application (Login, Chef Dashboard, Employee Dashboard). Configure une instance Axios avec l'URL de base de l'API Backend et des intercepteurs pour ajouter le token d'authentification.",
+                            "hours": 16
+                        }
+                    ]
+                },
+                {
+                    "id": "US-5.3",
+                    "title": "Mise en place de l'Infrastructure Docker",
+                    "story_points": 5,
+                    "description": "En tant qu'\u00e9quipe de d\u00e9veloppement, nous voulons conteneuriser l'application avec Docker, afin d'assurer la parit\u00e9 iso-prod entre les environnements.",
+                    "acceptance_criteria": [
+                        "Des Dockerfiles sont cr\u00e9\u00e9s et optimis\u00e9s pour l'application Laravel (Backend) et Nginx (pour le Frontend et le proxy).",
+                        "Un fichier `docker-compose.yml` est configur\u00e9 pour orchestrer les services (Laravel, Nginx, PostgreSQL).",
+                        "L'application est enti\u00e8rement fonctionnelle et accessible via `docker-compose up`.",
+                        "Les volumes persistants pour la base de donn\u00e9es et les d\u00e9pendances sont configur\u00e9s pour le d\u00e9veloppement.",
+                        "La configuration Nginx g\u00e8re le routage vers l'API Laravel et le service des assets statiques du Frontend."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-5.3.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Configuration Dockerfile et Docker Compose",
+                            "instructions": "Cr\u00e9e un Dockerfile multi-stage pour le Backend Laravel. D\u00e9veloppe un `docker-compose.yml` incluant les services `app` (Laravel), `nginx` (web server), `db` (PostgreSQL), et `redis` (pour queues/cache si besoin). Configure Nginx pour servir les assets React build\u00e9s et forwarder les requ\u00eates API vers le service Laravel. Assure la persistance des donn\u00e9es PostgreSQL via des volumes.",
+                            "hours": 32
+                        }
+                    ]
+                },
+                {
+                    "id": "US-5.4",
+                    "title": "Mise en place CI/CD avec GitHub Actions et Azure",
+                    "story_points": 13,
+                    "description": "En tant qu'\u00e9quipe de d\u00e9veloppement, nous voulons un pipeline CI/CD automatis\u00e9 pour les tests et le d\u00e9ploiement sur Azure, afin de garantir la qualit\u00e9 et la livraison continue.",
+                    "acceptance_criteria": [
+                        "Un workflow GitHub Actions est configur\u00e9 pour le Backend: linting, ex\u00e9cution de PHPUnit, construction de l'image Docker du Backend.",
+                        "Un workflow GitHub Actions est configur\u00e9 pour le Frontend: linting, ex\u00e9cution de Vitest/Cypress, construction de l'application React.",
+                        "Les images Docker sont pouss\u00e9es vers Azure Container Registry (ACR) apr\u00e8s succ\u00e8s des builds.",
+                        "Le d\u00e9ploiement automatis\u00e9 vers Microsoft Azure (ex: Azure App Service) est configur\u00e9 pour le Backend et le Frontend.",
+                        "L'application est accessible publiquement sur Azure apr\u00e8s chaque d\u00e9ploiement r\u00e9ussi sur la branche `main`.",
+                        "Les secrets (cl\u00e9s API, identifiants Azure) sont g\u00e9r\u00e9s de mani\u00e8re s\u00e9curis\u00e9e via GitHub Secrets et Azure Key Vault."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-5.4.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "Configuration CI/CD Backend (GitHub Actions + Azure)",
+                            "instructions": "Cr\u00e9e le fichier `.github/workflows/backend.yml`. Ce workflow doit : 1. Cloner le repo. 2. Installer les d\u00e9pendances Composer. 3. Lancer PHPUnit. 4. Si les tests passent, construire l'image Docker de l'application Laravel. 5. Se connecter \u00e0 Azure Container Registry et pousser l'image. 6. D\u00e9ployer la nouvelle image vers Azure App Service pour le Backend. G\u00e8re les variables d'environnement et secrets Azure.",
+                            "hours": 40
+                        },
+                        {
+                            "id": "T-5.4.2",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "Configuration CI/CD Frontend (GitHub Actions + Azure)",
+                            "instructions": "Cr\u00e9e le fichier `.github/workflows/frontend.yml`. Ce workflow doit : 1. Cloner le repo. 2. Installer les d\u00e9pendances NPM. 3. Lancer Vitest (unit tests) et Cypress (E2E tests). 4. Si les tests passent, construire l'application React (build statique). 5. Cr\u00e9er une image Docker si besoin (pour Nginx servant le frontend) et la pousser \u00e0 l'ACR, OU d\u00e9ployer les assets statiques vers un Azure Static Web App / Blob Storage. Configure le d\u00e9ploiement sur Azure pour le Frontend.",
+                            "hours": 36
+                        }
+                    ]
+                },
+                {
+                    "id": "US-5.5",
+                    "title": "Tests Automatis\u00e9s (Unit, Feature, E2E)",
+                    "story_points": 13,
+                    "description": "En tant qu'\u00e9quipe de d\u00e9veloppement, nous voulons mettre en place des tests automatis\u00e9s (Unit, Feature, E2E) pour toutes les fonctionnalit\u00e9s, afin d'assurer la qualit\u00e9 et la robustesse de l'application.",
+                    "acceptance_criteria": [
+                        "Les tests unitaires et d'int\u00e9gration (PHPUnit) sont \u00e9crits pour les fonctionnalit\u00e9s Backend critiques (authentification, CRUD, gestion des statuts). La couverture minimale de code est de 70%.",
+                        "Les tests unitaires (Vitest) sont \u00e9crits pour les composants React critiques (formulaires, affichage de liste). La couverture minimale de code est de 60%.",
+                        "Des tests de bout en bout (Cypress) sont \u00e9crits pour les parcours utilisateur principaux (connexion, cr\u00e9ation de t\u00e2che par le Chef, mise \u00e0 jour de statut par l'employ\u00e9).",
+                        "Tous les tests sont ex\u00e9cutables localement et via le pipeline CI/CD."
+                    ],
+                    "tasks": [
+                        {
+                            "id": "T-5.5.1",
+                            "role": "Backend Developer",
+                            "level": "Senior",
+                            "title": "\u00c9criture des tests Backend (PHPUnit)",
+                            "instructions": "Écris des tests unitaires pour les classes de service, modèles et contrôleurs clés. Écris des tests de fonctionnalités pour vérifier les endpoints API d'authentification, de gestion des utilisateurs (CRUD Chef), et de gestion des tâches (CRUD Chef, statut Employé). Utilise les usines (factories).",
+                            "hours": 48
+                        },
+                        {
+                            "id": "T-5.5.2",
+                            "role": "Frontend Developer",
+                            "level": "Mid-level",
+                            "title": "\u00c9criture des tests Frontend (Vitest, Cypress)",
+                            "instructions": "\u00c9cris des tests unitaires avec Vitest pour les composants React comme les formulaires de connexion, de cr\u00e9ation de t\u00e2che, et les listes d'affichage. \u00c9cris des tests E2E avec Cypress pour simuler les parcours utilisateurs complets : 1. Connexion en tant que Chef, cr\u00e9ation d'un employ\u00e9, cr\u00e9ation d'une t\u00e2che. 2. Connexion en tant qu'employ\u00e9, mise \u00e0 jour du statut d'une t\u00e2che. Assure l'isolement des tests.",
+                            "hours": 40
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

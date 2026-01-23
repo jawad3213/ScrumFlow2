@@ -1,0 +1,21 @@
+import client from '@/lib/axios';
+
+export const updateAvatar = (formData) => {
+    return client('/profile/avatar', {
+        method: 'POST',
+        body: formData,
+        headers: {}, // Let Axios/Browser set the boundary for FormData
+    });
+};
+
+export const updatePassword = (passwordData) => {
+    return client('/profile/password', {
+        body: passwordData
+    });
+};
+
+export const updateProfile = (profileData) => {
+    return client('/profile', {
+        body: profileData
+    });
+};
