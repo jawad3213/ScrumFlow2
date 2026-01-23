@@ -58,11 +58,11 @@ describe('ForgotPassword', () => {
     fireEvent.click(screen.getByRole('button', { name: /Réinitialiser/i }));
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith(
-      "à remettre ici !!!!!!!!!!!",
+      "http://localhost:8000/api/forgot-password",
       expect.objectContaining({
         method: 'POST',
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ inputemail: 'test@example.com' })
+        body: JSON.stringify({ email: 'test@example.com' })
       })
     ));
 

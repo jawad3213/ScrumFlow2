@@ -44,6 +44,7 @@ describe("ConfirmNewPass", () => {
   it("affiche une erreur si le mot de passe est trop court", async () => {
     renderWithRouter("/confirm-password?token=123");
 
+    fireEvent.change(screen.getByLabelText(/Entrer votre email/i), { target: { value: 'test@example.com' } });
     fireEvent.change(screen.getByLabelText(/Nouveau mot de passe/i), { target: { value: '123' } });
     fireEvent.change(screen.getByLabelText(/Confirmer le mot de passe/i), { target: { value: '123' } });
 
@@ -60,6 +61,7 @@ describe("ConfirmNewPass", () => {
   it("affiche une erreur si les mots de passe ne correspondent pas", async () => {
     renderWithRouter("/confirm-password?token=123");
 
+    fireEvent.change(screen.getByLabelText(/Entrer votre email/i), { target: { value: 'test@example.com' } });
     fireEvent.change(screen.getByLabelText(/Nouveau mot de passe/i), { target: { value: 'password1' } });
     fireEvent.change(screen.getByLabelText(/Confirmer le mot de passe/i), { target: { value: 'password2' } });
 
@@ -79,6 +81,7 @@ describe("ConfirmNewPass", () => {
 
     renderWithRouter("/confirm-password?token=123");
 
+    fireEvent.change(screen.getByLabelText(/Entrer votre email/i), { target: { value: 'test@example.com' } });
     fireEvent.change(screen.getByLabelText(/Nouveau mot de passe/i), { target: { value: 'password123' } });
     fireEvent.change(screen.getByLabelText(/Confirmer le mot de passe/i), { target: { value: 'password123' } });
 
@@ -102,6 +105,7 @@ describe("ConfirmNewPass", () => {
 
     renderWithRouter("/confirm-password?token=123");
 
+    fireEvent.change(screen.getByLabelText(/Entrer votre email/i), { target: { value: 'test@example.com' } });
     fireEvent.change(screen.getByLabelText(/Nouveau mot de passe/i), { target: { value: 'password123' } });
     fireEvent.change(screen.getByLabelText(/Confirmer le mot de passe/i), { target: { value: 'password123' } });
 
@@ -119,6 +123,7 @@ describe("ConfirmNewPass", () => {
   it("affiche une erreur si le token est absent", async () => {
     renderWithRouter("/confirm-password");
 
+    fireEvent.change(screen.getByLabelText(/Entrer votre email/i), { target: { value: 'test@example.com' } });
     fireEvent.change(screen.getByLabelText(/Nouveau mot de passe/i), { target: { value: 'password123' } });
     fireEvent.change(screen.getByLabelText(/Confirmer le mot de passe/i), { target: { value: 'password123' } });
 
