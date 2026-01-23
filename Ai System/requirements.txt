@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+pymupdf
+google-generativeai
+instructor
+pydantic
+pytest
+httpx
