@@ -1,19 +1,24 @@
+# Étape 1 : Build avec Composer (Multi-stage pour réduire la taille finale)
+FROM composer:2.6 as build
+WORKDIR /app
+COPY . .
+# On installe les dépendances ici pour ne pas encombrer l'image finale
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Étape 2 : Runtime léger et complet
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies
+# Installation des dépendances système nécessaires (en une seule couche pour économiser)
 RUN apk add --no-cache \
-    curl \
+    libpq-dev \
     libpng-dev \
     libxml2-dev \
     zip \
     unzip \
-    git \
     oniguruma-dev \
-    libzip-dev \
-    postgresql-dev \
-    linux-headers
+    libzip-dev
 
-# Install PHP extensions
+# Installation des extensions PHP indispensables pour Laravel et PostgreSQL
 RUN docker-php-ext-install \
     pdo_pgsql \
     mbstring \
@@ -23,19 +28,12 @@ RUN docker-php-ext-install \
     gd \
     zip
 
-# Get latest Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Set working directory
 WORKDIR /var/www
 
-# Copy existing application directory contents
-COPY . .
+# On récupère uniquement le code et les dépendances déjà installées
+COPY --from=build /app .
 
-# Install dependencies
-RUN composer install --no-interaction --optimize-autoloader --no-dev
-
-# Set permissions
+# Permissions pour Laravel (on ajoute bootstrap/cache qui manquait dans le nôtre)
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 9000
