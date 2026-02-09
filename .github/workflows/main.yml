@@ -59,7 +59,7 @@ jobs:
 
   # ÉTAPE 3 : DÉPLOIEMENT SSH (Uniquement sur la branche MAIN)
   deploy:
-    needs: build-and-push
+    needs: build-validation
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
