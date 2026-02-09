@@ -1,44 +1,81 @@
-name: Deploy TaskFlow to Azure
+name: TaskFlow Professional CI/CD
 
 on:
   push:
-    branches: [ "dev" ] # Le déploiement se lance quand tu valides ton travail sur dev
+    branches: [ "main", "dev" ]
 
 jobs:
-  build-and-deploy:
+  # ÉTAPE 1 : QUALITÉ ET TESTS (Backend & Frontend)
+  tests:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Log in to Azure Container Registry
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_pgsql
+          coverage: none
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Run Backend Tests (PHPUnit)
+        run: |
+          cd backend
+          # On lance le binaire phpunit que tu as dans ton dossier vendor
+          ./vendor/bin/phpunit
+
+      - name: Install Frontend Dependencies & Lint
+        run: |
+          cd frontend
+          npm install
+          # npm run lint (si configuré)
+
+  # ÉTAPE 2 : BUILD & PUSH (Si les tests réussissent)
+  build-and-push:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Log in to Azure Registry
         uses: azure/docker-login@v1
         with:
           login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      # Build et Push des 3 images avec les bons contextes
-      - name: Build and push Backend
+      - name: Build and push All Images
         run: |
           docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/tf-backend:latest ./backend
-          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/tf-backend:latest
-
-      - name: Build and push Frontend
-        run: |
           docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/tf-frontend:latest ./frontend
-          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/tf-frontend:latest
-
-      - name: Build and push AI System
-        run: |
-          # Utilisation des guillemets pour gérer l'espace dans "Ai System"
           docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/tf-ai:latest "./Ai System"
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/tf-backend:latest
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/tf-frontend:latest
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/tf-ai:latest
 
-      # Déploiement sur Azure Web App
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
+  # ÉTAPE 3 : DÉPLOIEMENT SSH (Uniquement sur la branche MAIN)
+  deploy:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VM via SSH
+        uses: appleboy/ssh-action@master
         with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }} # Utilise le secret configuré sur GitHub
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          configuration-file: docker-compose.yml
+          host: 158.158.112.55
+          username: azureuser
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/TaskFlow
+            git pull origin main
+            # Nettoyage pour éviter les erreurs de cache ou d'IP
+            docker rm -f $(docker ps -aq) || true
+            docker rmi $(docker images -q) || true
+            # Reconstruction propre
+            docker-compose build --no-cache
+            docker-compose up -d
