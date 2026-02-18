@@ -131,7 +131,11 @@ class AuthController extends Controller
         $user = $request->user();
         
         // Supprimer le token d'accès actuel
-        $user->currentAccessToken()->delete();
+        // Only delete if it's a real PersonalAccessToken (not a TransientToken)
+        $token = $user->currentAccessToken();
+        if ($token instanceof \Laravel\Sanctum\PersonalAccessToken) {
+            $token->delete();
+        }
 
         // Supprimer le refresh token de la DB s'il existe dans le cookie
         $rawToken = $request->cookie('refresh_token');

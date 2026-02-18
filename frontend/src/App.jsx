@@ -10,8 +10,15 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
 
 // Guard: redirects authenticated users away from public-only pages
-const PublicRoute = ({ children }) => {
+// For the landing page: always renders (no spinner, no redirect) — CTA handled inside the page
+// For other public pages (/login etc.): waits for auth to resolve to prevent flicker
+const PublicRoute = ({ children, instant = false }) => {
   const { isAuthenticated, loading } = useAuth();
+  // For instant pages (landing): always render, no redirect
+  if (instant) return children;
+  // If auth is confirmed → redirect to dashboard
+  if (!loading && isAuthenticated) return <Navigate to="/dashboard" replace />;
+  // For other public pages: show spinner while auth resolves
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-background">
@@ -19,7 +26,6 @@ const PublicRoute = ({ children }) => {
       </div>
     );
   }
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return children;
 };
 
@@ -70,7 +76,7 @@ function App() {
         {/* ==========================================
             PUBLIC ROUTES
            ========================================== */}
-        <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
+        <Route path="/" element={<PublicRoute instant><LandingPage /></PublicRoute>} />
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
         <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />

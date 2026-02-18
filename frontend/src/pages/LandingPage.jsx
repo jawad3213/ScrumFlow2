@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { motion } from 'framer-motion';
 import {
     ArrowRight,
@@ -22,6 +23,11 @@ import logo from '../assets/genralLogo.png';
 const LandingPage = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { isAuthenticated } = useAuth();
+
+    // Auth-aware CTA: logged in → go to dashboard, logged out → go to login
+    const ctaLink = isAuthenticated ? '/dashboard' : '/login';
+    const ctaLabel = isAuthenticated ? 'Accéder à votre plateforme' : 'Se connecter';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -182,10 +188,10 @@ const LandingPage = () => {
                             </motion.a>
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                 <Link
-                                    to="/login"
+                                    to={ctaLink}
                                     className="px-6 py-2.5 bg-brand-primary-500 text-white text-sm font-black rounded-xl hover:bg-brand-primary-600 transition-all duration-default shadow-subtle hover:shadow-dropdown"
                                 >
-                                    Se connecter
+                                    {ctaLabel}
                                 </Link>
                             </motion.div>
                         </motion.div>
@@ -219,8 +225,8 @@ const LandingPage = () => {
                             <a href="#how-it-works" className="block py-2 text-sm font-bold text-neutral-600 hover:text-brand-primary-500">
                                 Comment ça marche
                             </a>
-                            <Link to="/login" className="block w-full px-6 py-2.5 bg-brand-primary-500 text-white text-sm font-black rounded-xl text-center">
-                                Se connecter
+                            <Link to={ctaLink} className="block w-full px-6 py-2.5 bg-brand-primary-500 text-white text-sm font-black rounded-xl text-center">
+                                {ctaLabel}
                             </Link>
                         </div>
                     </motion.div>
@@ -433,10 +439,10 @@ const LandingPage = () => {
                                 whileTap={{ scale: 0.95 }}
                             >
                                 <Link
-                                    to="/login"
+                                    to={ctaLink}
                                     className="group px-8 py-4 bg-brand-primary-500 text-white text-base font-black rounded-xl hover:bg-brand-primary-600 transition-all duration-default shadow-dropdown hover:shadow-xl flex items-center gap-2"
                                 >
-                                    Se connecter
+                                    {ctaLabel}
                                     <motion.div
                                         animate={{ x: [0, 5, 0] }}
                                         transition={{ duration: 1.5, repeat: Infinity }}
