@@ -39,6 +39,9 @@ import TeamPage from './pages/team/TeamPage';
 // Pages - Settings
 import SettingsPage from './pages/settings/SettingsPage';
 
+// Pages - Landing
+import LandingPage from './pages/LandingPage';
+
 
 function App() {
   return (
@@ -51,10 +54,10 @@ function App() {
         {/* ==========================================
             PUBLIC ROUTES
            ========================================== */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* ==========================================
             PRIVATE PROTECTED ROUTES
@@ -97,7 +100,7 @@ function App() {
         </Route>
 
         {/* 404 CATCH-ALL */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );

@@ -1,5 +1,15 @@
 {
+  "name": "taskflow",
+  "version": "1.0.0",
+  "description": "TaskFlow - AI-powered project management",
+  "scripts": {
+    "frontend": "npm run dev --prefix frontend",
+    "backend": "cd backend && php artisan serve",
+    "ai": "cd \"Ai System\" && uvicorn main:app --reload --port 8001",
+    "all": "concurrently --names \"FRONTEND,BACKEND,AI\" --prefix-colors \"cyan,green,magenta\" \"npm run frontend\" \"npm run backend\" \"npm run ai\""
+  },
   "devDependencies": {
+    "concurrently": "^9.1.2",
     "shadcn": "^3.6.2"
   }
 }
