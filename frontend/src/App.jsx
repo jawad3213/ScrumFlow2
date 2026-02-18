@@ -6,6 +6,22 @@ import ProjectLayout from './layouts/ProjectLayout';
 
 // Features
 import RoleGuard from './features/auth/components/RoleGuard';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import LoadingAnimation from '@/components/ui/LoadingAnimation';
+
+// Guard: redirects authenticated users away from public-only pages
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-background">
+        <LoadingAnimation message="Loading..." />
+      </div>
+    );
+  }
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  return children;
+};
 
 
 // Pages - Auth
@@ -54,10 +70,10 @@ function App() {
         {/* ==========================================
             PUBLIC ROUTES
            ========================================== */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+        <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
 
         {/* ==========================================
             PRIVATE PROTECTED ROUTES
