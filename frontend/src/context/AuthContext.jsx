@@ -97,7 +97,8 @@ export const AuthProvider = ({ children }) => {
                             clearAccessToken();
                         }
 
-                        if (!isLoginPage) {
+                        const isPublicPage = isLoginPage || window.location.pathname === '/';
+                        if (!isPublicPage) {
                             console.log('[Auth] Redirecting to login...');
                             window.location.assign('/login');
                         }

@@ -60,8 +60,8 @@ axiosInstance.interceptors.response.use(
       // Don't refresh if the error is from login or refresh-token itself
       if (originalRequest.url.includes('/login') || originalRequest.url.includes('/refresh-token')) {
         StorageService.clearAuth();
-        // Only redirect if not already on login page to avoid loops
-        if (!window.location.pathname.includes('/login')) {
+        // Only redirect if not already on a public page
+        if (!window.location.pathname.includes('/login') && window.location.pathname !== '/') {
           window.location.assign('/login');
         }
         
@@ -111,7 +111,7 @@ axiosInstance.interceptors.response.use(
             console.log('[Axios] Refresh token invalid (401), clearing auth');
             StorageService.clearAuth();
             accessToken = null;
-            if (!window.location.pathname.includes('/login')) {
+            if (!window.location.pathname.includes('/login') && window.location.pathname !== '/') {
                 window.location.assign('/login');
             }
         } else {
