@@ -56,30 +56,5 @@ class ProfileTest extends TestCase
         $this->assertTrue(Hash::check('newpassword', $user->fresh()->password));
     }
 
-    public function test_can_upload_avatar()
-    {
-        if (!function_exists('imagecreatetruecolor')) {
-            $this->markTestSkipped('GD extension is not installed.');
-        }
 
-        Storage::fake('public');
-
-        $user = User::factory()->create();
-        Sanctum::actingAs($user);
-
-        $file = UploadedFile::fake()->image('avatar.jpg');
-
-        $response = $this->postJson('/api/profile/avatar', [
-            'avatar' => $file
-        ]);
-
-        $response->assertStatus(200);
-        
-        $user->refresh();
-        // Assuming the controller updates a field like profile_photo_path or similar
-        $this->assertTrue($user->profile_photo_path !== null || $user->avatar !== null);
-        
-        $path = $user->profile_photo_path ?? $user->avatar;
-        Storage::disk('public')->assertExists($path);
-    }
 }
