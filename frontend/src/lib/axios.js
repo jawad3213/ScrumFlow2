@@ -160,6 +160,13 @@ const client = async (endpoint, { body, ...customConfig } = {}) => {
      config.headers['Content-Type'] = undefined; 
   }
 
+  // If the endpoint is a full URL (external service like the AI backend),
+  // use a plain axios call to avoid sending auth cookies/headers that cause CORS issues.
+  const isExternalUrl = endpoint.startsWith('http://') || endpoint.startsWith('https://');
+  if (isExternalUrl) {
+    return axios(config).then(res => res.data);
+  }
+
   return axiosInstance(config);
 };
 
