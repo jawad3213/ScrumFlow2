@@ -24,3 +24,11 @@ export const getMe = () => {
 export const logout = () => {
   return client('/logout', { method: 'POST' });
 };
+
+export const register = (data) => {
+  return client('/register', { body: data });
+};
+
+export const googleLogin = (data) => {
+  return client('/auth/google', { body: data });
+};

@@ -6,6 +6,58 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { BASE_URL } from '@/utils/api';
 import { USER_ROLES } from '@/utils/constants';
 
+const getInitials = (name) => {
+    if (!name) return '??';
+    return name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
+};
+
+const getRandomColor = (name) => {
+    if (!name) return 'bg-neutral-100 text-neutral-500 border-neutral-200';
+    const colors = [
+        'bg-blue-100 text-blue-700 border-blue-200',
+        'bg-purple-100 text-purple-700 border-purple-200',
+        'bg-emerald-100 text-emerald-700 border-emerald-200',
+        'bg-amber-100 text-amber-700 border-amber-200',
+        'bg-rose-100 text-rose-700 border-rose-200',
+        'bg-indigo-100 text-indigo-700 border-indigo-200'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+};
+
+const AvatarWithFallback = ({ user }) => {
+    const [imageError, setImageError] = useState(false);
+    const fullName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'User';
+
+    if (user?.avatar && !imageError) {
+        return (
+            <img
+                src={`${BASE_URL}/storage/${user.avatar}`}
+                alt="Avatar"
+                onError={(e) => {
+                    console.error('Navbar Avatar load error:', e);
+                    setImageError(true);
+                }}
+                className="h-9 w-9 rounded-full object-cover border-2 border-surface-background group-hover:border-brand-primary-50"
+            />
+        );
+    }
+
+    return (
+        <div className={`h-9 w-9 flex items-center justify-center rounded-full border-2 border-white shadow-sm text-xs font-black group-hover:border-brand-primary-100 transition-colors ${getRandomColor(fullName)}`}>
+            {getInitials(fullName)}
+        </div>
+    );
+};
+
 const Navbar = () => {
     const { user, userRole, logout } = useAuth();
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -34,6 +86,11 @@ const Navbar = () => {
     // Simple breadcrumb logic
     const pathSegments = location.pathname.split('/').filter(Boolean);
 
+    // Custom labels for specific route segments
+    const breadcrumbLabels = {
+        'team-global': 'Global Team',
+    };
+
     return (
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-surface-border bg-white/70 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 px-8 shadow-subtle">
             {/* Breadcrumb */}
@@ -43,7 +100,7 @@ const Navbar = () => {
                     <React.Fragment key={index}>
                         <ChevronRight className="h-4 w-4 text-neutral-300" />
                         <span className={`capitalize transition-colors ${index === pathSegments.length - 1 ? 'text-neutral-900' : 'hover:text-brand-primary-500'}`}>
-                            {segment.replace(/-/g, ' ')}
+                            {breadcrumbLabels[segment] || segment.replace(/-/g, ' ')}
                         </span>
                     </React.Fragment>
                 ))}
@@ -65,11 +122,7 @@ const Navbar = () => {
                             </span>
                         </div>
                         <div className="relative">
-                            <img
-                                src={user?.avatar ? `${BASE_URL}/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
-                                alt="Avatar"
-                                className="h-9 w-9 rounded-full object-cover border-2 border-surface-background group-hover:border-brand-primary-50"
-                            />
+                            <AvatarWithFallback user={user} />
                         </div>
                     </button>
 

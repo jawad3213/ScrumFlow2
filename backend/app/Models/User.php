@@ -27,6 +27,7 @@ class User extends Authenticatable
         'specialization_id',
         'avatar',
         'is_engaged',
+        'google_id',
     ];
 
     /**

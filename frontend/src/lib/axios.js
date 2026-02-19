@@ -58,7 +58,7 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       
       // Don't refresh if the error is from login or refresh-token itself
-      if (originalRequest.url.includes('/login') || originalRequest.url.includes('/refresh-token')) {
+      if (originalRequest.url.includes('/login') || originalRequest.url.includes('/refresh-token') || originalRequest.url.includes('/register') || originalRequest.url.includes('/auth/google')) {
         StorageService.clearAuth();
         // Only redirect if not already on a public page
         if (!window.location.pathname.includes('/login') && window.location.pathname !== '/') {

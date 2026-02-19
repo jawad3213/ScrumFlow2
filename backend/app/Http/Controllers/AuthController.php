@@ -215,5 +215,131 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Mot de passe réinitialisé avec succès.']);
     }
+
+    /**
+     * Register a new user with email and password.
+     */
+    public function register(Request $request)
+    {
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        $user = User::create([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'chef', // Default role for new registrations
+        ]);
+
+        // Create access token
+        $accessToken = $user->createToken('access_token', ['*'], now()->addMinutes(60))->plainTextToken;
+
+        // Create refresh token
+        $rawRefreshToken = Str::random(64);
+        RefreshToken::create([
+            'user_id' => $user->id,
+            'token' => hash('sha256', $rawRefreshToken),
+            'expires_at' => now()->addDays(30),
+        ]);
+
+        $refreshCookie = cookie(
+            'refresh_token',
+            $rawRefreshToken,
+            60 * 24 * 30,
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'Lax'
+        );
+
+        return response()->json([
+            'message' => 'Inscription réussie',
+            'access_token' => $accessToken,
+            'token_type' => 'Bearer',
+            'user' => $user,
+            'role' => $user->role,
+        ])->withCookie($refreshCookie);
+    }
+
+    /**
+     * Handle Google OAuth login/registration via Firebase.
+     * Finds existing user by google_id or email, or creates a new one.
+     */
+    public function googleLogin(Request $request)
+    {
+        $request->validate([
+            'id_token' => 'required|string',
+            'email' => 'required|email',
+            'google_id' => 'required|string',
+            'first_name' => 'nullable|string|max:255',
+            'last_name' => 'nullable|string|max:255',
+            'avatar' => 'nullable|string',
+        ]);
+
+        // Find user by google_id first, then by email
+        $user = User::where('google_id', $request->google_id)->first();
+
+        if (!$user) {
+            $user = User::where('email', $request->email)->first();
+
+            if ($user) {
+                // Link existing email user to their Google account
+                $user->google_id = $request->google_id;
+                if ($request->avatar && !$user->avatar) {
+                    $user->avatar = $request->avatar;
+                }
+                $user->save();
+            } else {
+                // Create a brand new user
+                $user = User::create([
+                    'first_name' => $request->first_name ?? 'User',
+                    'last_name' => $request->last_name ?? '',
+                    'email' => $request->email,
+                    'google_id' => $request->google_id,
+                    'avatar' => $request->avatar,
+                    'password' => null, // No password for Google-only users
+                    'role' => 'chef',
+                ]);
+            }
+        }
+
+        // Create access token
+        $accessToken = $user->createToken('access_token', ['*'], now()->addMinutes(60))->plainTextToken;
+
+        // Create refresh token
+        $rawRefreshToken = Str::random(64);
+        RefreshToken::create([
+            'user_id' => $user->id,
+            'token' => hash('sha256', $rawRefreshToken),
+            'expires_at' => now()->addDays(30),
+        ]);
+
+        $refreshCookie = cookie(
+            'refresh_token',
+            $rawRefreshToken,
+            60 * 24 * 30,
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'Lax'
+        );
+
+        return response()->json([
+            'message' => 'Connexion Google réussie',
+            'access_token' => $accessToken,
+            'token_type' => 'Bearer',
+            'user' => $user,
+            'role' => $user->role,
+        ])->withCookie($refreshCookie);
+    }
 }
 

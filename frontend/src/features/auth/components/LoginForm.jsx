@@ -3,6 +3,7 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { isValidEmail } from '@/utils';
+import GoogleAuthButton from './GoogleAuthButton';
 
 const LoginForm = () => {
     const { login } = useAuth();
@@ -44,6 +45,16 @@ const LoginForm = () => {
                     {error}
                 </div>
             )}
+
+            {/* Google Auth */}
+            <GoogleAuthButton label="Continue with Google" />
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 my-6">
+                <div className="flex-1 h-px bg-surface-border" />
+                <span className="text-xs font-bold text-neutral-400 uppercase tracking-widest">or</span>
+                <div className="flex-1 h-px bg-surface-border" />
+            </div>
 
             {/* Form */}
             <form onSubmit={handleLogin} className="space-y-6">
@@ -106,6 +117,14 @@ const LoginForm = () => {
                     {isLoading ? <Loader2 size={24} className="animate-spin" /> : 'Log in Now'}
                 </button>
             </form>
+
+            {/* Signup Link */}
+            <p className="text-center text-sm text-neutral-500 font-medium mt-8">
+                Don't have an account?{' '}
+                <Link to="/signup" className="text-brand-primary-500 hover:text-brand-primary-600 font-bold transition-colors">
+                    Sign up
+                </Link>
+            </p>
         </>
     );
 };

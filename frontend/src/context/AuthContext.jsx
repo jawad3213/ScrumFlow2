@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { login as apiLogin, refreshToken as apiRefresh, getMe, logout as apiLogout } from '@/features/auth/api/auth';
+import { login as apiLogin, refreshToken as apiRefresh, getMe, logout as apiLogout, register as apiRegister, googleLogin as apiGoogleLogin } from '@/features/auth/api/auth';
 import StorageService from '@/utils/storage';
 import { setAccessToken, clearAccessToken } from '@/lib/axios';
 
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
         initRef.current = true;
 
         const silentRefresh = async () => {
-            const isLoginPage = window.location.pathname.includes('/login');
+            const isLoginPage = window.location.pathname.includes('/login') || window.location.pathname.includes('/signup');
 
             try {
                 const storedUser = StorageService.getUser();
@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }) => {
                             clearAccessToken();
                         }
 
-                        const isPublicPage = isLoginPage || window.location.pathname === '/';
+                        const isPublicPage = isLoginPage || window.location.pathname === '/' || window.location.pathname.includes('/signup');
                         if (!isPublicPage) {
                             console.log('[Auth] Redirecting to login...');
                             window.location.assign('/login');
@@ -175,6 +175,56 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const signup = async (data) => {
+        try {
+            console.log('[Auth] Signup called with:', data.email);
+            const response = await apiRegister(data);
+            console.log('[Auth] Signup response received:', {
+                hasAccessToken: !!response.access_token,
+                hasUser: !!response.user,
+                role: response.role
+            });
+
+            if (response.access_token) {
+                StorageService.setRole(response.role);
+                StorageService.setUser(response.user);
+                setAccessToken(response.access_token);
+                setToken(response.access_token);
+                setUserRole(response.role);
+                setUser(response.user);
+                return response;
+            }
+        } catch (error) {
+            console.error('[Auth] Signup error:', error);
+            throw error;
+        }
+    };
+
+    const loginWithGoogle = async (googleData) => {
+        try {
+            console.log('[Auth] Google login called with:', googleData.email);
+            const response = await apiGoogleLogin(googleData);
+            console.log('[Auth] Google login response received:', {
+                hasAccessToken: !!response.access_token,
+                hasUser: !!response.user,
+                role: response.role
+            });
+
+            if (response.access_token) {
+                StorageService.setRole(response.role);
+                StorageService.setUser(response.user);
+                setAccessToken(response.access_token);
+                setToken(response.access_token);
+                setUserRole(response.role);
+                setUser(response.user);
+                return response;
+            }
+        } catch (error) {
+            console.error('[Auth] Google login error:', error);
+            throw error;
+        }
+    };
+
     const updateUser = (userData) => {
         StorageService.setUser(userData);
         setUser(userData);
@@ -186,9 +236,11 @@ export const AuthProvider = ({ children }) => {
             userRole,
             token,
             login,
+            signup,
+            loginWithGoogle,
             logout,
             updateUser,
-            isAuthenticated: !!user, // Modified: if we have a user, we are considered authenticated
+            isAuthenticated: !!user,
             loading
         }}>
             {children}
