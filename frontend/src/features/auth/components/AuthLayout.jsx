@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import logo from '@/assets/genralLogo.png';
 
 const AuthLayout = ({
@@ -12,7 +13,16 @@ const AuthLayout = ({
     illustrationContent
 }) => {
     return (
-        <div className="min-h-screen flex bg-surface-background">
+        <div className="min-h-screen flex bg-surface-background relative">
+            {/* Back to Home Arrow */}
+            <Link
+                to="/"
+                className="absolute top-6 left-6 z-50 flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-500 hover:text-brand-primary-600 hover:bg-brand-primary-50 transition-all duration-200 group"
+            >
+                <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
+                <span className="text-sm font-bold hidden sm:inline">Accueil</span>
+            </Link>
+
             {/* Left Column: Form Container */}
             <div className="w-full lg:w-[480px] bg-white flex flex-col justify-center px-8 md:px-12 lg:px-16 py-12 shadow-elevation z-10 overflow-y-auto">
                 <div className="mb-10 flex flex-col items-center">

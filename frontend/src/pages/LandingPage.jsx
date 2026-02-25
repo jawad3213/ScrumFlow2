@@ -194,6 +194,16 @@ const LandingPage = () => {
                                     {ctaLabel}
                                 </Link>
                             </motion.div>
+                            {!isAuthenticated && (
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                    <Link
+                                        to="/signup"
+                                        className="px-6 py-2.5 border-2 border-brand-primary-500 text-brand-primary-500 text-sm font-black rounded-xl hover:bg-brand-primary-50 transition-all duration-default"
+                                    >
+                                        S'inscrire
+                                    </Link>
+                                </motion.div>
+                            )}
                         </motion.div>
 
                         {/* Mobile Menu Button */}
@@ -228,6 +238,11 @@ const LandingPage = () => {
                             <Link to={ctaLink} className="block w-full px-6 py-2.5 bg-brand-primary-500 text-white text-sm font-black rounded-xl text-center">
                                 {ctaLabel}
                             </Link>
+                            {!isAuthenticated && (
+                                <Link to="/signup" className="block w-full px-6 py-2.5 border-2 border-brand-primary-500 text-brand-primary-500 text-sm font-black rounded-xl text-center hover:bg-brand-primary-50 transition-all">
+                                    S'inscrire
+                                </Link>
+                            )}
                         </div>
                     </motion.div>
                 )}

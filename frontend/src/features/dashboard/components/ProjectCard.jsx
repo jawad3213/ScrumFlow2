@@ -1,148 +1,156 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import {
-    ChevronDown,
-    ChevronUp,
     CheckCircle2,
-    Clock,
+    Circle,
     Coins,
+    TrendingUp,
     User,
-    ArrowUpRight,
-    ArrowDownRight
+    ArrowRight,
+    Layers
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '@/utils/utils';
 
+const phases = [
+    { key: 'has_strategic', label: 'Strategic' },
+    { key: 'has_technical', label: 'Technical' },
+    { key: 'has_stack', label: 'Stack' },
+];
+
 const ProjectCard = ({ project }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+    const completedCount = phases.filter(p => project[p.key]).length;
+    const progressPercent = Math.round((completedCount / phases.length) * 100);
 
     return (
-        <motion.div
-            layout
-            className="group relative bg-white/40 backdrop-blur-xl border border-white/40 rounded-[32px] overflow-hidden shadow-elevation hover:shadow-2xl transition-all duration-500"
-        >
-            <div className="p-8">
-                {/* Header */}
-                <div className="flex justify-between items-start mb-6">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-3">
-                            <h3 className="text-xl font-black text-neutral-900 tracking-tight">{project.name}</h3>
+        <Link to={`/project/${project.id}`}>
+            <motion.div
+                whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.08)' }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                className="group relative w-full bg-white border border-neutral-100 rounded-2xl overflow-hidden hover:border-brand-primary-200 transition-colors duration-300"
+            >
+                {/* Left accent bar */}
+                <div className={cn(
+                    "absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl transition-all duration-500",
+                    progressPercent === 100
+                        ? "bg-gradient-to-b from-emerald-400 to-emerald-600"
+                        : progressPercent > 0
+                            ? "bg-gradient-to-b from-brand-primary-400 to-brand-primary-600"
+                            : "bg-neutral-200"
+                )} />
+
+                <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-0 p-5 pl-6">
+
+                    {/* === Section 1: Project Identity === */}
+                    <div className="flex items-center gap-4 lg:w-[240px] lg:shrink-0">
+                        {/* Project icon */}
+                        <div className={cn(
+                            "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                            progressPercent === 100
+                                ? "bg-emerald-50 text-emerald-600"
+                                : "bg-brand-primary-50 text-brand-primary-600"
+                        )}>
+                            <Layers className="w-5 h-5" />
                         </div>
-                        <p className="text-neutral-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                            <User className="w-3 h-3" /> {project.chef}
-                        </p>
+                        <div className="min-w-0">
+                            <h3 className="text-sm font-black text-neutral-900 tracking-tight truncate">
+                                {project.name}
+                            </h3>
+                            <p className="text-xs text-neutral-400 font-semibold flex items-center gap-1.5 mt-0.5">
+                                <User className="w-3 h-3" />
+                                <span className="truncate">{project.chef}</span>
+                            </p>
+                        </div>
                     </div>
-                </div>
 
-                {/* Analysis Progress Stepper */}
-                <div className="space-y-4 mb-8">
-                    <div className="flex justify-between items-end">
-                        <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Analysis Progress</span>
-                    </div>
-
-                    <div className="relative flex justify-between items-center px-2">
-                        {/* Background line */}
-                        <div className="absolute top-[14px] left-0 w-full h-[1px] bg-neutral-100 z-0" />
-
-                        {[
-                            { id: 1, label: 'Strategic', done: project.has_strategic },
-                            { id: 2, label: 'Technical', done: project.has_technical },
-                            { id: 3, label: 'Stack', done: project.has_stack },
-                        ].map((step, idx) => {
-                            const isDone = step.done;
-                            const isNext = !isDone && (idx === 0 || [
-                                project.has_strategic,
-                                project.has_technical,
-                                project.has_stack
-                            ][idx - 1]);
-
-                            return (
-                                <div key={step.id} className="relative z-10 flex flex-col items-center gap-2">
-                                    <div className={cn(
-                                        "w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all duration-500 bg-white",
-                                        isDone ? "bg-brand-primary-500 border-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/20" :
-                                            isNext ? "border-brand-primary-500 text-brand-primary-500" : "border-neutral-100 text-neutral-300"
-                                    )}>
-                                        {isDone ? (
-                                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                                                <CheckCircle2 size={14} strokeWidth={3} />
-                                            </motion.div>
-                                        ) : (
-                                            <span className="text-[10px] font-black">{step.id}</span>
+                    {/* === Section 2: Analysis Phases === */}
+                    <div className="flex items-center gap-6 lg:flex-1 lg:justify-center lg:px-6">
+                        {/* Phase badges */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {phases.map((phase) => {
+                                const done = project[phase.key];
+                                return (
+                                    <div
+                                        key={phase.key}
+                                        className={cn(
+                                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300",
+                                            done
+                                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                                : "bg-neutral-50 text-neutral-400 border border-neutral-100"
                                         )}
+                                    >
+                                        {done ? (
+                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                        ) : (
+                                            <Circle className="w-3.5 h-3.5" />
+                                        )}
+                                        {phase.label}
                                     </div>
-                                    <span className={cn(
-                                        "text-[8px] font-black uppercase tracking-tighter transition-colors duration-500",
-                                        isDone ? "text-neutral-900" : "text-neutral-400"
-                                    )}>
-                                        {step.label}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Metrics */}
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                    <div className="bg-neutral-50/50 rounded-2xl p-4 border border-neutral-100/50">
-                        <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block mb-1">Project Cost</span>
-                        <div className="flex items-center gap-1.5">
-                            <Coins className="w-3.5 h-3.5 text-amber-500" />
-                            <span className="text-sm font-bold text-neutral-900">{new Intl.NumberFormat('fr-MA', { style: 'currency', currency: 'MAD' }).format(project.cost || 0)}</span>
+                                );
+                            })}
                         </div>
-                    </div>
-                    <div className="bg-neutral-50/50 rounded-2xl p-4 border border-neutral-100/50">
-                        <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block mb-1">Proj. ROI</span>
-                        <div className="flex items-center gap-1.5">
-                            <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
-                            <span className="text-sm font-bold text-neutral-900">{project.roi}%</span>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Steps Trigger */}
-                <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="w-full py-4 border-t border-neutral-100 flex items-center justify-between text-[11px] font-black text-neutral-400 uppercase tracking-[0.2em] hover:text-brand-primary-600 transition-colors group/btn"
-                >
-                    Project Steps
-                    {isExpanded ? <ChevronUp size={16} className="text-neutral-300" /> : <ChevronDown size={16} className="text-neutral-300" />}
-                </button>
-
-                {/* Steps Content */}
-                <AnimatePresence>
-                    {isExpanded && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                        >
-                            <div className="pt-6 space-y-6">
-                                {project.steps && project.steps.length > 0 ? project.steps.map((step, idx) => (
-                                    <div key={idx} className="relative pl-6 pb-2 border-l border-neutral-100">
-                                        <div className="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-brand-primary-500 border-4 border-white shadow-sm" />
-                                        <h4 className="text-[11px] font-black text-neutral-900 uppercase tracking-widest mb-3">{step.title}</h4>
-                                        <div className="space-y-2">
-                                            {step.stories.map((story, sIdx) => (
-                                                <div key={sIdx} className="flex items-start gap-2 bg-neutral-50/30 p-2.5 rounded-xl border border-neutral-100/30">
-                                                    <CheckCircle2 className="w-3.5 h-3.5 text-neutral-300 mt-0.5" />
-                                                    <span className="text-[11px] font-medium text-neutral-600">{story}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )) : (
-                                    <div className="text-center py-4 bg-neutral-50/50 rounded-2xl">
-                                        <p className="text-[10px] font-black text-neutral-400 uppercase">Analysis Pending</p>
-                                    </div>
-                                )}
+                        {/* Progress bar */}
+                        <div className="hidden xl:flex items-center gap-3 min-w-[140px]">
+                            <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${progressPercent}%` }}
+                                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                                    className={cn(
+                                        "h-full rounded-full",
+                                        progressPercent === 100
+                                            ? "bg-gradient-to-r from-emerald-400 to-emerald-500"
+                                            : "bg-gradient-to-r from-brand-primary-400 to-brand-primary-500"
+                                    )}
+                                />
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-        </motion.div>
+                            <span className={cn(
+                                "text-xs font-black tabular-nums",
+                                progressPercent === 100 ? "text-emerald-600" : "text-brand-primary-600"
+                            )}>
+                                {progressPercent}%
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* === Section 3: Metrics === */}
+                    <div className="flex items-center gap-4 lg:gap-6 lg:shrink-0">
+                        {/* Cost */}
+                        <div className="flex items-center gap-2 px-3 py-2 bg-amber-50/60 rounded-xl border border-amber-100/60">
+                            <Coins className="w-4 h-4 text-amber-500" />
+                            <div>
+                                <span className="text-[10px] font-bold text-amber-600/70 uppercase tracking-wider block leading-none">Cost</span>
+                                <span className="text-sm font-black text-neutral-900 leading-tight">
+                                    {new Intl.NumberFormat('fr-MA', {
+                                        style: 'currency',
+                                        currency: 'MAD',
+                                        maximumFractionDigits: 0,
+                                        notation: 'compact'
+                                    }).format(project.cost || 0)}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* ROI */}
+                        <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50/60 rounded-xl border border-emerald-100/60">
+                            <TrendingUp className="w-4 h-4 text-emerald-500" />
+                            <div>
+                                <span className="text-[10px] font-bold text-emerald-600/70 uppercase tracking-wider block leading-none">ROI</span>
+                                <span className="text-sm font-black text-neutral-900 leading-tight">
+                                    {project.roi}%
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Arrow CTA */}
+                        <div className="hidden sm:flex w-9 h-9 rounded-xl bg-neutral-50 border border-neutral-100 items-center justify-center group-hover:bg-brand-primary-500 group-hover:border-brand-primary-500 group-hover:text-white text-neutral-400 transition-all duration-300 shrink-0">
+                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+        </Link>
     );
 };
 
