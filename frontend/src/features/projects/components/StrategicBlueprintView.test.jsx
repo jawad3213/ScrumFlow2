@@ -19,7 +19,7 @@ vi.mock('@/features/ai-analysis/components/AIDashboard', () => ({
     default: ({ data }) => <div data-testid="ai-dashboard">{data?.name} Dashboard</div>,
 }));
 
-vi.mock('@/components/ui/LoadingAnimation', () => ({
+vi.mock('@/components/ui/loading-animation', () => ({
     default: ({ message }) => <div>{message}</div>,
 }));
 

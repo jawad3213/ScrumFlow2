@@ -8,7 +8,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import Toast from '@/components/ui/Toast';
+import Toast from '@/components/ui/toast';
 
 // API & Utils
 import { analyzeStaffing } from '@/features/ai-analysis/api/ai';
@@ -20,7 +20,7 @@ import testData from '@/pages/NewProjectAnalysis/test_data.json';
 import AIDashboard from '@/features/ai-analysis/components/AIDashboard';
 import RequirementUpload from '@/features/ai-analysis/components/RequirementUpload';
 import ResourcePool from '@/features/ai-analysis/components/ResourcePool';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 
 const ProjectAnalysisView = () => {
     const { id } = useParams();

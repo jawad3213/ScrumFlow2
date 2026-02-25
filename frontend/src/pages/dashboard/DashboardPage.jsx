@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, TrendingUp, Users as UsersIcon } from 'lucide-react';
-import client from '@/lib/axios';
+import { fetchDashboardData } from '@/features/dashboard/api/dashboard';
 import ProjectCard from '@/features/dashboard/components/ProjectCard';
 import { motion } from 'framer-motion';
 import { cn } from '@/utils/utils';
 
 
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 
 
 const DashboardPage = () => {
@@ -14,9 +14,9 @@ const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchDashboardData = async () => {
+        const loadData = async () => {
             try {
-                const response = await client('/projects/dashboard');
+                const response = await fetchDashboardData();
                 setData(response);
             } catch (error) {
                 console.error("Dashboard fetch error:", error);
@@ -24,7 +24,7 @@ const DashboardPage = () => {
                 setLoading(false);
             }
         };
-        fetchDashboardData();
+        loadData();
     }, []);
 
     if (loading) {

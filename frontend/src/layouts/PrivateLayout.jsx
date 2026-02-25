@@ -2,9 +2,10 @@ import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { cn } from '../utils/utils';
 
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 
 const PrivateLayout = () => {
@@ -34,7 +35,9 @@ const PrivateLayout = () => {
             >
                 <Navbar />
                 <main className="flex-1 p-8">
-                    <Outlet />
+                    <ErrorBoundary>
+                        <Outlet />
+                    </ErrorBoundary>
                 </main>
             </div>
         </div>

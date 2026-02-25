@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getProject } from '@/features/projects/api/projects';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 import BacklogDashboard from '@/features/projects/components/BacklogDashboard';
 import TechnicalBlueprintWizard from '@/features/projects/components/TechnicalBlueprintWizard';
 

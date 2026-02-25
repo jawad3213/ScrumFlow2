@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import { getProject } from '@/features/projects/api/projects';
 import AIDashboard from '@/features/ai-analysis/components/AIDashboard';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 
 const StrategicBlueprintView = () => {
     const { id } = useParams();

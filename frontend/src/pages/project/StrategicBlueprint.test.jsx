@@ -19,7 +19,7 @@ vi.mock('@/features/ai-analysis/components/AIDashboard', () => ({
 }));
 
 // --- 3. MOCK DU LOADER ---
-vi.mock('@/components/ui/LoadingAnimation', () => ({
+vi.mock('@/components/ui/loading-animation', () => ({
     default: ({ message }) => <div>{message}</div>,
 }));
 

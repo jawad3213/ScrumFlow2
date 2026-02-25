@@ -13,7 +13,7 @@ import { cn } from '@/utils/utils';
 // Components
 import RequirementUpload from '@/features/ai-analysis/components/RequirementUpload';
 import AIDashboard from '@/features/ai-analysis/components/AIDashboard';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 import BacklogDashboard from './BacklogDashboard';
 
 // --- Wizard Constants ---

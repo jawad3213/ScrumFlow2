@@ -26,7 +26,7 @@ vi.mock('@/components/ui/input', () => ({
 vi.mock('@/components/ui/textarea', () => ({
   Textarea: (props) => <textarea data-testid="project-desc-textarea" {...props} />
 }));
-vi.mock('@/components/ui/SiriOrb', () => ({ default: () => <div data-testid="siri-orb" /> }));
+vi.mock('@/components/ui/siri-orb', () => ({ default: () => <div data-testid="siri-orb" /> }));
 
 vi.mock('@/features/ai-analysis/components/InternalResourcePool', () => ({ default: () => <div>Pool</div> }));
 vi.mock('@/features/ai-analysis/components/DynamicResourcePool', () => ({ default: () => <div>Pool</div> }));

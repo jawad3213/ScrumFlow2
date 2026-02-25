@@ -27,7 +27,7 @@ import DynamicResourcePool from '@/features/ai-analysis/components/DynamicResour
 import StaffingStrategy from '@/features/ai-analysis/components/StaffingStrategy';
 import RequirementUpload from '@/features/ai-analysis/components/RequirementUpload';
 import AIDashboard from '@/features/ai-analysis/components/AIDashboard';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 
 import teamChecklistImg from '@/assets/NormalSelction.png';
 import team1Img from '@/assets/AgenceSelection.png';

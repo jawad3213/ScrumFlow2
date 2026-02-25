@@ -17,7 +17,7 @@ import StorageService from '@/utils/storage';
 import { cn } from '@/utils/utils';
 
 // Unified loading for consistency
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 
 const STEPS = [
     { id: 1, title: "Context", icon: Info },

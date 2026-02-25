@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import ShimmerText from "./ShimmerText"; // Vérifie bien la casse du nom de fichier
+import ShimmerText from "./shimmer-text"; // Vérifie bien la casse du nom de fichier
 
 describe("ShimmerText Component", () => {
     it("affiche le texte correct passé en prop", () => {

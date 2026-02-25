@@ -5,7 +5,7 @@ import SpecializationTable from '@/features/team/components/SpecializationTable'
 import AddEmployeeModal from '@/features/team/components/AddEmployeeModal';
 import AddSpecializationModal from '@/features/team/components/AddSpecializationModal';
 import { Trash2 } from 'lucide-react';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useEmployees } from '@/features/team/api/useEmployeesQuery';

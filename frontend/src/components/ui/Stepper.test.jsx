@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { Stepper } from './Stepper';
+import { Stepper } from './stepper';
 
 describe('Stepper Component', () => {
     const steps = ['Profil', 'Paiement', 'Confirmation'];

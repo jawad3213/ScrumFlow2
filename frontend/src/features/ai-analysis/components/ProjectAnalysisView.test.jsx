@@ -52,7 +52,7 @@ vi.mock('@/features/ai-analysis/components/ResourcePool', () => ({
     )
 }));
 
-vi.mock('@/components/ui/LoadingAnimation', () => ({
+vi.mock('@/components/ui/loading-animation', () => ({
     default: ({ message }) => (
         <div data-testid="loading-animation">
             <div data-testid="lottie-animation" />

@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import SiriOrb from "./SiriOrb";
+import SiriOrb from "./siri-orb";
 
 describe("SiriOrb Component", () => {
     it("applique les dimensions et les variables CSS par défaut", () => {

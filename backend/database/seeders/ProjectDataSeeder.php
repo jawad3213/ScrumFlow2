@@ -28,21 +28,22 @@ class ProjectDataSeeder extends Seeder
             'user_id' => $chef->id,
             'start_date' => Carbon::now()->toDateString(),
             'estimated_duration_months' => 8,
-            'total_capex' => 508800,
-            'total_opex' => 164400,
-            'total_project_cost' => 563600,
-            'total_gain_value' => 1560000,
-            'annual_opex_value' => 164400,
-            'roi_percentage' => 74.81,
-            'break_even_point_months' => 25,
-            'roi_analysis_summary' => "- Le projet 'ScrumFlow' représente un investissement stratégique majeur visant à optimiser la gestion de projet interne via l'intégration de l'Intelligence Artificielle.\n- Le coût initial (CAPEX) est substantiel (508 800 MAD) et couvre une phase de développement intensive de 8 mois.\n- La rentabilité du projet est projetée pour être atteinte au bout de 25 mois.\n- En Année 3, 'ScrumFlow' démontre sa pleine valeur, générant un ROI positif de 74.81%.",
+            'total_capex' => 376000,
+            'total_opex' => 98400,
+            'total_project_cost' => 474400,
+            'total_gain_value' => 960000,
+            'annual_opex_value' => 98400,
+            'roi_percentage' => 62.35,
+            'break_even_point_months' => 22,
+            'roi_analysis_summary' => "- Le projet 'ScrumFlow' représente un investissement stratégique visant à optimiser la gestion de projet interne via l'IA.\n- Le CAPEX de 376 000 MAD couvre 8 mois de développement avec une équipe de 3 ingénieurs (salaires marché marocain : Senior ~20 000 MAD/mois, Confirmé ~15 000 MAD/mois, Junior ~10 000 MAD/mois).\n- Les coûts cloud annuels (OPEX) s'élèvent à 98 400 MAD, alignés sur les tarifs AWS région eu-west (utilisée par les entreprises marocaines).\n- Le break-even est projeté à 22 mois, avec un ROI de 62.35% en Année 3.",
             'stack_name' => 'Artificial Intelligence & Cloud Platform',
         ]);
 
         // 3. Financials (Infrastructure & Licenses)
         $licenses = [
-            ['name' => 'Gemini API Subscription', 'cost' => 16000, 'desc' => 'Coût utilisation API pour analyse IA.'],
-            ['name' => 'GitHub Actions Pro', 'cost' => 4000, 'desc' => 'Plan payant pour la CI/CD.'],
+            ['name' => 'Gemini API Subscription', 'cost' => 6000, 'desc' => 'Abonnement API Gemini Pro (~500 MAD/mois, usage modéré ~1M tokens/mois).'],
+            ['name' => 'GitHub Team Plan', 'cost' => 1900, 'desc' => 'Plan Team à 4$/user/mois pour 4 devs (~160 MAD/mois).'],
+            ['name' => 'Domaine .ma + SSL', 'cost' => 350, 'desc' => 'Nom de domaine .ma (~250 MAD/an) + certificat SSL (~100 MAD/an).'],
         ];
 
         foreach ($licenses as $lic) {
@@ -56,9 +57,10 @@ class ProjectDataSeeder extends Seeder
         }
 
         $cloud = [
-            ['name' => 'AWS EC2 Instances', 'cost' => 48000, 'desc' => 'Hébergement conteneurs Docker.'],
-            ['name' => 'AWS RDS PostgreSQL', 'cost' => 24000, 'desc' => 'Base de données managée.'],
-            ['name' => 'AWS S3 Storage', 'cost' => 2400, 'desc' => 'Stockage PDF et avatars.'],
+            ['name' => 'AWS EC2 (t3.medium)', 'cost' => 14400, 'desc' => 'Instance t3.medium eu-west (~1 200 MAD/mois, suffisant pour app Laravel + workers).'],
+            ['name' => 'AWS RDS PostgreSQL (db.t3.micro)', 'cost' => 7200, 'desc' => 'Base de données managée db.t3.micro (~600 MAD/mois).'],
+            ['name' => 'AWS S3 Storage', 'cost' => 600, 'desc' => 'Stockage objets (~50 MAD/mois pour ~50 Go de PDFs et avatars).'],
+            ['name' => 'AWS CloudFront CDN', 'cost' => 1200, 'desc' => 'Distribution CDN pour assets statiques (~100 MAD/mois).'],
         ];
 
         foreach ($cloud as $c) {
@@ -74,16 +76,33 @@ class ProjectDataSeeder extends Seeder
         // 5. Estimated Gains
         EstimatedGain::create([
             'project_id' => $project->id,
-            'item_name' => "Gains d'efficacité et Optimisation",
-            'cost_mad' => 180000,
-            'description' => "Réduction du temps de Setup et standardisation des User Stories.",
+            'item_name' => "Gains d'efficacité opérationnelle",
+            'cost_mad' => 120000,
+            'description' => "Réduction de 60% du temps de Setup projet (équivalent ~2 ingénieurs à 10 000 MAD/mois économisés sur la gestion manuelle).",
+        ]);
+
+        EstimatedGain::create([
+            'project_id' => $project->id,
+            'item_name' => "Réduction des erreurs et retravail",
+            'cost_mad' => 72000,
+            'description' => "Standardisation des User Stories et blueprints réduisant le retravail de 40% (~6 000 MAD/mois d'économies).",
+        ]);
+
+        EstimatedGain::create([
+            'project_id' => $project->id,
+            'item_name' => "Accélération Time-to-Market",
+            'cost_mad' => 48000,
+            'description' => "Livraison 25% plus rapide grâce à l'automatisation, permettant de facturer plus tôt (~4 000 MAD/mois de revenus anticipés).",
         ]);
 
         // 6. ROI Projections (3 Years)
+        // Année 1: CAPEX 376K + OPEX 98.4K = 474.4K | Gains: 80K (adoption progressive)
+        // Année 2: +98.4K OPEX = 572.8K cumulé | Gains cumulés: 320K (pleine adoption)
+        // Année 3: +98.4K OPEX = 671.2K cumulé | Gains cumulés: 960K (ROI positif)
         $projections = [
-            ['year' => 1, 'costs' => 563600, 'gains' => 120000, 'roi' => -78.71],
-            ['year' => 2, 'costs' => 728000, 'gains' => 720000, 'roi' => -1.1],
-            ['year' => 3, 'costs' => 892400, 'gains' => 1560000, 'roi' => 74.81],
+            ['year' => 1, 'costs' => 474400, 'gains' => 80000, 'roi' => -83.13],
+            ['year' => 2, 'costs' => 572800, 'gains' => 320000, 'roi' => -44.13],
+            ['year' => 3, 'costs' => 671200, 'gains' => 960000, 'roi' => 43.03],
         ];
 
         foreach ($projections as $p) {

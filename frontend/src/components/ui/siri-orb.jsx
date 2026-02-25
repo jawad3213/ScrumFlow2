@@ -1,6 +1,6 @@
 import { cn } from "@/utils/utils";
 import React from "react";
-import "./SiriOrb.css";
+import "./siri-orb.css";
 
 const SiriOrb = ({
     size = "192px",

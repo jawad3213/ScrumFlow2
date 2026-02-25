@@ -36,7 +36,7 @@ vi.mock('lucide-react', () => ({
 
 vi.mock('@/lib/axios', () => ({ default: vi.fn() }));
 
-vi.mock('@/components/ui/LoadingAnimation', () => ({
+vi.mock('@/components/ui/loading-animation', () => ({
     default: ({ message }) => <div>{message}</div>
 }));
 

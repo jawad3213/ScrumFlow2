@@ -17,7 +17,7 @@ vi.mock('@/features/projects/components/TechnicalBlueprintWizard', () => ({
     default: ({ projectId }) => <div data-testid="blueprint-wizard">Wizard for ID: {projectId}</div>,
 }));
 
-vi.mock('@/components/ui/LoadingAnimation', () => ({
+vi.mock('@/components/ui/loading-animation', () => ({
     default: ({ message }) => <div>{message}</div>,
 }));
 

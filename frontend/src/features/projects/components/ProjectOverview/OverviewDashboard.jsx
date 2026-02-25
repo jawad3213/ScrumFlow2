@@ -9,7 +9,7 @@ import TechStackSnapshot from './TechStackSnapshot';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Trash2, AlertTriangle } from 'lucide-react';
 import ProjectProgressStepper from './ProjectProgressStepper';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 
 const OverviewDashboard = () => {
     const { id } = useParams();

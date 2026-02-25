@@ -42,7 +42,7 @@ vi.mock('@/features/team/components/AddSpecializationModal', () => ({
     default: () => <button>Add Specialization Button</button>,
 }));
 
-vi.mock('@/components/ui/LoadingAnimation', () => ({
+vi.mock('@/components/ui/loading-animation', () => ({
     default: ({ message }) => <div>{message}</div>,
 }));
 

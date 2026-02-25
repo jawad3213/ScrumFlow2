@@ -21,7 +21,7 @@ vi.mock('@/features/projects/api/useProjectsQuery');
 vi.mock('@/features/projects/api/projects');
 
 // 3. SOLUTION AUX ERREURS : Mock des composants qui utilisent Canvas ou IntersectionObserver
-vi.mock('@/components/ui/LoadingAnimation', () => ({
+vi.mock('@/components/ui/loading-animation', () => ({
     default: ({ message }) => <div data-testid="loading-stub">{message}</div>
 }));
 

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import LoadingAnimation from './LoadingAnimation';
+import LoadingAnimation from './loading-animation';
 
 // Mock de la bibliothèque Lottie car JSDOM ne supporte pas le rendu complexe/canvas
 vi.mock('@lottiefiles/dotlottie-react', () => ({
