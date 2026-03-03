@@ -10,8 +10,8 @@ const ProjectProgressStepper = ({ project }) => {
     const hasStack = !!project.stack_name;
 
     const steps = [
-        { id: 1, label: 'Strategic Blueprint', completed: hasStrategic },
-        { id: 2, label: 'Technical Blueprint', completed: hasTechnical },
+        { id: 1, label: 'Financial Blueprint', completed: hasStrategic },
+        { id: 2, label: 'Scrum Master Blueprint', completed: hasTechnical },
         { id: 3, label: 'Technology Stack', completed: hasStack },
     ];
 

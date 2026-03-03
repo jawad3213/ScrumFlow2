@@ -100,7 +100,7 @@ describe('DashboardPage Integration Tests', () => {
             // Portfolio Balance
             expect(screen.getByText('Portfolio Balance')).toBeInTheDocument();
             expect(screen.getByText('1')).toBeInTheDocument();
-            expect(screen.getByText('Strategic Engagements')).toBeInTheDocument();
+            expect(screen.getByText('Financial Engagements')).toBeInTheDocument();
 
             // Portfolio Budget
             expect(screen.getByText('Portfolio Budget')).toBeInTheDocument();

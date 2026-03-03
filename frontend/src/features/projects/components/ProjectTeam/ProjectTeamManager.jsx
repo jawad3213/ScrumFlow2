@@ -16,7 +16,7 @@ import client from '@/lib/axios';
 import { cn } from '@/utils/utils';
 import { toast } from 'sonner';
 
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 
 /**
  * High-end Project Team Management Interface

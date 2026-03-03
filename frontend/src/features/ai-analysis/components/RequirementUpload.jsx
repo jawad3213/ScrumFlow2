@@ -16,7 +16,7 @@ const cascadeContainer = {
     }
 };
 
-const RequirementUpload = ({ onFileSelected, isLoading, error }) => {
+const RequirementUpload = ({ onFileSelected, isLoading, error, hideLaunchButton = false, onFileChange }) => {
     const [file, setFile] = useState(null);
     const fileInputRef = useRef(null);
 
@@ -32,6 +32,7 @@ const RequirementUpload = ({ onFileSelected, isLoading, error }) => {
             return;
         }
         setFile(selectedFile);
+        if (onFileChange) onFileChange(selectedFile);
     };
 
     const triggerAnalysis = () => {
@@ -43,6 +44,7 @@ const RequirementUpload = ({ onFileSelected, isLoading, error }) => {
     const clearFile = (e) => {
         e.stopPropagation();
         setFile(null);
+        if (onFileChange) onFileChange(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
@@ -70,7 +72,7 @@ const RequirementUpload = ({ onFileSelected, isLoading, error }) => {
                             {({ isDragging, openFilePicker }) => (
                                 <EmptyState
                                     title="Project Scoping"
-                                    description="Upload your PRD or Project Specifications PDF.\nGemini will decompose it into a technical blueprint."
+                                    description="Upload your PRD or Project Specifications PDF.\nGemini will decompose it into a scrum master blueprint."
                                     icons={[FileText, FileUp, Files]}
                                     action={{
                                         label: isLoading ? "Analyzing..." : "Select PDF Document",
@@ -119,28 +121,30 @@ const RequirementUpload = ({ onFileSelected, isLoading, error }) => {
                             <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-black mt-2">Ready for Intelligence Extraction</p>
                         </div>
 
-                        <motion.button
-                            whileHover={{ y: -2, scale: 1.01 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => {
-                                console.log("Launching Analysis for:", file.name);
-                                triggerAnalysis();
-                            }}
-                            disabled={isLoading}
-                            className="w-full mt-6 h-14 bg-neutral-900 hover:bg-black text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? (
-                                <>
-                                    <Loader2 size={20} className="animate-spin" />
-                                    Synthesizing Blueprint...
-                                </>
-                            ) : (
-                                <>
-                                    <UploadCloud size={20} className="text-brand-primary-400" />
-                                    Launch AI Analysis
-                                </>
-                            )}
-                        </motion.button>
+                        {!hideLaunchButton && (
+                            <motion.button
+                                whileHover={{ y: -2, scale: 1.01 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => {
+                                    console.log("Launching Analysis for:", file.name);
+                                    triggerAnalysis();
+                                }}
+                                disabled={isLoading}
+                                className="w-full mt-6 h-14 bg-neutral-900 hover:bg-black text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 size={20} className="animate-spin" />
+                                        Synthesizing Blueprint...
+                                    </>
+                                ) : (
+                                    <>
+                                        <UploadCloud size={20} className="text-brand-primary-400" />
+                                        Launch AI Analysis
+                                    </>
+                                )}
+                            </motion.button>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

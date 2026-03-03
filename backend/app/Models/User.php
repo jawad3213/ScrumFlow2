@@ -24,9 +24,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'specialization_id',
         'avatar',
-        'is_engaged',
+        'google_id',
     ];
 
     /**
@@ -49,9 +48,30 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    /**
+     * Append computed attributes to JSON.
+     */
+    protected $appends = ['has_password'];
+
+    /**
+     * Check if user has a password set (false for Google-only users).
+     */
+    public function getHasPasswordAttribute(): bool
+    {
+        return !is_null($this->attributes['password'] ?? null);
+    }
+
     public function specialization()
     {
         return $this->belongsTo(Specialization::class);
+    }
+
+    /**
+     * The employees owned by this chef user.
+     */
+    public function employees()
+    {
+        return $this->hasMany(\App\Models\Employee::class);
     }
 
     public function refreshTokens()

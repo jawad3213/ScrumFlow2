@@ -50,7 +50,60 @@ import { USER_ROLES } from '@/utils/constants';
 
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useProject } from '@/features/projects/api/useProject';
+
 import { getProjects } from '@/features/projects/api/projects';
+
+const getInitials = (name) => {
+    if (!name) return '??';
+    return name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
+};
+
+const getRandomColor = (name) => {
+    if (!name) return 'bg-neutral-100 text-neutral-500 border-neutral-200';
+    const colors = [
+        'bg-blue-100 text-blue-700 border-blue-200',
+        'bg-purple-100 text-purple-700 border-purple-200',
+        'bg-emerald-100 text-emerald-700 border-emerald-200',
+        'bg-amber-100 text-amber-700 border-amber-200',
+        'bg-rose-100 text-rose-700 border-rose-200',
+        'bg-indigo-100 text-indigo-700 border-indigo-200'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+};
+
+const AvatarWithFallback = ({ user }) => {
+    const [imageError, setImageError] = useState(false);
+    const fullName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'User';
+
+    if (user?.avatar && !imageError) {
+        return (
+            <img
+                src={`${BASE_URL}/storage/${user.avatar}`}
+                alt="Avatar"
+                onError={(e) => {
+                    console.error('Sidebar Avatar load error:', e);
+                    setImageError(true);
+                }}
+                className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm group-hover:border-brand-primary-100 transition-colors"
+            />
+        );
+    }
+
+    return (
+        <div className={`h-10 w-10 flex items-center justify-center rounded-full border-2 border-white shadow-sm text-xs font-black sm:text-sm group-hover:border-brand-primary-100 transition-colors ${getRandomColor(fullName)}`}>
+            {getInitials(fullName)}
+        </div>
+    );
+};
 
 const navLinkClass = ({ isActive }) =>
     cn(
@@ -132,8 +185,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                         {!collapsed && "Main Menu"}
                     </div>
                     <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Overview" collapsed={collapsed} />
-                    <SidebarItem to="/projects/new" icon={PlusCircle} label="New Project" collapsed={collapsed} />
-                    <SidebarItem to="/team-global" icon={Users} label="Team Global" collapsed={collapsed} />
+                    <SidebarItem to="/projects/new-project" icon={PlusCircle} label="New Project" collapsed={collapsed} />
+                    <SidebarItem to="/team-global" icon={Users} label="Global Team" collapsed={collapsed} />
                     <SidebarItem to="/settings" icon={Settings} label="Settings" collapsed={collapsed} />
                 </>
             );
@@ -146,9 +199,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     </div>
 
                     <SidebarItem to={`/project/${projectId}`} icon={LayoutDashboard} label="Overview" collapsed={collapsed} end />
-                    <SidebarItem to={`/project/${projectId}/hub`} icon={Sparkles} label="Strategic Blueprint" collapsed={collapsed} />
-                    <SidebarItem to={`/project/${projectId}/blueprint`} icon={Code} label="Technical Blueprint" collapsed={collapsed} />
-                    <SidebarItem to={`/project/${projectId}/stack`} icon={Layers} label="Stack Choice" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/financial-blueprint`} icon={Sparkles} label="Financial Blueprint" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/scrum-master-blueprint`} icon={Code} label="Scrum Master Blueprint" collapsed={collapsed} />
+                    <SidebarItem to={`/project/${projectId}/stack-choice`} icon={Layers} label="Stack Choice" collapsed={collapsed} />
                     <SidebarItem to={`/project/${projectId}/project-team`} icon={Users} label="Project Team" collapsed={collapsed} />
 
 
@@ -174,7 +227,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                         </div>
                     ) : (
                         <div className="flex items-center gap-3">
-                            <img src={logo} alt="TaskFlow" className="h-10 w-auto object-contain" />
+                            <img src={logo} alt="growtrack" className="h-10 w-auto object-contain" />
                         </div>
                     )}
                 </div>
@@ -347,23 +400,33 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {/* Footer / User Profile & Toggle */}
                 <div className="border-t border-neutral-200 p-4 space-y-4">
                     {/* User Profile Section */}
-                    <div
-                        onClick={() => navigate('/profile')}
-                        className={cn(
-                            "flex items-center gap-3 rounded-xl border border-surface-border bg-surface-background p-3 shadow-subtle cursor-pointer hover:bg-brand-primary-50/50 hover:border-brand-primary-200 transition-all group",
-                            collapsed ? "justify-center border-none bg-transparent shadow-none px-0" : ""
-                        )}
-                    >
-                        <div className="relative">
-                            <img
-                                src={user?.avatar ? `${BASE_URL}/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
-                                alt="Avatar"
-                                className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm group-hover:border-brand-primary-100 transition-colors"
-                            />
-                            <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success-default border-2 border-white" />
+                    {/* User Profile Section */}
+                    {collapsed ? (
+                        <div className="flex justify-center">
+                            <Tooltip delayDuration={0}>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleLogout(); }}
+                                        className="h-10 w-10 flex items-center justify-center rounded-xl text-neutral-400 hover:text-danger-default hover:bg-danger-lighter transition-all"
+                                    >
+                                        <LogOut className="h-5 w-5" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="right" sideOffset={20} className="font-bold border border-white/10 shadow-lg bg-danger-default text-white whitespace-nowrap">
+                                    Logout
+                                </TooltipContent>
+                            </Tooltip>
                         </div>
+                    ) : (
+                        <div
+                            onClick={() => navigate('/profile')}
+                            className="flex items-center gap-3 rounded-xl border border-surface-border bg-surface-background p-3 shadow-subtle cursor-pointer hover:bg-brand-primary-50/50 hover:border-brand-primary-200 transition-all group"
+                        >
+                            <div className="relative">
+                                <AvatarWithFallback user={user} />
+                                <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success-default border-2 border-white" />
+                            </div>
 
-                        {!collapsed && (
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-bold text-neutral-900 truncate tracking-tight group-hover:text-brand-primary-700 transition-colors">
                                     {user?.first_name} {user?.last_name}
@@ -372,32 +435,16 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                                     {userRole === USER_ROLES.MANAGER ? 'Manager' : 'Team'}
                                 </p>
                             </div>
-                        )}
 
-                        {collapsed ? (
-                            <Tooltip delayDuration={0}>
-                                <TooltipTrigger asChild>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleLogout(); }}
-                                        className="text-neutral-400 hover:text-danger-default transition-colors p-1.5 hover:bg-danger-lighter rounded-lg"
-                                    >
-                                        <LogOut className="h-4 w-4" />
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="right" sideOffset={20} className="font-bold border border-white/10 shadow-lg bg-danger-default text-white whitespace-nowrap">
-                                    Logout
-                                </TooltipContent>
-                            </Tooltip>
-                        ) : (
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleLogout(); }}
-                                className="text-neutral-400 hover:text-danger-default transition-colors p-1.5 hover:bg-danger-lighter rounded-lg"
+                                className="text-neutral-400 hover:text-danger-default transition-colors p-1.5 hover:bg-danger-lighter rounded-lg text-right"
                                 title="Logout"
                             >
                                 <LogOut className="h-4 w-4" />
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     <Tooltip delayDuration={0}>
                         <TooltipTrigger asChild>

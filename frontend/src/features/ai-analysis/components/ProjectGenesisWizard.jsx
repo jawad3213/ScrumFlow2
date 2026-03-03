@@ -27,7 +27,7 @@ import DynamicResourcePool from '@/features/ai-analysis/components/DynamicResour
 import StaffingStrategy from '@/features/ai-analysis/components/StaffingStrategy';
 import RequirementUpload from '@/features/ai-analysis/components/RequirementUpload';
 import AIDashboard from '@/features/ai-analysis/components/AIDashboard';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 
 import teamChecklistImg from '@/assets/NormalSelction.png';
 import team1Img from '@/assets/AgenceSelection.png';
@@ -87,6 +87,7 @@ const ProjectGenesisWizard = () => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [error, setError] = useState(null);
     const [validationError, setValidationError] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
 
     // --- State ---
     const [projectData, setProjectData] = useState({
@@ -131,6 +132,11 @@ const ProjectGenesisWizard = () => {
 
     const handleNext = async () => {
         if (!validateCurrentStep()) return;
+
+        if (currentStep === 4 && selectedFile) {
+            await handleAnalysis(selectedFile);
+            return;
+        }
 
         if (currentStep < 5) {
             setDirection(1);
@@ -194,7 +200,7 @@ const ProjectGenesisWizard = () => {
             setStoreMessage({ type: 'success', text: 'Project blueprint synchronized successfully!' });
 
             setTimeout(() => {
-                navigate('/dashboard/projects');
+                navigate('/dashboard');
             }, 2000);
         } catch (err) {
             console.error('Store error:', err);
@@ -429,11 +435,19 @@ const ProjectGenesisWizard = () => {
                                                 )
                                             )}
                                             {currentStep === 4 && (
-                                                <RequirementUpload
-                                                    onFileSelected={handleAnalysis}
-                                                    isLoading={isAnalyzing}
-                                                    error={error}
-                                                />
+                                                <div className="space-y-8">
+                                                    <div className="text-center mb-8">
+                                                        <h3 className="text-2xl font-black text-neutral-900 tracking-tight">Scoping</h3>
+                                                        <p className="text-sm text-neutral-500 font-medium mt-2">Upload your scoping document.</p>
+                                                    </div>
+                                                    <RequirementUpload
+                                                        onFileSelected={handleAnalysis}
+                                                        onFileChange={setSelectedFile}
+                                                        hideLaunchButton={true}
+                                                        isLoading={isAnalyzing}
+                                                        error={error}
+                                                    />
+                                                </div>
                                             )}
                                             {currentStep === 5 && (
                                                 <div className="space-y-10">
@@ -495,15 +509,25 @@ const ProjectGenesisWizard = () => {
                                                         </motion.button>
                                                     )}
 
-                                                    {currentStep !== 4 && (
+                                                    {currentStep !== 5 && (
                                                         <motion.button
                                                             whileHover={{ y: -4 }}
                                                             whileTap={{ scale: 0.96 }}
                                                             onClick={handleNext}
-                                                            className="bg-neutral-900 hover:bg-brand-primary-500 text-white rounded-[24px] px-10 h-14 font-black text-[11px] uppercase tracking-[0.25em] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] hover:shadow-brand-primary-500/25 transition-all flex items-center gap-4 group"
+                                                            disabled={isAnalyzing}
+                                                            className="bg-neutral-900 hover:bg-brand-primary-500 text-white rounded-[24px] px-10 h-14 font-black text-[11px] uppercase tracking-[0.25em] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] hover:shadow-brand-primary-500/25 transition-all flex items-center gap-4 group disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
-                                                            Progress to {STEPS[currentStep].title}
-                                                            <ChevronRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
+                                                            {isAnalyzing ? (
+                                                                <>
+                                                                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                                                    Synthesizing Analysis...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    Progress to {STEPS[currentStep].title}
+                                                                    <ChevronRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
+                                                                </>
+                                                            )}
                                                         </motion.button>
                                                     )}
                                                 </div>

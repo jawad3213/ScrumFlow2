@@ -36,14 +36,14 @@ describe('Sidebar Integration', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        
+
         // Setup par défaut : Manager en vue globale
         authHook.useAuth.mockReturnValue({
             user: { first_name: 'John', last_name: 'Doe' },
             userRole: USER_ROLES.MANAGER,
             logout: mockLogout
         });
-        
+
         projectHook.useProject.mockReturnValue({
             currentProject: 'global',
             setCurrentProject: mockSetCurrentProject
@@ -52,7 +52,7 @@ describe('Sidebar Integration', () => {
         projectApi.getProjects.mockResolvedValue([
             { id: '1', name: 'Projet Test' }
         ]);
-        
+
         // Mock ResizeObserver (nécessaire pour les composants Radix/Shadcn)
         global.ResizeObserver = vi.fn().mockImplementation(() => ({
             observe: vi.fn(),
@@ -85,7 +85,7 @@ describe('Sidebar Integration', () => {
         );
 
         expect(screen.getByText(/Project Menu/i)).toBeInTheDocument();
-        expect(screen.getByText(/Strategic Blueprint/i)).toBeInTheDocument();
+        expect(screen.getByText(/Financial Blueprint/i)).toBeInTheDocument();
     });
 
     it('ne doit pas afficher le switcher "Workspace" pour un utilisateur TEAM', () => {
@@ -104,7 +104,7 @@ describe('Sidebar Integration', () => {
         expect(screen.getByText(/Notifications/i)).toBeInTheDocument();
     });
 
-    it('appelle logout et navigue vers login lors du clic sur déconnexion', async () => {
+    it('appelle logout et navigue vers l\'accueil lors du clic sur déconnexion', async () => {
         render(
             <MemoryRouter>
                 <Sidebar collapsed={false} setCollapsed={vi.fn()} />
@@ -116,6 +116,6 @@ describe('Sidebar Integration', () => {
         fireEvent.click(logoutBtn);
 
         expect(mockLogout).toHaveBeenCalled();
-        expect(mockNavigate).toHaveBeenCalledWith('/login');
+        expect(mockNavigate).toHaveBeenCalledWith('/');
     });
 });

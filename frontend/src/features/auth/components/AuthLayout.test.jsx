@@ -22,20 +22,20 @@ describe('AuthLayout', () => {
 
   it('affiche correctement le titre et le sous-titre', () => {
     renderWithRouter(<AuthLayout {...defaultProps} />);
-    
+
     expect(screen.getByText(defaultProps.title)).toBeInTheDocument();
     expect(screen.getByText(defaultProps.subtitle)).toBeInTheDocument();
   });
 
   it('rend les composants enfants (children) à l\'intérieur du conteneur de formulaire', () => {
     renderWithRouter(<AuthLayout {...defaultProps} />);
-    
+
     expect(screen.getByTestId('child-form')).toBeInTheDocument();
   });
 
   it('affiche l\'illustration par défaut avec les bonnes propriétés', () => {
     renderWithRouter(<AuthLayout {...defaultProps} illustrationAlt="Alt Image" />);
-    
+
     const img = screen.getByAltText("Alt Image");
     expect(img).toBeInTheDocument();
     expect(img.getAttribute('src')).toBe("test-img.png");
@@ -46,10 +46,10 @@ describe('AuthLayout', () => {
     renderWithRouter(
       <AuthLayout {...defaultProps} illustrationContent={customContent} />
     );
-    
+
     // Le contenu personnalisé doit être présent
     expect(screen.getByTestId('custom-illustration')).toBeInTheDocument();
-    
+
     // L'image d'illustration par défaut ne doit PAS être présente
     const defaultImg = screen.queryByAltText("Illustration");
     expect(defaultImg).not.toBeInTheDocument();
@@ -57,25 +57,29 @@ describe('AuthLayout', () => {
 
   it('le lien du logo pointe vers le bon chemin par défaut', () => {
     renderWithRouter(<AuthLayout {...defaultProps} />);
-    
-    // On cherche le lien qui enveloppe l'image du logo
-    const link = screen.getByRole('link');
-    expect(link.getAttribute('href')).toBe('/login');
+
+    // On cherche le lien qui enveloppe l'image du logo (il y a aussi le lien "Accueil")
+    const links = screen.getAllByRole('link');
+    const logoLink = links.find(link => link.querySelector('img[alt="growtrack Logo"]'));
+    expect(logoLink).toBeTruthy();
+    expect(logoLink.getAttribute('href')).toBe('/login');
   });
 
   it('le lien du logo accepte un chemin personnalisé via logoPath', () => {
     renderWithRouter(<AuthLayout {...defaultProps} logoPath="/register" />);
-    
-    const link = screen.getByRole('link');
-    expect(link.getAttribute('href')).toBe('/register');
+
+    const links = screen.getAllByRole('link');
+    const logoLink = links.find(link => link.querySelector('img[alt="growtrack Logo"]'));
+    expect(logoLink).toBeTruthy();
+    expect(logoLink.getAttribute('href')).toBe('/register');
   });
 
   it('masque la colonne d\'illustration sur les petits écrans (classe CSS)', () => {
     const { container } = renderWithRouter(<AuthLayout {...defaultProps} />);
-    
-    // On récupère le conteneur de droite (index 1 des enfants directs du flex)
-    const rightColumn = container.firstChild.childNodes[1];
-    
+
+    // The "Back to Home" Link is at index 0, form column at index 1, illustration at index 2
+    const rightColumn = container.firstChild.childNodes[2];
+
     // Vérifie la présence de la classe Tailwind 'hidden lg:flex'
     expect(rightColumn.className).toContain('hidden');
     expect(rightColumn.className).toContain('lg:flex');

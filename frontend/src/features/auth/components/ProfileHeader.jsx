@@ -6,10 +6,39 @@ import { Badge } from '@/components/ui/badge';
 import { BASE_URL } from '@/utils/api';
 import { USER_ROLES } from '@/utils/constants';
 
+const getInitials = (name) => {
+    if (!name) return '??';
+    return name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
+};
+
+const getRandomColor = (name) => {
+    if (!name) return 'bg-neutral-100 text-neutral-500 border-neutral-200';
+    const colors = [
+        'bg-blue-100 text-blue-700 border-blue-200',
+        'bg-purple-100 text-purple-700 border-purple-200',
+        'bg-emerald-100 text-emerald-700 border-emerald-200',
+        'bg-amber-100 text-amber-700 border-amber-200',
+        'bg-rose-100 text-rose-700 border-rose-200',
+        'bg-indigo-100 text-indigo-700 border-indigo-200'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+};
+
 const ProfileHeader = () => {
     const { user, userRole, updateUser } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [imageError, setImageError] = useState(false);
     const fileInputRef = useRef(null);
+    const fullName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'User';
 
     const handlePhotoUpload = async (e) => {
         const file = e.target.files[0];
@@ -45,11 +74,21 @@ const ProfileHeader = () => {
                         accept="image/*"
                         onChange={handlePhotoUpload}
                     />
-                    <img
-                        src={user?.avatar ? `${BASE_URL}/storage/${user.avatar}` : `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.first_name || 'User'}`}
-                        alt="Avatar"
-                        className={`w-32 h-32 rounded-3xl object-cover bg-white border-4 border-white shadow-xl mb-4 group-hover:scale-[1.02] transition-transform duration-500 ${loading ? 'opacity-50' : ''}`}
-                    />
+                    {user?.avatar && !imageError ? (
+                        <img
+                            src={`${BASE_URL}/storage/${user.avatar}`}
+                            alt="Avatar"
+                            onError={(e) => {
+                                console.error('Avatar load error:', e);
+                                setImageError(true);
+                            }}
+                            className={`w-32 h-32 rounded-3xl object-cover bg-white border-4 border-white shadow-xl mb-4 group-hover:scale-[1.02] transition-transform duration-500 ${loading ? 'opacity-50' : ''}`}
+                        />
+                    ) : (
+                        <div className={`w-32 h-32 rounded-3xl flex items-center justify-center text-4xl font-black border-4 border-white shadow-xl mb-4 group-hover:scale-[1.02] transition-transform duration-500 ${getRandomColor(fullName)} ${loading ? 'opacity-50' : ''}`}>
+                            {getInitials(fullName)}
+                        </div>
+                    )}
                     <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={loading}

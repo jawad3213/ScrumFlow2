@@ -90,7 +90,7 @@ describe("Navbar – integration tests", () => {
     await userEvent.click(screen.getByText("Log out"))
 
     expect(mockLogout).toHaveBeenCalled()
-    expect(mockNavigate).toHaveBeenCalledWith("/login")
+    expect(mockNavigate).toHaveBeenCalledWith("/")
   })
 
   it("closes user menu when clicking outside", async () => {

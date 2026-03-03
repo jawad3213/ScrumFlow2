@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import client from '@/lib/axios';
 import { cn } from '@/utils/utils';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 
 const cascadeContainer = {
     hidden: { opacity: 0 },

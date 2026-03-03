@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bienvenue chez TaskFlow</title>
+    <title>Bienvenue chez growtrack</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
         
@@ -118,7 +118,7 @@
     <div class="container">
         <div class="header">
             <div class="icon">🚀</div>
-            <h1>Bienvenue chez TaskFlow !</h1>
+            <h1>Bienvenue chez growtrack !</h1>
             <p>Votre aventure commence ici.</p>
         </div>
         
@@ -140,11 +140,11 @@
             
             <p>Pour des raisons de sécurité, nous vous recommandons vivement de modifier votre mot de passe lors de votre première connexion.</p>
             
-            <a href="{{ config('app.frontend_url') ?? '#' }}" class="btn">Se connecter à TaskFlow</a>
+            <a href="{{ config('app.frontend_url') ?? '#' }}" class="btn">Se connecter à growtrack</a>
         </div>
         
         <div class="footer">
-            <p>&copy; {{ date('Y') }} TaskFlow. Tous droits réservés.</p>
+            <p>&copy; {{ date('Y') }} growtrack. Tous droits réservés.</p>
             <p>Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer cet email.</p>
         </div>
     </div>

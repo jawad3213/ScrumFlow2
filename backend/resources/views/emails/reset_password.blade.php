@@ -112,13 +112,13 @@
     <div class="wrapper">
         <div class="container">
             <div class="header">
-                 <img src="http://localhost:5173/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="TaskFlow Logo" width="60" style="display: block; margin: 0 auto; margin-bottom: 10px;">
-                <a href="#" class="logo">TaskFlow</a>
+                 <img src="http://localhost:5173/login/Gemini_Generated_Image_8jllqr8jllqr8jll-removebg-preview.png" alt="growtrack Logo" width="60" style="display: block; margin: 0 auto; margin-bottom: 10px;">
+                <a href="#" class="logo">growtrack</a>
             </div>
             <div class="content">
                 <h1 class="greeting">Bonjour,</h1>
                 <p class="text">
-                    Nous avons reçu une demande de réinitialisation de votre mot de passe pour votre compte <strong>TaskFlow</strong>.
+                    Nous avons reçu une demande de réinitialisation de votre mot de passe pour votre compte <strong>growtrack</strong>.
                 </p>
                 <p class="text">
                     Si vous êtes à l'origine de cette demande, vous pouvez réinitialiser votre mot de passe en cliquant sur le bouton ci-dessous :
@@ -138,12 +138,12 @@
                 <div style="border-top: 1px solid #E5E7EB; margin-top: 32px; padding-top: 24px;">
                     <p class="text" style="margin-bottom: 0;">
                         Merci,<br>
-                        <strong style="color: #111827;">L'équipe TaskFlow</strong>
+                        <strong style="color: #111827;">L'équipe growtrack</strong>
                     </p>
                 </div>
             </div>
             <div class="footer">
-                <p>&copy; {{ date('Y') }} TaskFlow. Tous droits réservés.</p>
+                <p>&copy; {{ date('Y') }} growtrack. Tous droits réservés.</p>
                 <p style="margin-top: 8px;">Ceci est un email automatique, merci de ne pas y répondre.</p>
             </div>
         </div>

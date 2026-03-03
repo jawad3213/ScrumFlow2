@@ -33,6 +33,7 @@
     "cmdk": "^1.1.1",
     "columns": "^0.8.0",
     "dicons": "^1.1.7",
+    "firebase": "^12.9.0",
     "framer-motion": "^12.23.26",
     "gsap": "^3.14.2",
     "html2pdf.js": "^0.14.0",

@@ -8,8 +8,15 @@ vi.mock('@/features/auth/api/profile', () => ({
   updatePassword: vi.fn(),
 }));
 
+// Mock useAuth to avoid needing the full AuthProvider
+vi.mock('@/features/auth/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { has_password: true },
+  }),
+}));
+
 // Mock de window.alert
-const alertMock = vi.spyOn(window, 'alert').mockImplementation(() => {});
+const alertMock = vi.spyOn(window, 'alert').mockImplementation(() => { });
 
 describe('UpdatePasswordForm', () => {
   beforeEach(() => {
@@ -28,10 +35,10 @@ describe('UpdatePasswordForm', () => {
 
   it('affiche une alerte si les mots de passe ne correspondent pas', async () => {
     render(<UpdatePasswordForm />);
-    
+
     fireEvent.change(screen.getByPlaceholderText(/Min 8 chars/i), { target: { value: 'Pass1' } });
     fireEvent.change(screen.getByPlaceholderText(/Confirm new password/i), { target: { value: 'Pass2' } });
-    
+
     fireEvent.click(screen.getByRole('button', { name: /Change Password/i }));
 
     expect(alertMock).toHaveBeenCalledWith("Passwords don't match");
@@ -41,7 +48,7 @@ describe('UpdatePasswordForm', () => {
     // Utilisation des vrais timers pour ce test pour éviter le timeout
     vi.useRealTimers();
     updatePassword.mockResolvedValueOnce({ status: 'success' });
-    
+
     render(<UpdatePasswordForm />);
 
     const currentInput = screen.getByPlaceholderText("••••••••");
@@ -68,7 +75,7 @@ describe('UpdatePasswordForm', () => {
     vi.useRealTimers();
     // On crée une promesse qui ne se résout pas immédiatement
     updatePassword.mockReturnValue(new Promise((resolve) => setTimeout(resolve, 500)));
-    
+
     render(<UpdatePasswordForm />);
     const submitBtn = screen.getByRole('button', { name: /Change Password/i });
 
@@ -78,6 +85,6 @@ describe('UpdatePasswordForm', () => {
     fireEvent.click(submitBtn);
 
     expect(submitBtn).toBeDisabled();
-    expect(submitBtn).toHaveTextContent(/Changing.../i);
+    expect(submitBtn).toHaveTextContent(/Saving.../i);
   });
 });

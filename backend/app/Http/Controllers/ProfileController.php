@@ -49,23 +49,33 @@ class ProfileController extends Controller
      */
     public function updatePassword(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'current_password' => 'required',
+        $user = $request->user();
+        $hasPassword = !is_null($user->password);
+
+        // Build validation rules - only require current_password if user already has one
+        $rules = [
             'new_password' => 'required|min:8|confirmed',
-        ]);
+        ];
+
+        if ($hasPassword) {
+            $rules['current_password'] = 'required';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $user = $request->user();
-
-        if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json([
-                'errors' => [
-                    'current_password' => ['Le mot de passe actuel est incorrect.']
-                ]
-            ], 422);
+        // If user has a password, verify the current one
+        if ($hasPassword) {
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'errors' => [
+                        'current_password' => ['Le mot de passe actuel est incorrect.']
+                    ]
+                ], 422);
+            }
         }
 
         $user->password = Hash::make($request->new_password);

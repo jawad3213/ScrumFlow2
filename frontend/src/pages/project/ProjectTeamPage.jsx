@@ -9,7 +9,7 @@ const ProjectTeamPage = () => {
 
     return (
         <div className="space-y-10 animate-in fade-in duration-default ease-soft">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white rounded-[32px] border border-neutral-100 p-8 shadow-elevation">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div className="flex items-center gap-5">
                     <div className="w-14 h-14 rounded-2xl bg-brand-primary-500 flex items-center justify-center text-white shadow-xl shadow-brand-primary-500/20">
                         <Users className="h-7 w-7" />

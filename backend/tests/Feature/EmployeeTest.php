@@ -5,41 +5,80 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Employee;
 use App\Models\Specialization;
 use Laravel\Sanctum\Sanctum;
-use Illuminate\Support\Facades\Mail;
 
 class EmployeeTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_can_list_employees()
+    private function createChefWithEmployee($overrides = [])
     {
-        $user = User::factory()->create(['role' => 'chef']);
-        Sanctum::actingAs($user);
+        $chef = User::factory()->create(['role' => 'chef']);
+        Sanctum::actingAs($chef);
 
-        User::factory()->create(['role' => 'employee']);
-        User::factory()->create(['role' => 'employee']);
+        $spec = Specialization::factory()->create();
+        $employee = Employee::create(array_merge([
+            'user_id' => $chef->id,
+            'first_name' => 'Test',
+            'last_name' => 'Employee',
+            'email' => 'test@example.com',
+            'specialization_id' => $spec->id,
+        ], $overrides));
+
+        return [$chef, $employee, $spec];
+    }
+
+    public function test_can_list_own_employees()
+    {
+        [$chef, $employee1] = $this->createChefWithEmployee();
+        Employee::create([
+            'user_id' => $chef->id,
+            'first_name' => 'Second',
+            'last_name' => 'Employee',
+            'email' => 'second@example.com',
+            'specialization_id' => $employee1->specialization_id,
+        ]);
 
         $response = $this->getJson('/api/employees');
 
-        // Should return the 2 employees. The acting user is chef.
         $response->assertStatus(200)
             ->assertJsonCount(2);
     }
 
+    public function test_cannot_see_other_chef_employees()
+    {
+        // Chef A has an employee
+        $chefA = User::factory()->create(['role' => 'chef']);
+        $spec = Specialization::factory()->create();
+        Employee::create([
+            'user_id' => $chefA->id,
+            'first_name' => 'ChefA',
+            'last_name' => 'Employee',
+            'email' => 'chefa@example.com',
+            'specialization_id' => $spec->id,
+        ]);
+
+        // Chef B logs in — should see 0 employees
+        $chefB = User::factory()->create(['role' => 'chef']);
+        Sanctum::actingAs($chefB);
+
+        $response = $this->getJson('/api/employees');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(0);
+    }
+
     public function test_can_create_employee()
     {
-        Mail::fake();
+        $chef = User::factory()->create(['role' => 'chef']);
+        Sanctum::actingAs($chef);
 
-        $user = User::factory()->create(['role' => 'chef']);
-        Sanctum::actingAs($user);
-
-        // Pre-requisite: Specialization must exist
         Specialization::create([
             'name' => 'Backend Developer',
             'level' => 'Senior',
-            'salary' => 10000
+            'salary' => 10000,
         ]);
 
         $payload = [
@@ -55,70 +94,70 @@ class EmployeeTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonFragment(['email' => 'john.doe@example.com']);
 
-        $this->assertDatabaseHas('users', ['email' => 'john.doe@example.com', 'role' => 'employee']);
+        $this->assertDatabaseHas('employees', [
+            'email' => 'john.doe@example.com',
+            'user_id' => $chef->id,
+        ]);
     }
 
-    public function test_can_update_employee()
+    public function test_can_update_own_employee()
     {
-        $user = User::factory()->create(['role' => 'chef']);
-        Sanctum::actingAs($user);
+        [$chef, $employee] = $this->createChefWithEmployee();
 
-        $employee = User::factory()->create(['role' => 'employee', 'first_name' => 'Old Name']);
-
-        $payload = [
-            'first_name' => 'New Name',
-            // We don't send specialization info, so it shouldn't try to look it up if not present
-        ];
-
-        $response = $this->putJson("/api/employees/{$employee->id}", $payload);
+        $response = $this->putJson("/api/employees/{$employee->id}", [
+            'first_name' => 'Updated Name',
+        ]);
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['first_name' => 'New Name']);
+            ->assertJsonFragment(['first_name' => 'Updated Name']);
     }
 
-    public function test_can_delete_employee()
+    public function test_can_delete_own_employee()
     {
-        $user = User::factory()->create(['role' => 'chef']);
-        Sanctum::actingAs($user);
-
-        $employee = User::factory()->create(['role' => 'employee']);
+        [$chef, $employee] = $this->createChefWithEmployee();
 
         $response = $this->deleteJson("/api/employees/{$employee->id}");
 
         $response->assertStatus(200);
-        $this->assertDatabaseMissing('users', ['id' => $employee->id]);
+        $this->assertDatabaseMissing('employees', ['id' => $employee->id]);
     }
 
     public function test_can_list_available_employees()
     {
-        $user = User::factory()->create(['role' => 'chef']);
-        Sanctum::actingAs($user);
-
-        // Create 3 employees, but only 2 should be 'available' if one is assigned somewhere (if logic exists)
-        // or simply test that they return correctly.
-        User::factory()->count(3)->create(['role' => 'employee']);
+        [$chef, $employee1] = $this->createChefWithEmployee(['is_engaged' => false]);
+        Employee::create([
+            'user_id' => $chef->id,
+            'first_name' => 'Engaged',
+            'last_name' => 'Employee',
+            'email' => 'engaged@example.com',
+            'specialization_id' => $employee1->specialization_id,
+            'is_engaged' => true,
+        ]);
 
         $response = $this->getJson('/api/employees/available');
 
         $response->assertStatus(200)
-            ->assertJsonCount(3);
+            ->assertJsonCount(1); // Only the non-engaged one
     }
 
-    public function test_can_bulk_delete_employees()
+    public function test_can_bulk_delete_own_employees()
     {
-        $user = User::factory()->create(['role' => 'chef']);
-        Sanctum::actingAs($user);
-
-        $employees = User::factory()->count(3)->create(['role' => 'employee']);
-        $ids = $employees->pluck('id')->toArray();
-
-        $response = $this->postJson('/api/employees/bulk-delete', [
-            'ids' => $ids
+        [$chef, $employee1] = $this->createChefWithEmployee();
+        $employee2 = Employee::create([
+            'user_id' => $chef->id,
+            'first_name' => 'Bulk',
+            'last_name' => 'Delete',
+            'email' => 'bulk@example.com',
+            'specialization_id' => $employee1->specialization_id,
         ]);
+
+        $ids = [$employee1->id, $employee2->id];
+
+        $response = $this->postJson('/api/employees/bulk-delete', ['ids' => $ids]);
 
         $response->assertStatus(200);
         foreach ($ids as $id) {
-            $this->assertDatabaseMissing('users', ['id' => $id]);
+            $this->assertDatabaseMissing('employees', ['id' => $id]);
         }
     }
 }

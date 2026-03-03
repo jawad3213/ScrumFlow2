@@ -309,7 +309,7 @@ const AIDashboard = ({ data }) => {
                         <div className="p-2 bg-brand-primary-500/20 rounded-xl text-brand-primary-400 border border-brand-primary-500/30">
                             <Info size={18} />
                         </div>
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.2em]">Executive Strategy Analysis</h2>
+                        <h2 className="text-[10px] font-black uppercase tracking-[0.2em]">Executive Financial Analysis</h2>
                     </div>
                     <div className="bg-white/5 border border-white/10 p-8 rounded-[32px] backdrop-blur-sm">
                         <div className="text-base text-neutral-200 leading-relaxed font-medium italic">

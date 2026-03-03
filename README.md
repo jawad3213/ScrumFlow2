@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🚀 TaskFlow</h1>
+  <h1 align="center">🚀 growtrack</h1>
   <p align="center">
     <strong>AI-Powered Project Management & Financial Planning Platform</strong>
   </p>
@@ -42,7 +42,7 @@
 
 ## 🌟 Overview
 
-**TaskFlow** is a comprehensive project management platform designed for project managers (Chefs de Projet) and development teams. It uniquely integrates AI-powered analysis into the project lifecycle, transforming raw project requirement documents (PDFs — *Cahier des Charges*) into actionable staffing plans, detailed backlogs, technology recommendations, and financial forecasts.
+**growtrack** is a comprehensive project management platform designed for project managers (Chefs de Projet) and development teams. It uniquely integrates AI-powered analysis into the project lifecycle, transforming raw project requirement documents (PDFs — *Cahier des Charges*) into actionable staffing plans, detailed backlogs, technology recommendations, and financial forecasts.
 
 ### The Problem
 
@@ -54,7 +54,7 @@ Project managers spend significant time manually:
 
 ### The Solution
 
-TaskFlow automates all of the above using **Google Gemini AI**, providing structured, data-driven outputs via an intuitive wizard-based interface that guides managers through the entire project genesis process.
+growtrack automates all of the above using **Google Gemini AI**, providing structured, data-driven outputs via an intuitive wizard-based interface that guides managers through the entire project genesis process.
 
 ---
 
@@ -98,7 +98,7 @@ TaskFlow automates all of the above using **Google Gemini AI**, providing struct
 
 ## 🏛️ Architecture
 
-TaskFlow follows a **microservices-inspired architecture** with three distinct services orchestrated via Docker Compose:
+growtrack follows a **microservices-inspired architecture** with three distinct services orchestrated via Docker Compose:
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
@@ -193,7 +193,7 @@ TaskFlow follows a **microservices-inspired architecture** with three distinct s
 ## 📂 Project Structure
 
 ```
-TaskFlow/
+growtrack/
 ├── 📁 frontend/                    # React SPA (Vite + TailwindCSS)
 │   ├── 📁 nginx/
 │   │   └── default.conf            # Nginx reverse proxy configuration
@@ -319,7 +319,7 @@ TaskFlow/
 
 ## 🗄️ Database Schema
 
-TaskFlow uses **PostgreSQL 15** with **17 migration files** defining the following entity relationships:
+growtrack uses **PostgreSQL 15** with **17 migration files** defining the following entity relationships:
 
 ### Entity Relationship Diagram
 
@@ -561,7 +561,7 @@ All AI outputs are validated against strict Pydantic schemas using the `instruct
 
 ## 🔐 Authentication & Security
 
-TaskFlow implements a **dual-token authentication pattern** for maximum security:
+growtrack implements a **dual-token authentication pattern** for maximum security:
 
 ### Token Architecture
 
@@ -648,7 +648,7 @@ features/
 ├── /notifications              → NotificationsPage
 ├── /profile                    → ProfilePage
 ├── /settings                   → SettingsPage
-├── /projects/new               → [Admin] NewProjectPage (Genesis Wizard)
+├── /projects/new-project               → [Admin] NewProjectPage (Genesis Wizard)
 ├── /team-global                → [Admin] TeamPage
 │
 └── [ProjectLayout] (Project context)
@@ -689,8 +689,8 @@ features/
 
 #### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/TaskFlow.git
-cd TaskFlow
+git clone https://github.com/your-username/growtrack.git
+cd growtrack
 ```
 
 #### 2. Backend Setup
@@ -747,7 +747,7 @@ uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 
 ## 🐳 Docker Deployment
 
-TaskFlow is fully containerized with Docker Compose for easy deployment.
+growtrack is fully containerized with Docker Compose for easy deployment.
 
 ### Quick Start
 ```bash
@@ -765,10 +765,10 @@ docker-compose down
 
 | Service | Container Name | Image | Port |
 |---------|---------------|-------|------|
-| Database | `taskflow-db` | `postgres:15-alpine` | 5432 (internal) |
-| Backend | `taskflow-backend` | Custom (PHP 8.2-FPM) | 9000 (internal) |
-| Frontend | `taskflow-frontend` | Custom (Nginx) | **80** (exposed) |
-| AI System | `taskflow-ai` | Custom (Python 3.12) | 8001 (internal) |
+| Database | `growtrack-db` | `postgres:15-alpine` | 5432 (internal) |
+| Backend | `growtrack-backend` | Custom (PHP 8.2-FPM) | 9000 (internal) |
+| Frontend | `growtrack-frontend` | Custom (Nginx) | **80** (exposed) |
+| AI System | `growtrack-ai` | Custom (Python 3.12) | 8001 (internal) |
 
 ### Docker Build Stages
 
@@ -785,7 +785,7 @@ docker-compose down
 
 ### Networking
 
-All services communicate on the `taskflow-network` Docker bridge network. The Nginx container acts as the single entry point (port 80), routing requests to:
+All services communicate on the `growtrack-network` Docker bridge network. The Nginx container acts as the single entry point (port 80), routing requests to:
 - `/` → Static React SPA files
 - `/api/*` → Laravel (FastCGI to backend:9000)
 - `/ai/*` → FastAPI (HTTP proxy to ai-system:8001)
@@ -794,7 +794,7 @@ All services communicate on the `taskflow-network` Docker bridge network. The Ng
 
 ## 🧪 Testing
 
-TaskFlow includes comprehensive test suites across all three services.
+growtrack includes comprehensive test suites across all three services.
 
 ### Frontend Tests (Vitest + React Testing Library)
 ```bash
@@ -842,7 +842,7 @@ pytest -v             # Verbose output
 ### Backend (`backend/.env`)
 ```env
 # Application
-APP_NAME=TaskFlow
+APP_NAME=growtrack
 APP_ENV=production
 APP_KEY=base64:...
 APP_DEBUG=true
@@ -852,7 +852,7 @@ APP_URL=http://your-server-ip
 DB_CONNECTION=pgsql
 DB_HOST=db                    # Docker service name
 DB_PORT=5432
-DB_DATABASE=taskflow_db
+DB_DATABASE=growtrack_db
 DB_USERNAME=postgres
 DB_PASSWORD=your_password
 
@@ -870,7 +870,7 @@ MAIL_HOST=your-smtp-host
 MAIL_PORT=587
 MAIL_USERNAME=your-email
 MAIL_PASSWORD=your-password
-MAIL_FROM_ADDRESS=noreply@taskflow.com
+MAIL_FROM_ADDRESS=noreply@growtrack.com
 ```
 
 ### Frontend (`frontend/.env`)

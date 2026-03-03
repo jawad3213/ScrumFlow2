@@ -19,7 +19,7 @@ vi.mock('@/features/ai-analysis/components/AIDashboard', () => ({
     default: ({ data }) => <div data-testid="ai-dashboard">{data?.name} Dashboard</div>,
 }));
 
-vi.mock('@/components/ui/LoadingAnimation', () => ({
+vi.mock('@/components/ui/loading-animation', () => ({
     default: ({ message }) => <div>{message}</div>,
 }));
 
@@ -44,15 +44,15 @@ describe('StrategicBlueprintView', () => {
     });
 
     it('affiche l\'animation de chargement au montage', () => {
-        getProject.mockReturnValue(new Promise(() => {})); // Promesse pendante
+        getProject.mockReturnValue(new Promise(() => { })); // Promesse pendante
         render(<StrategicBlueprintView />, { wrapper: MemoryRouter });
-        
-        expect(screen.getByText(/Retrieving strategic blueprint/i)).toBeInTheDocument();
+
+        expect(screen.getByText(/Retrieving financial blueprint/i)).toBeInTheDocument();
     });
 
     it('affiche un message d\'erreur en cas d\'échec de l\'API', async () => {
         getProject.mockRejectedValue(new Error('API Error'));
-        
+
         render(<StrategicBlueprintView />, { wrapper: MemoryRouter });
 
         await waitFor(() => {
@@ -68,7 +68,7 @@ describe('StrategicBlueprintView', () => {
 
         // Vérifie le titre
         await waitFor(() => {
-            expect(screen.getByText(/Strategic Blueprint/i)).toBeInTheDocument();
+            expect(screen.getByText(/Financial Blueprint/i)).toBeInTheDocument();
         });
 
         // Vérifie que le nom du projet est injecté

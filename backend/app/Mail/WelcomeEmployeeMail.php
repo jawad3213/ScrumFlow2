@@ -34,7 +34,7 @@ class WelcomeEmployeeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Bienvenue chez TaskFlow - Vos identifiants',
+            subject: 'Bienvenue chez growtrack - Vos identifiants',
         );
     }
 

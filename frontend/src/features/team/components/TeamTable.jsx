@@ -5,7 +5,7 @@ import EditEmployeeModal from './EditEmployeeModal';
 import AddEmployeeModal from './AddEmployeeModal';
 import ConfirmDeleteModal from '@/components/shared/ConfirmDeleteModal';
 import { Users, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import EmptyState from '@/components/ui/EmptyState';
+import EmptyState from '@/components/ui/empty-state';
 import BulkDeleteModal from '@/components/shared/BulkDeleteModal';
 import { deleteEmployee, bulkDeleteEmployees } from '@/features/team/api/employees';
 

@@ -10,7 +10,7 @@ import {
     useReactTable,
 } from "@tanstack/react-table"
 import { ChevronDown, Search, SlidersHorizontal, ChevronLeft, ChevronRight, UserPlus, Database } from "lucide-react"
-import EmptyState from "@/components/ui/EmptyState"
+import EmptyState from "@/components/ui/empty-state"
 
 import { Button } from "@/components/ui/button"
 import {

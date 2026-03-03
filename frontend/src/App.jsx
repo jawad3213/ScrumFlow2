@@ -3,11 +3,13 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 // Layouts
 import PrivateLayout from './layouts/PrivateLayout';
 import ProjectLayout from './layouts/ProjectLayout';
+import ErrorBoundary from './components/shared/ErrorBoundary';
+import OfflineBanner from './components/shared/OfflineBanner';
 
 // Features
 import RoleGuard from './features/auth/components/RoleGuard';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import LoadingAnimation from '@/components/ui/loading-animation';
 
 // Guard: redirects authenticated users away from public-only pages
 // For the landing page: always renders (no spinner, no redirect) — CTA handled inside the page
@@ -36,6 +38,7 @@ const PublicRoute = ({ children, instant = false }) => {
 
 // Pages - Auth
 import LoginPage from './pages/auth/LoginPage';
+import SignupPage from './pages/auth/SignupPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import ProfilePage from './pages/auth/ProfilePage';
@@ -50,8 +53,8 @@ import NotificationsPage from './pages/dashboard/NotificationsPage';
 // Pages - Backlog & Analysis
 
 import AnalysisPage from './pages/NewProjectAnalysis/AnalysisPage';
-import StrategicBlueprint from './pages/project/StrategicBlueprint';
-import TechnicalBlueprintPage from './pages/project/TechnicalBlueprintPage';
+import FinancialBlueprintPage from './pages/project/FinancialBlueprintPage';
+import ScrumMasterBlueprintPage from './pages/project/ScrumMasterBlueprintPage';
 import StackChoicePage from './pages/project/StackChoicePage';
 import ProjectTeamPage from './pages/project/ProjectTeamPage';
 
@@ -72,62 +75,66 @@ import LandingPage from './pages/LandingPage';
 function App() {
   return (
     <div className="min-h-screen bg-surface-background font-sans antialiased text-neutral-900">
+      <OfflineBanner />
       {/* Debug Marker */}
       <span className="sr-only">App Rendered</span>
 
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
 
-        {/* ==========================================
+          {/* ==========================================
             PUBLIC ROUTES
            ========================================== */}
-        <Route path="/" element={<PublicRoute instant><LandingPage /></PublicRoute>} />
-        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-        <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
-        <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
+          <Route path="/" element={<PublicRoute instant><LandingPage /></PublicRoute>} />
+          <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+          <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
+          <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+          <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
 
-        {/* ==========================================
+          {/* ==========================================
             PRIVATE PROTECTED ROUTES
            ========================================== */}
-        <Route element={<PrivateLayout />}>
+          <Route element={<PrivateLayout />}>
 
-          {/* --- GLOBAL HUB (Unified View) --- */}
-          <Route path="/dashboard" element={<DashboardPage />} />
+            {/* --- GLOBAL HUB (Unified View) --- */}
+            <Route path="/dashboard" element={<DashboardPage />} />
 
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
 
-          {/* --- ADMIN / MANAGER ONLY (Global) --- */}
-          <Route path="/projects/new" element={
-            <RoleGuard role="admin"><NewProjectPage /></RoleGuard>
-          } />
-          <Route path="/team-global" element={
-            <RoleGuard role="admin"><TeamPage /></RoleGuard>
-          } />
-
-          {/* --- PROJECT SPECIFIC CONTEXT (:id) --- */}
-          <Route path="/project/:id" element={<ProjectLayout />}>
-            {/* Common Project Views */}
-            <Route index element={<ProjectDashboardPage />} />
-            <Route path="hub" element={<StrategicBlueprint />} />
-            <Route path="blueprint" element={<TechnicalBlueprintPage />} />
-            <Route path="stack" element={<StackChoicePage />} />
-            <Route path="project-team" element={<ProjectTeamPage />} />
-
-            {/* Manager Protected Project Views */}
-            <Route path="analysis" element={
-              <RoleGuard role="admin"><AnalysisPage /></RoleGuard>
+            {/* --- ADMIN / MANAGER ONLY (Global) --- */}
+            <Route path="/projects/new-project" element={
+              <RoleGuard role="admin"><NewProjectPage /></RoleGuard>
             } />
-            <Route path="team" element={
+            <Route path="/team-global" element={
               <RoleGuard role="admin"><TeamPage /></RoleGuard>
             } />
 
-          </Route>
-        </Route>
+            {/* --- PROJECT SPECIFIC CONTEXT (:id) --- */}
+            <Route path="/project/:id" element={<ProjectLayout />}>
+              {/* Common Project Views */}
+              <Route index element={<ProjectDashboardPage />} />
+              <Route path="financial-blueprint" element={<FinancialBlueprintPage />} />
+              <Route path="scrum-master-blueprint" element={<ScrumMasterBlueprintPage />} />
+              <Route path="stack-choice" element={<StackChoicePage />} />
+              <Route path="project-team" element={<ProjectTeamPage />} />
 
-        {/* 404 CATCH-ALL */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+              {/* Manager Protected Project Views */}
+              <Route path="analysis" element={
+                <RoleGuard role="admin"><AnalysisPage /></RoleGuard>
+              } />
+              <Route path="team" element={
+                <RoleGuard role="admin"><TeamPage /></RoleGuard>
+              } />
+
+            </Route>
+          </Route>
+
+          {/* 404 CATCH-ALL */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </ErrorBoundary>
     </div>
   );
 }

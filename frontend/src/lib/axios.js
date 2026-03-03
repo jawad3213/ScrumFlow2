@@ -58,7 +58,7 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       
       // Don't refresh if the error is from login or refresh-token itself
-      if (originalRequest.url.includes('/login') || originalRequest.url.includes('/refresh-token')) {
+      if (originalRequest.url.includes('/login') || originalRequest.url.includes('/refresh-token') || originalRequest.url.includes('/register') || originalRequest.url.includes('/auth/google')) {
         StorageService.clearAuth();
         // Only redirect if not already on a public page
         if (!window.location.pathname.includes('/login') && window.location.pathname !== '/') {
@@ -130,8 +130,11 @@ axiosInstance.interceptors.response.use(
     // Global Error Toaster
     if (error.response?.status >= 500) {
         toast.error('Server Error', { description: errorMessage });
-    } else if (error.code === 'ERR_NETWORK') {
-        toast.error('Network Error', { description: 'Please check your connection.' });
+    } else if (error.code === 'ERR_NETWORK' || !window.navigator.onLine) {
+        toast.error('No Internet Connection', { 
+            description: 'Unable to connect to the server. Please check your connection and try again.',
+            duration: 5000
+        });
     }
 
     // Reject with a proper Error-like object
@@ -158,6 +161,13 @@ const client = async (endpoint, { body, ...customConfig } = {}) => {
      // Let Axios/Browser handle Content-Type for FormData to strictly set the boundary
      if (!config.headers) config.headers = {};
      config.headers['Content-Type'] = undefined; 
+  }
+
+  // If the endpoint is a full URL (external service like the AI backend),
+  // use a plain axios call to avoid sending auth cookies/headers that cause CORS issues.
+  const isExternalUrl = endpoint.startsWith('http://') || endpoint.startsWith('https://');
+  if (isExternalUrl) {
+    return axios(config).then(res => res.data);
   }
 
   return axiosInstance(config);

@@ -11,6 +11,9 @@ use App\Http\Controllers\TaskController;
 
 // Route publique (pas besoin d'être connecté pour se logger)
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/auth/google', [AuthController::class, 'googleLogin']);
+Route::post('/auth/google/register', [AuthController::class, 'googleRegister']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/refresh-token', [AuthController::class, 'refreshToken']);

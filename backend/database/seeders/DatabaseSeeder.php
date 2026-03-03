@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
+use App\Services\ProjectSeederService;
+use App\Services\EmployeeSeederService;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -15,7 +18,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SpecializationSeeder::class,
             UserSeeder::class,
-            ProjectDataSeeder::class,
         ]);
+
+        // Seed projects and employees for each chef user
+        $chefs = User::where('role', 'chef')->get();
+        foreach ($chefs as $chef) {
+            ProjectSeederService::seedForUser($chef);
+            EmployeeSeederService::seedForUser($chef);
+            $this->command->info("Seeded project + employees for {$chef->first_name} {$chef->last_name}");
+        }
     }
 }

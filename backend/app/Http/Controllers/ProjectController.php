@@ -25,18 +25,26 @@ class ProjectController extends Controller
     /**
      * Display a listing of the projects.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $projects = Project::with(['chef', 'assignedEngineers.specialization', 'kpis', 'risks'])->latest()->get();
+        $userId = $request->user()->id;
+        $projects = Project::with(['chef', 'assignedEngineers.specialization', 'kpis', 'risks'])
+            ->where('user_id', $userId)
+            ->latest()
+            ->get();
         return response()->json($projects);
     }
 
     /**
      * Get dashboard summary and project listing for system overview.
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $projects = Project::with(['epics.stories', 'chef'])->latest()->get();
+        $userId = $request->user()->id;
+        $projects = Project::with(['epics.stories', 'chef'])
+            ->where('user_id', $userId)
+            ->latest()
+            ->get();
         
         $totalProjects = $projects->count();
         
@@ -44,8 +52,11 @@ class ProjectController extends Controller
         $totalGains = $projects->sum('total_gain_value');
         $averageRoi = $projects->avg('roi_percentage') ?? 0;
 
-        // Calculate unique engineers assigned across all projects
-        $engineerCount = AssignedEngineer::whereNotNull('user_id')->distinct('user_id')->count();
+        // Calculate unique engineers assigned across user's projects
+        $engineerCount = AssignedEngineer::whereIn('project_id', $projects->pluck('id'))
+                                         ->whereNotNull('user_id')
+                                         ->distinct('user_id')
+                                         ->count();
 
         // Prepare project data with progress calculation
         $projectsData = $projects->map(function ($project) {
@@ -58,20 +69,33 @@ class ProjectController extends Controller
 
             $progress = 0; // Reset progress logic as it relied on status
 
+            // Calculate status based on completion of analysis phases
+            $status = 'Planning';
+            if (!!$project->roi_analysis_summary && (isset($project->epics) && $project->epics->count() > 0)) {
+                $status = 'Ready to Execute';
+            } elseif (!!$project->roi_analysis_summary) {
+                $status = 'Blueprint Analysis';
+            } elseif (!empty($project->architecture_plan)) {
+                $status = 'Stack Defined';
+            }
+
             return [
                 'id' => $project->id,
                 'name' => $project->name,
                 'progress' => $progress,
+                'status' => $status,
                 'roi' => $project->roi_percentage,
                 'cost' => $project->total_project_cost,
                 'chef' => $project->chef ? $project->chef->first_name . ' ' . $project->chef->last_name : 'Unassigned',
+                'description' => $project->description,
                 'has_strategic' => !!$project->roi_analysis_summary,
                 'has_technical' => $project->epics->count() > 0 || !empty($project->architecture_plan),
                 'has_stack' => !!$project->stack_name,
-                'steps' => $project->epics->map(function ($epic) {
+                'roadmap' => $project->epics->map(function ($epic) {
                     return [
                         'title' => $epic->title,
-                        'stories' => $epic->stories->map(fn($s) => $s->title)
+                        'description' => $epic->description,
+                        'story_count' => $epic->stories->count()
                     ];
                 })
             ];
@@ -341,12 +365,17 @@ class ProjectController extends Controller
     /**
      * Display the specified project.
      */
-    public function show($id)
+    public function show($id, Request $request)
     {
         $project = Project::with(['chef', 'assignedEngineers.specialization', 'estimatedGains', 'infrastructureCosts', 'roiProjections', 'kpis', 'risks', 'epics.stories.tasks'])->find($id);
 
         if (!$project) {
             return response()->json(['message' => 'Project not found'], 404);
+        }
+
+        // Authorization check
+        if ($project->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized access to this project'], 403);
         }
 
         return response()->json($project);
@@ -361,6 +390,11 @@ class ProjectController extends Controller
 
         if (!$project) {
             return response()->json(['message' => 'Project not found'], 404);
+        }
+
+        // Authorization check
+        if ($project->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized access to this project'], 403);
         }
 
         $validator = Validator::make($request->all(), [
@@ -440,6 +474,11 @@ class ProjectController extends Controller
             return response()->json(['message' => 'Project not found'], 404);
         }
 
+        // Authorization check
+        if ($project->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized access to this project'], 403);
+        }
+
         // Expanded validation
         $validator = Validator::make($request->all(), [
             'stack_analysis_data' => 'nullable|array', // The new full JSON
@@ -484,12 +523,17 @@ class ProjectController extends Controller
     /**
      * Remove the specified project from storage.
      */
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
         $project = Project::find($id);
 
         if (!$project) {
             return response()->json(['message' => 'Project not found'], 404);
+        }
+
+        // Authorization check
+        if ($project->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized access to this project'], 403);
         }
 
         $project->delete();

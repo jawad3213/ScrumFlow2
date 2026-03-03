@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
-import userEvent from '@testing-library/user-event';
 import ProjectCard from './ProjectCard';
 
 // Mock framer-motion to avoid animation issues in tests
@@ -30,7 +29,7 @@ describe('ProjectCard Component', () => {
         ]
     };
 
-    it('renders project name and chef correctly', () => {
+    it('renders project name correctly', () => {
         render(
             <MemoryRouter>
                 <ProjectCard project={mockProject} />
@@ -38,20 +37,17 @@ describe('ProjectCard Component', () => {
         );
 
         expect(screen.getByText('ScrumFlow AI')).toBeInTheDocument();
-        expect(screen.getByText('Super Chef')).toBeInTheDocument();
     });
 
-    it('displays analysis progress stepper', () => {
+    it('displays roadmap and progress section labels', () => {
         render(
             <MemoryRouter>
                 <ProjectCard project={mockProject} />
             </MemoryRouter>
         );
 
-        expect(screen.getByText('Analysis Progress')).toBeInTheDocument();
-        expect(screen.getByText('Strategic')).toBeInTheDocument();
-        expect(screen.getByText('Technical')).toBeInTheDocument();
-        expect(screen.getByText('Stack')).toBeInTheDocument();
+        expect(screen.getByText('Financial Roadmap Preview')).toBeInTheDocument();
+        expect(screen.getByText('Execution Progress')).toBeInTheDocument();
     });
 
     it('displays financial metrics correctly', () => {
@@ -61,27 +57,12 @@ describe('ProjectCard Component', () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText('Project Cost')).toBeInTheDocument();
-        expect(screen.getByText('Proj. ROI')).toBeInTheDocument();
+        expect(screen.getByText('Budget')).toBeInTheDocument();
+        expect(screen.getByText('ROI Potential')).toBeInTheDocument();
         expect(screen.getByText('74.81%')).toBeInTheDocument();
     });
 
-    it('displays project steps when expanded', async () => {
-        const user = userEvent.setup();
-
-        render(
-            <MemoryRouter>
-                <ProjectCard project={mockProject} />
-            </MemoryRouter>
-        );
-
-        const expandButton = screen.getByText('Project Steps');
-        await user.click(expandButton);
-
-        expect(screen.getByText('Vues Alternatives')).toBeInTheDocument();
-    });
-
-    it('renders incomplete analysis stages correctly', () => {
+    it('renders progress correctly based on phases', () => {
         const incompleteProject = {
             ...mockProject,
             has_strategic: true,
@@ -95,7 +76,7 @@ describe('ProjectCard Component', () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText('2')).toBeInTheDocument();
-        expect(screen.getByText('3')).toBeInTheDocument();
+        // One out of three phases is complete => 33% progress
+        expect(screen.getByText('33%')).toBeInTheDocument();
     });
 });

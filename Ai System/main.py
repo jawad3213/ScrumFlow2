@@ -1,7 +1,14 @@
 import os
+import sys
 import shutil
 import fitz  # PyMuPDF
 import json
+
+# Force UTF-8 output on Windows (prevents UnicodeEncodeError from emoji/special chars in AI responses)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -72,7 +79,10 @@ async def analyze_staffing(
     except Exception as e:
         import traceback
         error_traceback = traceback.format_exc()
-        print(f"FAILED Analysis Error:\n{error_traceback}")
+        try:
+            print(f"FAILED Analysis Error:\n{error_traceback}")
+        except UnicodeEncodeError:
+            print(error_traceback.encode("utf-8", errors="replace").decode("utf-8"))
         detail_msg = f"[{type(e).__name__}] {str(e)}"
         raise HTTPException(status_code=500, detail=detail_msg)
 
@@ -128,7 +138,10 @@ async def analyze_backlog(
     except Exception as e:
         import traceback
         error_traceback = traceback.format_exc()
-        print(f"FAILED Backlog Analysis Error:\n{error_traceback}")
+        try:
+            print(f"FAILED Backlog Analysis Error:\n{error_traceback}")
+        except UnicodeEncodeError:
+            print(error_traceback.encode("utf-8", errors="replace").decode("utf-8"))
         detail_msg = f"[{type(e).__name__}] {str(e)}"
         raise HTTPException(status_code=500, detail=detail_msg)
 
@@ -172,7 +185,10 @@ async def analyze_stack(
     except Exception as e:
         import traceback
         error_traceback = traceback.format_exc()
-        print(f"FAILED Stack Analysis Error:\n{error_traceback}")
+        try:
+            print(f"FAILED Stack Analysis Error:\n{error_traceback}")
+        except UnicodeEncodeError:
+            print(error_traceback.encode("utf-8", errors="replace").decode("utf-8"))
         detail_msg = f"[{type(e).__name__}] {str(e)}"
         raise HTTPException(status_code=500, detail=detail_msg)
 

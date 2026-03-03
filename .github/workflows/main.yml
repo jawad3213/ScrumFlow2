@@ -1,4 +1,4 @@
-name: TaskFlow Professional CI/CD
+name: growtrack Professional CI/CD
 
 on:
   push:
@@ -45,7 +45,7 @@ jobs:
 
       - name: Verify Dockerfiles & Environment
         run: |
-          echo "Démarrage de la trace de build pour TaskFlow..."
+          echo "Démarrage de la trace de build pour growtrack..."
           echo "Branche actuelle : ${{ github.ref }}"
           echo "Vérification de la présence des fichiers critiques..."
           ls -R backend/Dockerfile frontend/Dockerfile "./Ai System/Dockerfile"
@@ -70,7 +70,7 @@ jobs:
           username: azureuser
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/TaskFlow
+            cd ~/growtrack
             git pull origin main
             # Nettoyage pour éviter les erreurs de cache ou d'IP
             docker rm -f $(docker ps -aq) || true

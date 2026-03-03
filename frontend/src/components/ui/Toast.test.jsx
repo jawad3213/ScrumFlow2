@@ -1,7 +1,7 @@
 import { render, screen, act, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import Toast from "./Toast";
+import Toast from "./toast";
 
 describe("Toast Component", () => {
     const onCloseMock = vi.fn();

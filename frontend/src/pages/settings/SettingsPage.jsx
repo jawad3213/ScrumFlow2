@@ -54,7 +54,7 @@ const SettingsPage = () => {
                             <h2 className="text-xl font-black text-neutral-900">AI Intelligence Engine</h2>
                             <p className="text-neutral-500 font-medium max-w-xl text-sm leading-relaxed">
                                 Configure your Google Gemini API key to enable AI-powered features such as
-                                Staffing Analysis, Backlog Generation, and Strategic Blueprints.
+                                Staffing Analysis, Backlog Generation, and Financial Blueprints.
                             </p>
                         </div>
                     </div>

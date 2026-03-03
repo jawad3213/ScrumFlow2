@@ -2,7 +2,7 @@ import React, { useState, forwardRef, useImperativeHandle, useMemo, useCallback,
 import { DataTable } from '@/components/shared/DataTable';
 import { specializationColumns } from './SpecializationColumns';
 import { Database, ChevronLeft, ChevronRight } from 'lucide-react';
-import EmptyState from '@/components/ui/EmptyState';
+import EmptyState from '@/components/ui/empty-state';
 import EditSpecializationModal from './EditSpecializationModal';
 import ConfirmDeleteModal from '@/components/shared/ConfirmDeleteModal';
 import BulkDeleteModal from '@/components/shared/BulkDeleteModal';
