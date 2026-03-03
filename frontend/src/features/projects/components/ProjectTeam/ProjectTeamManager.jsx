@@ -103,7 +103,7 @@ const ProjectTeamManager = ({ projectId }) => {
                     <div className="flex flex-col px-6">
                         <span className="text-[9px] font-black text-neutral-300 uppercase tracking-widest leading-none mb-1">Roles Filled</span>
                         <span className="text-xl font-black text-brand-primary-600 leading-none">
-                            {team.filter(t => t.user_id).length} / {team.length}
+                            {team.filter(t => t.employee_id).length} / {team.length}
                         </span>
                     </div>
                 </div>
@@ -142,7 +142,7 @@ const RequirementCard = ({ requirement, availableTalent, onAssign, onUnassign, i
             user.last_name.toLowerCase().includes(search.toLowerCase()))
     );
 
-    const isFilled = !!requirement.user;
+    const isFilled = !!requirement.employee;
 
     return (
         <motion.div
@@ -205,10 +205,10 @@ const RequirementCard = ({ requirement, availableTalent, onAssign, onUnassign, i
                         >
                             <div className="flex items-center gap-4 relative z-10">
                                 <div className="w-10 h-10 rounded-xl bg-white border border-neutral-100 flex items-center justify-center text-brand-primary-500 font-black">
-                                    {requirement.user.first_name[0]}{requirement.user.last_name[0]}
+                                    {requirement.employee.first_name[0]}{requirement.employee.last_name[0]}
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-sm font-black text-neutral-900 leading-none">{requirement.user.first_name} {requirement.user.last_name}</span>
+                                    <span className="text-sm font-black text-neutral-900 leading-none">{requirement.employee.first_name} {requirement.employee.last_name}</span>
                                     <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest mt-1">Matched Talent</span>
                                 </div>
                             </div>

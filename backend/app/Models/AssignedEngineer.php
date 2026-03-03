@@ -11,7 +11,7 @@ class AssignedEngineer extends Model
     protected $fillable = [
         'project_id',
         'specialization_id',
-        'user_id',
+        'employee_id',
         'phase',
         'months_assigned'
     ];
@@ -28,9 +28,12 @@ class AssignedEngineer extends Model
         return $this->belongsTo(Specialization::class);
     }
 
-    public function user()
+    /**
+     * The employee assigned to this role.
+     */
+    public function employee()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Employee::class);
     }
 
     // Accessor to calculate cost on the fly

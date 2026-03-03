@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\Employee;
 use App\Models\Project;
 use App\Models\ProjectEpic;
 use App\Models\ProjectStory;
@@ -135,20 +136,20 @@ class DashboardTest extends TestCase
         $project1 = Project::factory()->create(['user_id' => $chef->id]);
         $project2 = Project::factory()->create(['user_id' => $chef->id]);
 
-        $specialization = Specialization::first();
-        $engineer1 = User::factory()->create([
-            'role' => 'employee',
+        $specialization = Specialization::factory()->create();
+        $employee1 = Employee::factory()->create([
+            'user_id' => $chef->id,
             'specialization_id' => $specialization->id
         ]);
-        $engineer2 = User::factory()->create([
-            'role' => 'employee',
+        $employee2 = Employee::factory()->create([
+            'user_id' => $chef->id,
             'specialization_id' => $specialization->id
         ]);
 
-        // Assign engineer1 to both projects (should count once)
+        // Assign employee1 to both projects (should count once)
         AssignedEngineer::create([
             'project_id' => $project1->id,
-            'user_id' => $engineer1->id,
+            'employee_id' => $employee1->id,
             'specialization_id' => $specialization->id,
             'months_assigned' => 6,
             'phase' => 'Development'
@@ -156,16 +157,16 @@ class DashboardTest extends TestCase
 
         AssignedEngineer::create([
             'project_id' => $project2->id,
-            'user_id' => $engineer1->id,
+            'employee_id' => $employee1->id,
             'specialization_id' => $specialization->id,
             'months_assigned' => 3,
             'phase' => 'Development'
         ]);
 
-        // Assign engineer2 to project2
+        // Assign employee2 to project2
         AssignedEngineer::create([
             'project_id' => $project2->id,
-            'user_id' => $engineer2->id,
+            'employee_id' => $employee2->id,
             'specialization_id' => $specialization->id,
             'months_assigned' => 4,
             'phase' => 'Development'
@@ -242,13 +243,11 @@ class DashboardTest extends TestCase
 
         $response->assertStatus(200);
         
-        $steps = $response->json('projects.0.steps');
+        $roadmap = $response->json('projects.0.roadmap');
         
-        $this->assertCount(1, $steps); // One epic
-        $this->assertEquals('Authentication', $steps[0]['title']);
-        $this->assertCount(2, $steps[0]['stories']); // Two stories
-        $this->assertContains('Login Feature', $steps[0]['stories']);
-        $this->assertContains('Logout Feature', $steps[0]['stories']);
+        $this->assertCount(1, $roadmap); // One epic
+        $this->assertEquals('Authentication', $roadmap[0]['title']);
+        $this->assertEquals(2, $roadmap[0]['story_count']); // Two stories
     }
 
     /** @test */

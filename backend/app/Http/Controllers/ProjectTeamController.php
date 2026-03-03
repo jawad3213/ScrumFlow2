@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
-use App\Models\User;
+use App\Models\Employee;
 use App\Models\AssignedEngineer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +17,7 @@ class ProjectTeamController extends Controller
     {
         $project = Project::with([
             'assignedEngineers.specialization',
-            'assignedEngineers.user.specialization'
+            'assignedEngineers.employee.specialization'
         ])->findOrFail($projectId);
 
         return response()->json([
@@ -33,7 +33,7 @@ class ProjectTeamController extends Controller
     {
         $request->validate([
             'assigned_engineer_id' => 'required|exists:assigned_engineers,id',
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'required|exists:employees,id',
         ]);
 
         return DB::transaction(function () use ($request, $projectId) {
@@ -41,24 +41,24 @@ class ProjectTeamController extends Controller
                 ->where('id', $request->assigned_engineer_id)
                 ->firstOrFail();
 
-            $user = User::findOrFail($request->user_id);
+            $employee = Employee::findOrFail($request->user_id);
 
-            // 1. Unassign previous user if any
-            if ($assignment->user_id) {
-                User::where('id', $assignment->user_id)->update(['is_engaged' => false]);
+            // 1. Unassign previous employee if any
+            if ($assignment->employee_id) {
+                Employee::where('id', $assignment->employee_id)->update(['is_engaged' => false]);
             }
 
-            // 2. Assign new user
-            $assignment->user_id = $user->id;
+            // 2. Assign new employee
+            $assignment->employee_id = $employee->id;
             $assignment->save();
 
-            // 3. Mark user as engaged
-            $user->is_engaged = true;
-            $user->save();
+            // 3. Mark employee as engaged
+            $employee->is_engaged = true;
+            $employee->save();
 
             return response()->json([
                 'message' => 'Employee assigned successfully',
-                'assignment' => $assignment->load(['user.specialization', 'specialization'])
+                'assignment' => $assignment->load(['employee.specialization', 'specialization'])
             ]);
         });
     }
@@ -77,9 +77,9 @@ class ProjectTeamController extends Controller
                 ->where('id', $request->assigned_engineer_id)
                 ->firstOrFail();
 
-            if ($assignment->user_id) {
-                User::where('id', $assignment->user_id)->update(['is_engaged' => false]);
-                $assignment->user_id = null;
+            if ($assignment->employee_id) {
+                Employee::where('id', $assignment->employee_id)->update(['is_engaged' => false]);
+                $assignment->employee_id = null;
                 $assignment->save();
             }
 
