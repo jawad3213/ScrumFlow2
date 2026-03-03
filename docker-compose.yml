@@ -4,36 +4,38 @@ services:
   # 1. Base de données PostgreSQL
   db:
     image: postgres:15-alpine
-    container_name: growtrack-db
+    container_name: scrumflow-db
     restart: always
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-growtrack_db}
+      POSTGRES_DB: ${DB_DATABASE:-ScrumFlow}
       POSTGRES_USER: ${DB_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-your_db_password}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - growtrack-network
+      - scrumflow-network
 
   # 2. Backend Laravel (PHP-FPM)
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: growtrack-backend
+    image: scrumflow-backend
+    container_name: scrumflow-backend
     restart: always
     env_file: ./backend/.env
     depends_on:
       - db
     networks:
-      - growtrack-network
+      - scrumflow-network
 
   # 3. Frontend React (Nginx) - Port 80 pour Azure
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: growtrack-frontend
+    image: scrumflow-frontend
+    container_name: scrumflow-frontend
     restart: always
     ports:
       - "80:80"
@@ -41,21 +43,22 @@ services:
       - backend
       - ai-system
     networks:
-      - growtrack-network
+      - scrumflow-network
 
   # 4. Système IA (Python + Gemini)
   ai-system:
     build:
       context: "./Ai System"
       dockerfile: Dockerfile
-    container_name: growtrack-ai
+    image: scrumflow-ai
+    container_name: scrumflow-ai
     restart: always
     #env_file: "./Ai System/.env"
     networks:
-      - growtrack-network
+      - scrumflow-network
 
 networks:
-  growtrack-network:
+  scrumflow-network:
     driver: bridge
 
 volumes:

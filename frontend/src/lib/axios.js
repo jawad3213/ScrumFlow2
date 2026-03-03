@@ -164,9 +164,10 @@ const client = async (endpoint, { body, ...customConfig } = {}) => {
   }
 
   // If the endpoint is a full URL (external service like the AI backend),
-  // use a plain axios call to avoid sending auth cookies/headers that cause CORS issues.
-  const isExternalUrl = endpoint.startsWith('http://') || endpoint.startsWith('https://');
-  if (isExternalUrl) {
+  // or if it explicitly targets our '/ai' reverse proxy,
+  // use a plain axios call to avoid sending auth cookies/headers and to bypass the '/api' baseURL.
+  const isExternalOrAiProxy = endpoint.startsWith('http://') || endpoint.startsWith('https://') || endpoint.startsWith('/ai');
+  if (isExternalOrAiProxy) {
     return axios(config).then(res => res.data);
   }
 

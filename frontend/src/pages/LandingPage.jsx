@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import {
     ArrowRight,
     Sparkles,
@@ -16,9 +16,42 @@ import {
     ChevronRight,
     Menu,
     X,
-    Code2
+    Code2,
+    DollarSign,
+    PieChart,
+    CalendarClock,
+    Shield,
+    Layers,
+    CircleDollarSign,
+    Activity
 } from 'lucide-react';
 import logo from '../assets/genralLogo.png';
+
+// Animated counter component for financial KPIs
+const AnimatedCounter = ({ value, suffix = '', prefix = '', duration = 2, decimals = 0 }) => {
+    const [count, setCount] = useState(0);
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: '-100px' });
+
+    useEffect(() => {
+        if (!isInView) return;
+        let startTime;
+        const animate = (timestamp) => {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
+            const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+            setCount(eased * value);
+            if (progress < 1) requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+    }, [isInView, value, duration]);
+
+    return (
+        <span ref={ref}>
+            {prefix}{decimals > 0 ? count.toFixed(decimals) : Math.round(count).toLocaleString('fr-FR')}{suffix}
+        </span>
+    );
+};
 
 const LandingPage = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -153,7 +186,7 @@ const LandingPage = () => {
                                 whileHover={{ scale: 1.05, rotate: 5 }}
                                 transition={{ type: "spring", stiffness: 400 }}
                                 src={logo}
-                                alt="ScrumFlow Logo"
+                                alt="GrowTrack Logo"
                                 className="h-12 w-auto"
                             />
                         </motion.div>
@@ -613,7 +646,7 @@ const LandingPage = () => {
                             transition={{ delay: 0.3 }}
                             className="text-lg text-neutral-600"
                         >
-                            Des exigences à l'exécution, ScrumFlow gère chaque aspect de la planification de projet avec la précision de l'IA.
+                            Des exigences à l'exécution, GrowTrack gère chaque aspect de la planification de projet avec la précision de l'IA.
                         </motion.p>
                     </motion.div>
 
@@ -925,6 +958,492 @@ const LandingPage = () => {
                 </div>
             </section>
 
+            {/* ============================================
+                FINANCIAL FORECAST SHOWCASE SECTION
+               ============================================ */}
+            <section id="financial-preview" className="py-24 bg-neutral-950 relative overflow-hidden">
+                {/* Background effects */}
+                <div className="absolute inset-0">
+                    <div className="absolute inset-0 opacity-[0.03]" style={{
+                        backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
+                        backgroundSize: '40px 40px'
+                    }} />
+                    <motion.div
+                        animate={{ scale: [1, 1.3, 1], opacity: [0.08, 0.15, 0.08] }}
+                        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+                        className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-brand-primary-500 rounded-full blur-[120px]"
+                    />
+                    <motion.div
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.06, 0.12, 0.06] }}
+                        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
+                        className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-purple-600 rounded-full blur-[120px]"
+                    />
+                    <motion.div
+                        animate={{ scale: [1, 1.4, 1], opacity: [0.04, 0.08, 0.04] }}
+                        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-cyan-500 rounded-full blur-[100px]"
+                    />
+                </div>
+
+                <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+                    {/* Section Header */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: '-100px' }}
+                        transition={{ duration: 0.6 }}
+                        className="text-center max-w-3xl mx-auto mb-16"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            whileInView={{ scale: 1, opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ type: 'spring', stiffness: 100 }}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 backdrop-blur-sm rounded-full mb-6"
+                        >
+                            <motion.div
+                                animate={{ scale: [1, 1.3, 1] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                            >
+                                <CircleDollarSign className="w-4 h-4 text-emerald-400" />
+                            </motion.div>
+                            <span className="text-xs font-black text-emerald-400 uppercase tracking-wide">
+                                Prévisions Financières par IA
+                            </span>
+                        </motion.div>
+                        <motion.h2
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.2 }}
+                            className="text-4xl lg:text-5xl font-black text-white tracking-tight mb-4"
+                        >
+                            Chaque Décision,{' '}
+                            <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-brand-primary-400 bg-clip-text text-transparent">
+                                Chiffrée et Justifiée
+                            </span>
+                        </motion.h2>
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.3 }}
+                            className="text-lg text-neutral-400 font-medium"
+                        >
+                            Notre IA transforme votre cahier des charges en une analyse financière complète — CAPEX, OPEX, ROI sur 3 ans, et point de rentabilité — en quelques minutes.
+                        </motion.p>
+                    </motion.div>
+
+                    {/* KPI Cards Row */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-12">
+                        {[
+                            {
+                                icon: DollarSign,
+                                label: 'CAPEX Total',
+                                value: 376000,
+                                suffix: '',
+                                displayPrefix: '',
+                                displaySuffix: ' MAD',
+                                sublabel: 'Investissement initial',
+                                color: 'from-blue-500 to-cyan-500',
+                                bgColor: 'bg-blue-500/10',
+                                iconColor: 'text-blue-400',
+                                borderColor: 'border-blue-500/20'
+                            },
+                            {
+                                icon: Activity,
+                                label: 'OPEX Annuel',
+                                value: 98400,
+                                suffix: '',
+                                displayPrefix: '',
+                                displaySuffix: ' MAD',
+                                sublabel: 'Coûts opérationnels',
+                                color: 'from-purple-500 to-pink-500',
+                                bgColor: 'bg-purple-500/10',
+                                iconColor: 'text-purple-400',
+                                borderColor: 'border-purple-500/20'
+                            },
+                            {
+                                icon: TrendingUp,
+                                label: 'ROI Année 3',
+                                value: 62.35,
+                                suffix: '%',
+                                displayPrefix: '+',
+                                displaySuffix: '%',
+                                decimals: 2,
+                                sublabel: 'Retour sur investissement',
+                                color: 'from-emerald-500 to-teal-500',
+                                bgColor: 'bg-emerald-500/10',
+                                iconColor: 'text-emerald-400',
+                                borderColor: 'border-emerald-500/20'
+                            },
+                            {
+                                icon: CalendarClock,
+                                label: 'Break-Even',
+                                value: 22,
+                                suffix: '',
+                                displayPrefix: '',
+                                displaySuffix: ' mois',
+                                sublabel: 'Point de rentabilité',
+                                color: 'from-orange-500 to-amber-500',
+                                bgColor: 'bg-orange-500/10',
+                                iconColor: 'text-orange-400',
+                                borderColor: 'border-orange-500/20'
+                            }
+                        ].map((kpi, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: '-50px' }}
+                                transition={{ duration: 0.5, delay: index * 0.1, type: 'spring', stiffness: 100 }}
+                                whileHover={{ y: -8, transition: { type: 'spring', stiffness: 300 } }}
+                                className={`group relative bg-white/[0.03] backdrop-blur-xl border ${kpi.borderColor} rounded-2xl p-6 hover:bg-white/[0.06] transition-all duration-300 overflow-hidden`}
+                            >
+                                {/* Glow effect on hover */}
+                                <div className={`absolute inset-0 bg-gradient-to-br ${kpi.color} opacity-0 group-hover:opacity-[0.05] transition-opacity duration-500 rounded-2xl`} />
+
+                                {/* Top accent line */}
+                                <motion.div
+                                    className={`absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r ${kpi.color} rounded-t-2xl`}
+                                    initial={{ scaleX: 0 }}
+                                    whileInView={{ scaleX: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.8, delay: 0.3 + index * 0.1 }}
+                                />
+
+                                <div className="relative z-10">
+                                    <motion.div
+                                        whileHover={{ rotate: 360, scale: 1.1 }}
+                                        transition={{ duration: 0.6 }}
+                                        className={`inline-flex p-2.5 ${kpi.bgColor} rounded-xl mb-4`}
+                                    >
+                                        <kpi.icon className={`w-5 h-5 ${kpi.iconColor}`} />
+                                    </motion.div>
+
+                                    <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">
+                                        {kpi.label}
+                                    </p>
+
+                                    <div className="text-2xl lg:text-3xl font-black text-white mb-1">
+                                        <AnimatedCounter
+                                            value={kpi.value}
+                                            prefix={kpi.displayPrefix}
+                                            suffix={kpi.displaySuffix}
+                                            decimals={kpi.decimals || 0}
+                                            duration={2.5}
+                                        />
+                                    </div>
+
+                                    <p className="text-xs text-neutral-500 font-medium">
+                                        {kpi.sublabel}
+                                    </p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* Recommended Team Section */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: '-50px' }}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                        className="mb-12 bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 lg:p-8 relative overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.02] to-purple-500/[0.02] rounded-2xl" />
+
+                        <div className="relative z-10">
+                            {/* Header */}
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="inline-flex p-2.5 bg-cyan-500/10 rounded-xl">
+                                    <Users className="w-5 h-5 text-cyan-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-black text-white">Équipe Recommandée par l'IA</h3>
+                                    <p className="text-xs text-neutral-500 font-medium">Staffing optimal généré automatiquement selon les besoins du projet</p>
+                                </div>
+                            </div>
+
+                            {/* Engineers Grid */}
+                            <div className="grid md:grid-cols-3 gap-4">
+                                {[
+                                    {
+                                        role: 'Développeur Fullstack',
+                                        specialization: 'React / Laravel',
+                                        level: 'Senior',
+                                        levelColor: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
+                                        salary: '18 000',
+                                        months: 6,
+                                        total: '108 000',
+                                        avatar: '👨‍💻',
+                                        gradient: 'from-blue-500/10 to-cyan-500/10',
+                                        borderColor: 'border-blue-500/15 hover:border-blue-500/30'
+                                    },
+                                    {
+                                        role: 'Ingénieur ML',
+                                        specialization: 'Python / FastAPI',
+                                        level: 'Confirmé',
+                                        levelColor: 'bg-purple-500/15 text-purple-400 border-purple-500/20',
+                                        salary: '15 000',
+                                        months: 4,
+                                        total: '60 000',
+                                        avatar: '🧠',
+                                        gradient: 'from-purple-500/10 to-pink-500/10',
+                                        borderColor: 'border-purple-500/15 hover:border-purple-500/30'
+                                    },
+                                    {
+                                        role: 'Ingénieur DevOps',
+                                        specialization: 'Docker / CI-CD',
+                                        level: 'Junior',
+                                        levelColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
+                                        salary: '10 000',
+                                        months: 3,
+                                        total: '30 000',
+                                        avatar: '⚙️',
+                                        gradient: 'from-emerald-500/10 to-teal-500/10',
+                                        borderColor: 'border-emerald-500/15 hover:border-emerald-500/30'
+                                    }
+                                ].map((eng, idx) => (
+                                    <motion.div
+                                        key={idx}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: 0.3 + idx * 0.15, type: 'spring', stiffness: 100 }}
+                                        whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300 } }}
+                                        className={`relative bg-gradient-to-br ${eng.gradient} border ${eng.borderColor} rounded-xl p-5 transition-all duration-300`}
+                                    >
+                                        {/* Avatar + Role */}
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="text-2xl">{eng.avatar}</div>
+                                                <div>
+                                                    <h4 className="text-sm font-black text-white leading-tight">{eng.role}</h4>
+                                                    <p className="text-xs text-neutral-400 font-medium mt-0.5">{eng.specialization}</p>
+                                                </div>
+                                            </div>
+                                            <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md border ${eng.levelColor}`}>
+                                                {eng.level}
+                                            </span>
+                                        </div>
+
+                                        {/* Stats */}
+                                        <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/5">
+                                            <div>
+                                                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Salaire/mois</p>
+                                                <p className="text-sm font-black text-neutral-200 mt-0.5">{eng.salary} <span className="text-neutral-500 text-[10px]">MAD</span></p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Durée</p>
+                                                <p className="text-sm font-black text-neutral-200 mt-0.5">{eng.months} <span className="text-neutral-500 text-[10px]">mois</span></p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Coût Total</p>
+                                                <p className="text-sm font-black text-emerald-400 mt-0.5">{eng.total} <span className="text-emerald-500/60 text-[10px]">MAD</span></p>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            {/* Total team cost bar */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.8 }}
+                                className="mt-4 flex items-center justify-between bg-white/[0.03] border border-white/5 rounded-xl px-5 py-3"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Shield className="w-4 h-4 text-cyan-400" />
+                                    <span className="text-xs text-neutral-400 font-bold">Coût total staffing (avec buffer 15%)</span>
+                                </div>
+                                <span className="text-base font-black text-white">
+                                    227 700 <span className="text-neutral-500 text-xs">MAD</span>
+                                </span>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+
+                    {/* Bottom Section: ROI Table + Feature List */}
+                    <div className="grid lg:grid-cols-5 gap-6">
+                        {/* ROI Projection Table — 3 columns */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -40 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true, margin: '-50px' }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="lg:col-span-3 bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 lg:p-8 overflow-hidden relative"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.02] to-transparent rounded-2xl" />
+
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="inline-flex p-2.5 bg-emerald-500/10 rounded-xl">
+                                        <PieChart className="w-5 h-5 text-emerald-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black text-white">Projection ROI sur 3 Ans</h3>
+                                        <p className="text-xs text-neutral-500 font-medium">Exemple de données générées par l'IA</p>
+                                    </div>
+                                </div>
+
+                                {/* Table */}
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead>
+                                            <tr className="border-b border-white/10">
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Année</th>
+                                                <th className="text-right py-3 px-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Coûts Cumulés</th>
+                                                <th className="text-right py-3 px-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Gains Cumulés</th>
+                                                <th className="text-right py-3 px-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Cash Flow</th>
+                                                <th className="text-right py-3 px-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">ROI</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {[
+                                                { year: 'Année 1', costs: '474 400', gains: '450 000', cashflow: '-24 400', roi: '-5.14%', roiColor: 'text-red-400' },
+                                                { year: 'Année 2', costs: '572 800', gains: '900 000', cashflow: '+327 200', roi: '+57.12%', roiColor: 'text-emerald-400' },
+                                                { year: 'Année 3', costs: '671 200', gains: '1 350 000', cashflow: '+678 800', roi: '+101.13%', roiColor: 'text-emerald-400' }
+                                            ].map((row, idx) => (
+                                                <motion.tr
+                                                    key={idx}
+                                                    initial={{ opacity: 0, x: -20 }}
+                                                    whileInView={{ opacity: 1, x: 0 }}
+                                                    viewport={{ once: true }}
+                                                    transition={{ delay: 0.4 + idx * 0.15 }}
+                                                    className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                                                >
+                                                    <td className="py-4 px-4">
+                                                        <span className="text-sm font-bold text-white">{row.year}</span>
+                                                    </td>
+                                                    <td className="py-4 px-4 text-right">
+                                                        <span className="text-sm font-medium text-neutral-400">{row.costs} MAD</span>
+                                                    </td>
+                                                    <td className="py-4 px-4 text-right">
+                                                        <span className="text-sm font-medium text-neutral-300">{row.gains} MAD</span>
+                                                    </td>
+                                                    <td className="py-4 px-4 text-right">
+                                                        <span className={`text-sm font-bold ${row.cashflow.startsWith('+') ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                            {row.cashflow} MAD
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-4 px-4 text-right">
+                                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-black ${row.roiColor} ${row.roi.startsWith('+') ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}>
+                                                            {row.roi}
+                                                        </span>
+                                                    </td>
+                                                </motion.tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Break-even indicator */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: 0.8 }}
+                                    className="mt-5 flex items-center gap-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3"
+                                >
+                                    <CalendarClock className="w-4 h-4 text-emerald-400 shrink-0" />
+                                    <p className="text-xs text-neutral-400 font-medium">
+                                        <span className="text-emerald-400 font-bold">Point de rentabilité estimé :</span> Le projet devient rentable au mois 22, avec un ROI positif dès l'Année 2.
+                                    </p>
+                                </motion.div>
+                            </div>
+                        </motion.div>
+
+                        {/* What AI Generates — 2 columns */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 40 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true, margin: '-50px' }}
+                            transition={{ duration: 0.6, delay: 0.3 }}
+                            className="lg:col-span-2 bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 lg:p-8 relative overflow-hidden"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-brand-primary-500/[0.02] to-purple-500/[0.02] rounded-2xl" />
+
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="inline-flex p-2.5 bg-brand-primary-500/10 rounded-xl">
+                                        <Layers className="w-5 h-5 text-brand-primary-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black text-white">Ce que l'IA Génère</h3>
+                                        <p className="text-xs text-neutral-500 font-medium">En une seule analyse</p>
+                                    </div>
+                                </div>
+
+                                <ul className="space-y-3">
+                                    {[
+                                        { text: 'Plan de staffing optimisé', desc: 'Rôles, niveaux, salaires' },
+                                        { text: 'Ventilation CAPEX complète', desc: 'Salaires + licences + buffer' },
+                                        { text: 'OPEX annuel détaillé', desc: 'Cloud + maintenance' },
+                                        { text: 'Projection ROI sur 3 ans', desc: 'Cash flow & rentabilité' },
+                                        { text: 'Analyse des risques', desc: 'Sévérité & mitigation' },
+                                        { text: 'KPIs de succès', desc: 'Métriques & objectifs' },
+                                        { text: 'Gains financiers estimés', desc: 'Bénéfices annuels' },
+                                        { text: 'Résumé qualitatif ROI', desc: 'Analyse par l\'IA' }
+                                    ].map((item, idx) => (
+                                        <motion.li
+                                            key={idx}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            whileInView={{ opacity: 1, x: 0 }}
+                                            viewport={{ once: true }}
+                                            transition={{ delay: 0.4 + idx * 0.08 }}
+                                            className="flex items-start gap-3 group/item"
+                                        >
+                                            <motion.div
+                                                whileHover={{ scale: 1.2, rotate: 360 }}
+                                                transition={{ duration: 0.3 }}
+                                                className="mt-0.5"
+                                            >
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                            </motion.div>
+                                            <div>
+                                                <span className="text-sm font-bold text-neutral-200 group-hover/item:text-white transition-colors">
+                                                    {item.text}
+                                                </span>
+                                                <span className="text-xs text-neutral-500 block mt-0.5">
+                                                    {item.desc}
+                                                </span>
+                                            </div>
+                                        </motion.li>
+                                    ))}
+                                </ul>
+
+                                {/* CTA */}
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    whileInView={{ opacity: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: 1 }}
+                                    className="mt-8"
+                                >
+                                    <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
+                                        <Link
+                                            to={ctaLink}
+                                            className="group/cta flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white text-sm font-black rounded-xl transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30"
+                                        >
+                                            Lancer Votre Analyse
+                                            <motion.div
+                                                animate={{ x: [0, 4, 0] }}
+                                                transition={{ duration: 1.5, repeat: Infinity }}
+                                            >
+                                                <ArrowRight className="w-4 h-4" />
+                                            </motion.div>
+                                        </Link>
+                                    </motion.div>
+                                </motion.div>
+                            </div>
+                        </motion.div>
+                    </div>
+                </div>
+            </section>
+
             {/* How It Works Section */}
             <section id="how-it-works" className="py-20 relative overflow-hidden">
                 {/* Decorative circles pattern */}
@@ -1159,7 +1678,7 @@ const LandingPage = () => {
                     >
                         <div className="flex flex-col items-center gap-4">
                             <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2">
-                                <img src={logo} alt="Logo ScrumFlow" className="h-10 w-auto brightness-0 invert" />
+                                <img src={logo} alt="Logo GrowTrack" className="h-10 w-auto brightness-0 invert" />
                             </motion.div>
                             <p className="text-sm text-neutral-400 font-medium text-center">
                                 Gestion de projet alimentée par l'IA pour les équipes modernes.
@@ -1175,7 +1694,7 @@ const LandingPage = () => {
                         className="pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-4"
                     >
                         <p className="text-sm text-neutral-400 font-medium">
-                            © 2026 ScrumFlow. Tous droits réservés.
+                            © 2026 GrowTrack. Tous droits réservés.
                         </p>
                     </motion.div>
                 </div>

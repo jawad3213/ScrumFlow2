@@ -4,7 +4,7 @@
 /backend/storage/*.key
 /backend/public/hot
 /backend/public/storage
-/backend/.env
+/backend/.env*
 /backend/Homestead.json
 /backend/Homestead.yaml
 /backend/phpunit.xml
