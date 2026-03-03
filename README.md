@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🚀 growtrack</h1>
+  <h1 align="center">🚀 GrowTrack</h1>
   <p align="center">
     <strong>AI-Powered Project Management & Financial Planning Platform</strong>
   </p>
@@ -42,7 +42,7 @@
 
 ## 🌟 Overview
 
-**growtrack** is a comprehensive project management platform designed for project managers (Chefs de Projet) and development teams. It uniquely integrates AI-powered analysis into the project lifecycle, transforming raw project requirement documents (PDFs — *Cahier des Charges*) into actionable staffing plans, detailed backlogs, technology recommendations, and financial forecasts.
+**GrowTrack** is a comprehensive project management platform designed for project managers (Chefs de Projet) and development teams. It uniquely integrates AI-powered analysis into the project lifecycle, transforming raw project requirement documents (PDFs — *Cahier des Charges*) into actionable staffing plans, detailed backlogs, technology recommendations, and financial forecasts.
 
 ### The Problem
 
@@ -54,51 +54,149 @@ Project managers spend significant time manually:
 
 ### The Solution
 
-growtrack automates all of the above using **Google Gemini AI**, providing structured, data-driven outputs via an intuitive wizard-based interface that guides managers through the entire project genesis process.
+GrowTrack automates all of the above using **Google Gemini AI**, providing structured, data-driven outputs via an intuitive wizard-based interface that guides managers through the entire project genesis process.
 
 ---
 
 ## ✨ Key Features
 
-### 🤖 AI-Powered Project Genesis
-- **Staffing Analysis** — Upload a requirements PDF + employee pool → AI generates an optimized staffing plan with cost breakdowns (CAPEX/OPEX), KPIs, and 3-year ROI projections
-- **Backlog Generation** — AI produces a full Agile backlog: Epics → User Stories → Technical Tasks, each with assigned roles, hours, and acceptance criteria
-- **Tech Stack Recommendation** — AI analyzes backlog complexity and recommends primary + alternative technology stacks with architecture patterns, pros/cons, and synergy explanations
+### 🤖 AI-Powered Project Genesis (Wizard)
 
-### 📊 Project Dashboard
-- Global dashboard with project overview cards and key statistics
-- Per-project dashboards with financial KPIs, risk analysis, and team composition
-- Notification center for team updates
+A guided, multi-step wizard that transforms a raw requirements PDF into a fully planned project:
+
+| Step | Name | What Happens |
+|:----:|------|-------------|
+| 1 | **Requirement Upload** | Drag & drop a project requirements PDF (*Cahier des Charges*). The AI extracts and understands the full scope of the project. |
+| 2 | **Resource Pool Configuration** | Choose your staffing strategy: select engineers from your **Internal Resource Pool** (pre-registered employees) or define a **Dynamic Resource Pool** with custom roles, levels, and salaries. |
+| 3 | **Gemini API Key** | Enter your Google Gemini API key (used per-request, never stored server-side). |
+| 4 | **AI Analysis & Results** | The AI runs three sequential analyses and presents a complete project plan ready to be saved. |
+
+**AI Analysis Outputs:**
+
+- **📊 Staffing & Financial Plan** — Optimized team composition with per-engineer cost breakdown, CAPEX/OPEX split, 3-year ROI projections with break-even point, KPIs, risk assessment, and infrastructure cost estimates.
+- **📋 Agile Backlog** — Full Scrum backlog: Epics → User Stories (with story points, acceptance criteria in happy-path + edge-case format) → Technical Tasks (with assigned roles, hour estimates, and step-by-step implementation instructions).
+- **🛠️ Tech Stack Recommendation** — Primary + alternative stack recommendations with architecture patterns, category breakdown (Frontend, Backend, Database, DevOps, AI/ML), synergy explanations, risk assessment, and junior developer tips.
+
+---
+
+### 📊 Dashboard System
+
+#### Global Dashboard
+- **Project overview cards** — See all your projects at a glance with key metrics (cost, duration, status)
+- **Quick statistics** — Total projects, total employees, total investment, and active projects
+- **Quick actions** — One-click access to create new projects or manage teams
+
+#### Project Dashboard
+- **Financial KPI cards** — Total CAPEX, OPEX, project cost, ROI %, and break-even point displayed as interactive cards
+- **Team composition overview** — See assigned engineers with their roles, levels, and monthly costs
+- **Risk analysis** — Visual risk severity indicators with descriptions
+- **Project timeline** — Start date, planned end date, and estimated duration
+
+---
+
+### 💰 Financial Blueprint
+
+A comprehensive financial analysis view for each project:
+
+- **Assigned Team Summary** — Table of all engineers with their role, specialization, level, monthly salary, assigned months, and total cost
+- **Licenses & API Costs** — Third-party services required with cost breakdown
+- **CAPEX Breakdown** — All development costs including contingency buffer (15-20%)
+- **OPEX Breakdown** — Recurring costs: cloud subscriptions, maintenance engineers, annual totals
+- **KPI Dashboard** — Non-financial success metrics with target values and measurement methods
+- **Risk Assessment** — Project risks with severity levels and mitigation strategies
+- **Estimated Gains** — Projected annual financial benefits with formulas
+- **ROI Projections** — 3-year forecast table: cumulative costs, cumulative gains, net cash flow, and ROI percentage per year
+- **📄 PDF Export** — One-click export of the entire financial analysis to a downloadable PDF via `html2pdf.js`
+
+---
+
+### 📋 Scrum Master Blueprint
+
+An interactive Agile backlog viewer presented as a navigable wizard:
+
+- **Epic Navigation** — Browse through project epics with descriptions and story counts
+- **User Stories** — For each epic, view user stories in "As a... I want... So that..." format with:
+  - Story points (Fibonacci scale)
+  - Acceptance criteria (binary pass/fail, covering happy path + edge cases)
+- **Technical Tasks** — For each story, view implementation tasks with:
+  - Assigned role and level (must match the staffing plan)
+  - Hour estimates
+  - Step-by-step implementation instructions (stack, security, best practices)
+- **Drill-down navigation** — Click through Epics → Stories → Tasks in a clean, hierarchical interface
+
+---
+
+### 🛠️ Stack Choice Visualization
+
+- **Side-by-side comparison** — Recommended vs. Alternative tech stack displayed in parallel
+- **Category breakdown** — Technologies grouped by layer: Frontend, Backend, Database, DevOps, AI/ML
+- **Strategy & Architecture** — Named strategy (e.g., "Modern Fullstack") with architecture pattern explanation
+- **Synergy analysis** — How the chosen technologies complement each other
+- **Risk assessment** — Technical risks and potential bottlenecks with the chosen stack
+- **Junior developer tips** — Accessibility guidance for less experienced engineers per technology
+
+---
 
 ### 👥 Team & Employee Management
-- Full CRUD for employees with specializations, roles, and engagement tracking
-- Specialization management (categories of expertise)
-- Bulk operations (delete, assign/unassign)
-- Employee availability tracking for project assignment
 
-### 📋 Strategic & Technical Blueprints
-- **Strategic Blueprint** — High-level project KPIs, risk assessment, and ROI analysis summaries
-- **Technical Blueprint** — Detailed Agile backlog visualization with Epics, User Stories, and Tasks in a navigable wizard interface
+#### Employee Management (Admin)
+- **Full CRUD** — Create, read, update, and delete employees with: first name, last name, email, and specialization
+- **Specialization assignment** — Link employees to predefined specializations (e.g., Backend Developer Senior, DevOps Junior)
+- **Engagement tracking** — Track whether an employee is currently assigned to a project (`is_engaged` flag)
+- **Bulk operations** — Select multiple employees for batch deletion
+- **Data table** — Sortable, searchable, paginated table with inline actions
 
-### 🏗️ Stack Choice Visualization
-- Side-by-side comparison of recommended vs. alternative tech stacks
-- Category-based breakdown (Frontend, Backend, Database, DevOps, AI/ML)
-- Synergy explanations and risk assessments
-- Junior developer tips per stack
+#### Specialization Management (Admin)
+- **Full CRUD** — Create and manage specialization categories (name + description)
+- **Bulk delete** — Batch management of specializations
+- **Used by** — Specializations are linked to both employees and assigned engineers
 
-### 🔐 Role-Based Access Control
-- **Admin / Chef de Projet** — Full access: create projects, manage team, run AI analyses
-- **Employee** — View assigned projects, project dashboards, and blueprints
+#### Project Team Management
+- **Assign employees** — Add employees from the pool to a specific project
+- **Unassign employees** — Remove team members from a project
+- **View team composition** — See all assigned engineers with their roles and costs
 
-### 📄 PDF Export & Reporting
-- Export staffing plans and financial analyses to PDF
-- HTML-to-PDF generation with `html2pdf.js`
+---
+
+### 🔐 Authentication & Access Control
+
+#### Authentication
+- **Login/Logout** — Email + password authentication with token-based sessions
+- **Sign Up** — New user registration with role selection (Chef de Projet / Employee)
+- **Google OAuth** — One-click sign-in via Google (Firebase Authentication integration)
+- **Forgot Password** — Email-based password reset flow with tokenized links
+- **Profile Management** — Update personal information, change password, upload avatar
+
+#### Role-Based Access Control
+- **Chef de Projet (Admin)** — Full access: create projects, run AI analyses, manage employees, manage specializations, assign teams
+- **Employee** — View-only access: see assigned projects, dashboards, blueprints, and stack choices
+
+---
+
+### 🌐 Landing Page
+
+- **Animated hero section** — Engaging first impression with GSAP scroll-based animations
+- **Feature showcase** — Interactive sections highlighting AI capabilities, financial planning, and team management
+- **Call-to-action** — Direct links to sign up or log in
+- **Responsive design** — Fully optimized for desktop, tablet, and mobile
+
+---
+
+### 🔔 Additional Features
+
+- **Notification center** — In-app notifications for team updates and project changes
+- **Settings page** — Application preferences and configuration
+- **Error boundary** — Graceful error handling with user-friendly error pages
+- **Offline banner** — Visual indicator when the user loses internet connectivity
+- **Smooth scrolling** — Lenis-powered smooth scroll experience throughout the app
+- **Command palette** — Quick-access command bar (`cmdk`) for power users
+- **Toast notifications** — Non-intrusive feedback via Sonner toast system
 
 ---
 
 ## 🏛️ Architecture
 
-growtrack follows a **microservices-inspired architecture** with three distinct services orchestrated via Docker Compose:
+GrowTrack follows a **microservices-inspired architecture** with three distinct services orchestrated via Docker Compose:
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
@@ -111,7 +209,7 @@ growtrack follows a **microservices-inspired architecture** with three distinct 
 │  (Static)  │   (PHP-FPM:9000)        │   (Uvicorn:8001)      │
 │            │                         │                        │
 │  Vite      │   Sanctum Auth          │   Google Gemini API    │
-│  TailwindCSS│  PostgreSQL 15         │   Pydantic Schemas     │
+│ TailwindCSS│   PostgreSQL 15         │   Pydantic Schemas     │
 │  React 19  │   Eloquent ORM          │   PyMuPDF (PDF Parse)  │
 └────────────┴──────────┬──────────────┴────────────────────────┘
                         │
@@ -156,6 +254,7 @@ growtrack follows a **microservices-inspired architecture** with three distinct 
 | **@react-pdf/renderer** | 4.3 | React-based PDF document generation |
 | **Lenis** | 1.3 | Smooth scrolling library |
 | **cmdk** | 1.1 | Command palette component |
+| **Firebase** | Latest | Google OAuth authentication |
 
 ### Backend
 | Technology | Version | Purpose |
@@ -173,7 +272,7 @@ growtrack follows a **microservices-inspired architecture** with three distinct 
 |------------|---------|---------|
 | **FastAPI** | Latest | Async Python web framework for AI endpoints |
 | **Uvicorn** | Latest | ASGI server for FastAPI |
-| **Google Generative AI** | Latest | Google Gemini LLM integration |
+| **Google Generative AI** | Latest | Google Gemini LLM integration (Gemini 2.5 Flash) |
 | **Instructor** | Latest | Structured output extraction from LLMs (Pydantic integration) |
 | **Pydantic** | Latest | Data validation and schema definition |
 | **PyMuPDF (fitz)** | Latest | PDF text extraction |
@@ -210,8 +309,8 @@ growtrack/
 │   │   │   │   ├── 📁 api/         # AI service API calls
 │   │   │   │   └── 📁 components/  # Wizard, Resource Pool, Staffing, etc.
 │   │   │   ├── 📁 auth/            # Authentication feature
-│   │   │   │   ├── 📁 api/         # Login, Refresh, Logout API
-│   │   │   │   ├── 📁 components/  # LoginForm, RoleGuard, ResetPassword, etc.
+│   │   │   │   ├── 📁 api/         # Login, Refresh, Logout, Google OAuth API
+│   │   │   │   ├── 📁 components/  # LoginForm, SignupForm, RoleGuard, ResetPassword, etc.
 │   │   │   │   └── 📁 hooks/       # Auth-related custom hooks
 │   │   │   ├── 📁 dashboard/       # Dashboard feature components
 │   │   │   ├── 📁 projects/        # Project management feature
@@ -226,9 +325,10 @@ growtrack/
 │   │   │   ├── PrivateLayout.jsx    # Authenticated route wrapper
 │   │   │   └── ProjectLayout.jsx    # Project-scoped route wrapper
 │   │   ├── 📁 lib/
-│   │   │   └── axios.js             # Axios instance with auth interceptors
+│   │   │   ├── axios.js             # Axios instance with auth interceptors
+│   │   │   └── firebase.js          # Firebase/Google OAuth configuration
 │   │   ├── 📁 pages/               # Page components (route endpoints)
-│   │   │   ├── 📁 auth/            # Login, Forgot/Reset password pages
+│   │   │   ├── 📁 auth/            # Login, Signup, Forgot/Reset password pages
 │   │   │   ├── 📁 dashboard/       # Global & Project dashboard pages
 │   │   │   ├── 📁 NewProjectAnalysis/ # New project wizard & analysis pages
 │   │   │   ├── 📁 project/         # Project detail pages
@@ -241,6 +341,7 @@ growtrack/
 │   │   │   ├── storage.js           # localStorage wrapper service
 │   │   │   └── validation.js        # Form validation helpers
 │   │   ├── App.jsx                  # Root route configuration
+│   │   ├── LandingPage.jsx          # Public landing page
 │   │   ├── main.jsx                 # Application entry point
 │   │   └── index.css                # Global styles
 │   ├── Dockerfile                   # Multi-stage: Node build → Nginx serve
@@ -261,6 +362,7 @@ growtrack/
 │   │   ├── 📁 Mail/                # Email templates (password reset)
 │   │   ├── 📁 Models/
 │   │   │   ├── User.php                    # User model (roles: chef/employee)
+│   │   │   ├── Employee.php                # Employee model (managed by chef)
 │   │   │   ├── Project.php                 # Project model with AI attributes
 │   │   │   ├── AssignedEngineer.php        # Engineer-to-Project assignment
 │   │   │   ├── ProjectEpic.php             # Agile Epic model
@@ -273,6 +375,8 @@ growtrack/
 │   │   │   ├── RoiProjection.php           # ROI yearly projections
 │   │   │   ├── Specialization.php          # Employee specialization
 │   │   │   └── RefreshToken.php            # Token refresh management
+│   │   ├── 📁 Services/
+│   │   │   └── ProjectSeederService.php    # Sample project data seeding
 │   │   └── 📁 Providers/
 │   ├── 📁 config/                  # Laravel configuration files
 │   │   ├── cors.php                # CORS settings for SPA
@@ -280,7 +384,7 @@ growtrack/
 │   │   └── ...
 │   ├── 📁 database/
 │   │   ├── 📁 factories/           # Model factories for testing
-│   │   ├── 📁 migrations/          # 17 migration files
+│   │   ├── 📁 migrations/          # 20 migration files
 │   │   └── 📁 seeders/             # Data seeders (Users, Projects, Specializations)
 │   ├── 📁 routes/
 │   │   └── api.php                 # All API route definitions
@@ -309,7 +413,6 @@ growtrack/
 │   └── Dockerfile                  # Python 3.12-slim + Uvicorn
 │
 ├── 📁 .github/                    # GitHub Actions workflows
-├── 📁 .docker/                    # Additional Docker configurations
 ├── docker-compose.yml             # Full-stack orchestration (4 services)
 ├── .dockerignore
 └── .gitignore
@@ -319,7 +422,7 @@ growtrack/
 
 ## 🗄️ Database Schema
 
-growtrack uses **PostgreSQL 15** with **17 migration files** defining the following entity relationships:
+GrowTrack uses **PostgreSQL 15** with **20 migration files** defining the following entity relationships:
 
 ### Entity Relationship Diagram
 
@@ -327,92 +430,106 @@ growtrack uses **PostgreSQL 15** with **17 migration files** defining the follow
 ┌──────────────────┐       ┌──────────────────────┐
 │  specializations │       │       users           │
 ├──────────────────┤       ├──────────────────────┤
-│ id (PK)          │◄──────┤ id (PK)              │
+│ id (PK)          │       │ id (PK)              │
 │ name             │       │ first_name           │
 │ description      │       │ last_name            │
 │ created_at       │       │ email (UNIQUE)       │
 │ updated_at       │       │ password (hashed)    │
 └──────────────────┘       │ role (chef/employee) │
-                           │ specialization_id(FK)│
-                           │ avatar               │
-                           │ is_engaged           │
-                           │ remember_token       │
-                           └───────┬──────────────┘
-                                   │ 1:N
-                                   ▼
-                    ┌──────────────────────────────┐
-                    │          projects             │
-                    ├──────────────────────────────┤
-                    │ id (PK)                      │
-                    │ name                          │
-                    │ user_id (FK → users)          │
-                    │ description                   │
-                    │ start_date                    │
-                    │ planned_end_date (auto-calc)  │
-                    │ actual_end_date               │
-                    │ ── AI Financial Attributes ── │
-                    │ estimated_duration_months     │
-                    │ total_capex                   │
-                    │ total_opex                    │
-                    │ total_project_cost            │
-                    │ total_gain_value              │
-                    │ annual_opex_value             │
-                    │ roi_percentage                │
-                    │ break_even_point_months       │
-                    │ roi_analysis_summary          │
-                    │ ── Stack Analysis (JSON) ──   │
-                    │ stack_analysis_data           │
-                    │ architecture_plan             │
-                    │ recommended_stack             │
-                    │ stack_name                    │
-                    └──────┬───────────────────────┘
-                           │ 1:N (multiple child tables)
-            ┌──────────────┼──────────────┬─────────────┐
-            ▼              ▼              ▼             ▼
-   ┌────────────┐  ┌──────────────┐ ┌──────────┐ ┌────────────┐
-   │ assigned   │  │ estimated    │ │ project  │ │ project    │
-   │ _engineers │  │ _gains       │ │ _kpis    │ │ _risks     │
-   ├────────────┤  ├──────────────┤ ├──────────┤ ├────────────┤
-   │ role       │  │ item_name    │ │ name     │ │ name       │
-   │ level      │  │ cost_mad     │ │ value    │ │ severity   │
-   │ specializ. │  │ description  │ │          │ │ description│
-   │ salary     │  │ formule      │ └──────────┘ └────────────┘
-   │ months     │  └──────────────┘
-   │ total_cost │
-   └────────────┘
-            ┌──────────────┬───────────────┐
-            ▼              ▼               ▼
-   ┌────────────────┐  ┌──────────────┐  ┌───────────────────┐
-   │ infrastructure │  │    roi       │  │   project_epics   │
-   │ _costs         │  │ _projections │  ├───────────────────┤
-   ├────────────────┤  ├──────────────┤  │ id, project_id    │
-   │ item_name      │  │ year_number  │  │ title, description│
-   │ cost_mad       │  │ cumul_costs  │  └────────┬──────────┘
-   │ description    │  │ cumul_gains  │           │ 1:N
-   │ formule        │  │ net_cashflow │           ▼
-   └────────────────┘  │ roi_percent  │  ┌───────────────────┐
-                       └──────────────┘  │  project_stories  │
-                                         ├───────────────────┤
-                                         │ id, epic_id       │
-                                         │ title, description│
-                                         │ story_points      │
-                                         │ acceptance_criteria│
-                                         └────────┬──────────┘
-                                                  │ 1:N
-                                                  ▼
-                                         ┌────────────────────────┐
-                                         │ project_blueprint_tasks│
-                                         ├────────────────────────┤
-                                         │ id, story_id           │
-                                         │ title, instructions    │
-                                         │ role, level            │
-                                         │ hours                  │
-                                         └────────────────────────┘
+        ▲                  │ google_id (nullable) │
+        │                  │ avatar               │
+        │ FK               │ remember_token       │
+        │                  └───────┬──────────────┘
+        │                          │ 1:N
+        │                          ▼
+        │               ┌──────────────────────┐
+        │               │      employees       │
+        │               ├──────────────────────┤
+        ├───────────────┤ id (PK)              │
+                        │ user_id (FK → users)  │  ← Owner (chef)
+                        │ first_name           │
+                        │ last_name            │
+                        │ email                │
+                        │ specialization_id(FK)│
+                        │ is_engaged           │
+                        └──────────────────────┘
+
+                     ┌──────────────────────────────┐
+                     │          projects             │
+                     ├──────────────────────────────┤
+                     │ id (PK)                      │
+                     │ name                          │
+                     │ user_id (FK → users)          │
+                     │ description                   │
+                     │ start_date                    │
+                     │ planned_end_date (auto-calc)  │
+                     │ actual_end_date               │
+                     │ ── AI Financial Attributes ── │
+                     │ estimated_duration_months     │
+                     │ total_capex                   │
+                     │ total_opex                    │
+                     │ total_project_cost            │
+                     │ total_gain_value              │
+                     │ annual_opex_value             │
+                     │ roi_percentage                │
+                     │ break_even_point_months       │
+                     │ roi_analysis_summary          │
+                     │ ── Stack Analysis (JSON) ──   │
+                     │ stack_analysis_data           │
+                     │ architecture_plan             │
+                     │ recommended_stack             │
+                     │ stack_name                    │
+                     └──────┬───────────────────────┘
+                            │ 1:N (multiple child tables)
+             ┌──────────────┼──────────────┬─────────────┐
+             ▼              ▼              ▼             ▼
+    ┌────────────┐  ┌──────────────┐ ┌──────────┐ ┌────────────┐
+    │ assigned   │  │ estimated    │ │ project  │ │ project    │
+    │ _engineers │  │ _gains       │ │ _kpis    │ │ _risks     │
+    ├────────────┤  ├──────────────┤ ├──────────┤ ├────────────┤
+    │ role       │  │ item_name    │ │ name     │ │ name       │
+    │ level      │  │ cost_mad     │ │ value    │ │ severity   │
+    │ specializ. │  │ description  │ │          │ │ description│
+    │ salary     │  │ formule      │ └──────────┘ └────────────┘
+    │ months     │  └──────────────┘
+    │ total_cost │
+    │ employee_id│ ← FK to employees
+    └────────────┘
+             ┌──────────────┬───────────────┐
+             ▼              ▼               ▼
+    ┌────────────────┐  ┌──────────────┐  ┌───────────────────┐
+    │ infrastructure │  │    roi       │  │   project_epics   │
+    │ _costs         │  │ _projections │  ├───────────────────┤
+    ├────────────────┤  ├──────────────┤  │ id, project_id    │
+    │ item_name      │  │ year_number  │  │ title, description│
+    │ cost_mad       │  │ cumul_costs  │  └────────┬──────────┘
+    │ description    │  │ cumul_gains  │           │ 1:N
+    │ formule        │  │ net_cashflow │           ▼
+    └────────────────┘  │ roi_percent  │  ┌───────────────────┐
+                        └──────────────┘  │  project_stories  │
+                                          ├───────────────────┤
+                                          │ id, epic_id       │
+                                          │ title, description│
+                                          │ story_points      │
+                                          │ acceptance_criteria│
+                                          └────────┬──────────┘
+                                                   │ 1:N
+                                                   ▼
+                                          ┌────────────────────────┐
+                                          │ project_blueprint_tasks│
+                                          ├────────────────────────┤
+                                          │ id, story_id           │
+                                          │ title, instructions    │
+                                          │ role, level            │
+                                          │ hours                  │
+                                          └────────────────────────┘
 ```
 
 ### Key Database Features
+- **Separate Employee table**: Employees are managed independently from user accounts — a Chef de Projet creates and manages their own pool of employees
 - **Auto-calculated fields**: `planned_end_date` is automatically computed from `start_date` + `estimated_duration_months` via Eloquent model events
 - **JSON columns**: `stack_analysis_data`, `architecture_plan`, and `recommended_stack` store full AI responses as JSON
+- **Google OAuth support**: `google_id` field on users for Google sign-in
 - **Cascade deletes**: Deleting a project removes all related children (engineers, gains, KPIs, risks, epics)
 - **Factory & Seeder support**: Pre-built factories and seeders for Users, Projects, Specializations, and AssignedEngineers
 
@@ -420,7 +537,7 @@ growtrack uses **PostgreSQL 15** with **17 migration files** defining the follow
 
 ## 🤖 AI System Deep-Dive
 
-The AI system is a **standalone Python microservice** powered by **Google Gemini** (via the `google-generativeai` SDK) and **Instructor** for structured output extraction.
+The AI system is a **standalone Python microservice** powered by **Google Gemini 2.5 Flash** (via the `google-generativeai` SDK) and **Instructor** for structured output extraction.
 
 ### How It Works
 
@@ -499,6 +616,7 @@ All AI outputs are validated against strict Pydantic schemas using the `instruct
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | `POST` | `/api/login` | ❌ | Authenticate user, returns access token + sets HttpOnly refresh cookie |
+| `POST` | `/api/register` | ❌ | Register a new user account |
 | `POST` | `/api/forgot-password` | ❌ | Send password reset email |
 | `POST` | `/api/reset-password` | ❌ | Reset password with token |
 | `POST` | `/api/refresh-token` | 🍪 Cookie | Refresh access token using HttpOnly cookie |
@@ -508,7 +626,7 @@ All AI outputs are validated against strict Pydantic schemas using the `instruct
 ### Employee Management
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| `GET`    | `/api/employees` | ✅ | List all employees |
+| `GET`    | `/api/employees` | ✅ | List all employees for the authenticated chef |
 | `GET`    | `/api/employees/available` | ✅ | List available (unengaged) employees |
 | `POST`   | `/api/employees` | ✅ | Create new employee |
 | `PUT`    | `/api/employees/{id}` | ✅ | Update employee |
@@ -561,7 +679,7 @@ All AI outputs are validated against strict Pydantic schemas using the `instruct
 
 ## 🔐 Authentication & Security
 
-growtrack implements a **dual-token authentication pattern** for maximum security:
+GrowTrack implements a **dual-token authentication pattern** with Google OAuth support for maximum security and convenience:
 
 ### Token Architecture
 
@@ -586,10 +704,11 @@ growtrack implements a **dual-token authentication pattern** for maximum securit
 2. **HttpOnly Refresh Cookie**: The refresh token is stored in an HttpOnly cookie, invisible to JavaScript
 3. **Automatic Token Refresh**: Axios interceptor automatically refreshes expired access tokens using the cookie
 4. **Request Queue**: During token refresh, subsequent 401 requests are queued and replayed after refresh succeeds
-5. **CORS Whitelist**: Backend only accepts requests from configured frontend origins
-6. **Sanctum Guard**: All API routes (except login/register) are protected by `auth:sanctum` middleware
-7. **Role-Based Guards**: Frontend `RoleGuard` component restricts admin-only routes (`/projects/new`, `/team-global`)
-8. **Password Hashing**: User passwords are automatically hashed via Laravel's `HashedCast`
+5. **Google OAuth**: Stateless Firebase-based Google sign-in as an alternative to email/password
+6. **CORS Whitelist**: Backend only accepts requests from configured frontend origins
+7. **Sanctum Guard**: All API routes (except login/register) are protected by `auth:sanctum` middleware
+8. **Role-Based Guards**: Frontend `RoleGuard` component restricts admin-only routes (`/projects/new-project`, `/team-global`)
+9. **Password Hashing**: User passwords are automatically hashed via Laravel's `HashedCast`
 
 ---
 
@@ -623,6 +742,7 @@ features/
 │   └── components/       # Feature-specific components
 │       ├── ProjectGenesisWizard.jsx   # 4-step project creation wizard
 │       ├── AIDashboard.jsx            # AI analysis results overview
+│       ├── ProjectAnalysisView.jsx    # Analysis results display
 │       ├── RequirementUpload.jsx      # PDF upload with drag & drop
 │       ├── ResourcePool.jsx           # Employee pool configuration
 │       ├── InternalResourcePool.jsx   # Internal team resource selection
@@ -630,6 +750,9 @@ features/
 │       ├── StaffingStrategy.jsx       # Staffing configuration
 │       └── GeminiAuth.jsx             # API key input component
 ├── auth/                 # Authentication feature
+│   ├── api/              # Login, Signup, Google OAuth, Profile API
+│   ├── components/       # LoginForm, SignupForm, RoleGuard, GoogleAuthButton, etc.
+│   └── hooks/            # useAuth custom hook
 ├── dashboard/            # Dashboard widgets
 ├── projects/             # Project management views
 └── team/                 # Employee & specialization management
@@ -638,28 +761,29 @@ features/
 ### Routing Architecture
 
 ```
+/                               → Public (LandingPage — animated hero)
 /login                          → Public (LoginPage)
+/signup                         → Public (SignupPage)
 /forgot-password                → Public (ForgotPasswordPage)
 /reset-password                 → Public (ResetPasswordPage)
-/                               → Redirect → /dashboard
 
 [PrivateLayout] (Auth required)
 ├── /dashboard                  → DashboardPage (global overview)
 ├── /notifications              → NotificationsPage
 ├── /profile                    → ProfilePage
 ├── /settings                   → SettingsPage
-├── /projects/new-project               → [Admin] NewProjectPage (Genesis Wizard)
+├── /projects/new-project       → [Admin] NewProjectPage (Genesis Wizard)
 ├── /team-global                → [Admin] TeamPage
 │
 └── [ProjectLayout] (Project context)
     └── /project/:id
-        ├── /                   → ProjectDashboardPage (project overview)
-        ├── /hub                → StrategicBlueprint (KPIs, risks, ROI)
-        ├── /blueprint          → TechnicalBlueprintPage (Epics/Stories/Tasks)
-        ├── /stack              → StackChoicePage (tech stack comparison)
-        ├── /project-team       → ProjectTeamPage (team composition)
-        ├── /analysis           → [Admin] AnalysisPage
-        └── /team               → [Admin] TeamPage
+        ├── /                           → ProjectDashboardPage (project overview)
+        ├── /financial-blueprint        → FinancialBlueprintPage (KPIs, costs, ROI)
+        ├── /scrum-master-blueprint     → ScrumMasterBlueprintPage (Epics/Stories/Tasks)
+        ├── /stack-choice               → StackChoicePage (tech stack comparison)
+        ├── /project-team               → ProjectTeamPage (team composition)
+        ├── /analysis                   → [Admin] AnalysisPage
+        └── /team                       → [Admin] TeamPage
 ```
 
 ### State Management Strategy
@@ -743,25 +867,99 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 ```
 
+#### 5. Run All Services Together (Alternative)
+```bash
+# From the root directory
+npm install           # Install concurrently
+npm run all           # Starts frontend + backend + AI system in parallel
+```
+
 ---
 
 ## 🐳 Docker Deployment
 
-growtrack is fully containerized with Docker Compose for easy deployment.
+GrowTrack is fully containerized with Docker Compose for easy deployment.
 
-### Quick Start
+### Prerequisites
+
+1. **Docker Desktop** — [Download here](https://www.docker.com/products/docker-desktop/)
+2. **Git** — To clone the repository
+
+### Step-by-Step Deployment
+
+#### Step 1: Clone the Repository
 ```bash
-# Build and start all services
-docker-compose up --build -d
-
-# View logs
-docker-compose logs -f
-
-# Stop all services
-docker-compose down
+git clone https://github.com/your-username/growtrack.git
+cd growtrack
 ```
 
-### Services Architecture
+#### Step 2: Configure the Backend Environment
+```bash
+cp backend/.env.example backend/.env
+```
+
+Edit `backend/.env` and update these values:
+
+| Variable | What to Change | Example |
+|----------|----------------|---------|
+| `APP_URL` | Your server IP or domain | `http://localhost` |
+| `DB_PASSWORD` | Set a **strong** password | `MyStr0ngP@ss!` |
+
+> ⚠️ **Important**: Keep `DB_HOST=db` — it refers to the Docker container name.
+
+#### Step 3: Match the Database Password
+
+The password in `backend/.env` **must match** the one in `docker-compose.yml`. Either:
+
+- Edit `docker-compose.yml` line 12 to match your `.env`:
+  ```yaml
+  POSTGRES_PASSWORD: MyStr0ngP@ss!
+  ```
+- Or keep the default `your_db_password` in both files (not recommended for production).
+
+#### Step 4: Build & Start All Containers
+```bash
+docker-compose up --build -d
+```
+
+This will:
+- Pull the PostgreSQL image
+- Build the Backend, Frontend, and AI System images
+- Start all 4 containers in the background
+
+#### Step 5: Initialize the Laravel Backend
+
+Run these commands **once** after the first build:
+
+```bash
+# Generate the Laravel app key
+docker exec growtrack-backend php artisan key:generate
+
+# Run database migrations
+docker exec growtrack-backend php artisan migrate
+
+# (Optional) Seed the database with sample data
+docker exec growtrack-backend php artisan db:seed
+```
+
+#### Step 6: Access the Application
+
+| Service | URL |
+|---------|-----|
+| 🌐 **Application** | `http://localhost` (port 80) |
+| 🔌 **Backend API** | `http://localhost/api/...` |
+| 🤖 **AI System** | `http://localhost/ai/...` |
+
+Everything is routed through Nginx on **port 80** — you only need one URL.
+
+#### Step 7: Get a Gemini API Key (for AI Features)
+
+The AI features require a **Google Gemini API key**:
+1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
+2. Create a free API key
+3. Enter it in the app when prompted (sent per-request, never stored server-side)
+
+### Services Overview
 
 | Service | Container Name | Image | Port |
 |---------|---------------|-------|------|
@@ -783,6 +981,25 @@ docker-compose down
 **AI System** — Single-stage:
 - `python:3.12-slim` → Installs PyMuPDF build tools + pip dependencies
 
+### Useful Docker Commands
+
+```bash
+# View logs of all containers
+docker-compose logs -f
+
+# View logs of a specific container
+docker-compose logs -f backend
+
+# Stop all containers
+docker-compose down
+
+# Stop & remove all data (including database!)
+docker-compose down -v
+
+# Rebuild after code changes
+docker-compose up --build -d
+```
+
 ### Networking
 
 All services communicate on the `growtrack-network` Docker bridge network. The Nginx container acts as the single entry point (port 80), routing requests to:
@@ -794,7 +1011,7 @@ All services communicate on the `growtrack-network` Docker bridge network. The N
 
 ## 🧪 Testing
 
-growtrack includes comprehensive test suites across all three services.
+GrowTrack includes comprehensive test suites across all three services.
 
 ### Frontend Tests (Vitest + React Testing Library)
 ```bash
@@ -842,7 +1059,7 @@ pytest -v             # Verbose output
 ### Backend (`backend/.env`)
 ```env
 # Application
-APP_NAME=growtrack
+APP_NAME=GrowTrack
 APP_ENV=production
 APP_KEY=base64:...
 APP_DEBUG=true
