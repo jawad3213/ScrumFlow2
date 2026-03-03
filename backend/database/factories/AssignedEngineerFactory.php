@@ -3,9 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\AssignedEngineer;
+use App\Models\Employee;
 use App\Models\Project;
 use App\Models\Specialization;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AssignedEngineerFactory extends Factory
@@ -17,7 +17,7 @@ class AssignedEngineerFactory extends Factory
         return [
             'project_id' => Project::factory(),
             'specialization_id' => Specialization::factory(),
-            'user_id' => User::factory(),
+            'employee_id' => Employee::factory(),
             'phase' => $this->faker->randomElement(['development', 'maintenance']),
             'months_assigned' => $this->faker->randomFloat(2, 1, 12),
         ];

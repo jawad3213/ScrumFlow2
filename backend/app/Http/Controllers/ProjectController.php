@@ -54,8 +54,8 @@ class ProjectController extends Controller
 
         // Calculate unique engineers assigned across user's projects
         $engineerCount = AssignedEngineer::whereIn('project_id', $projects->pluck('id'))
-                                         ->whereNotNull('user_id')
-                                         ->distinct('user_id')
+                                         ->whereNotNull('employee_id')
+                                         ->distinct('employee_id')
                                          ->count();
 
         // Prepare project data with progress calculation

@@ -32,19 +32,19 @@ global.IntersectionObserver = class IntersectionObserver {
 const mockTeam = [
     {
         id: 1,
-        user_id: 10,
+        employee_id: 10,
         phase: 'development',
         months_assigned: 6,
         specialization: { name: 'Frontend Engineer', level: 'Senior' },
-        user: { id: 10, first_name: 'John', last_name: 'Doe' }
+        employee: { id: 10, first_name: 'John', last_name: 'Doe' }
     },
     {
         id: 2,
-        user_id: null,
+        employee_id: null,
         phase: 'development',
         months_assigned: 3,
         specialization: { name: 'Backend Engineer', level: 'Mid-level' },
-        user: null
+        employee: null
     }
 ];
 

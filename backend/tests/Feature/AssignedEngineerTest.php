@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AssignedEngineer;
+use App\Models\Employee;
 use App\Models\Project;
 use App\Models\Specialization;
 use App\Models\User;
@@ -14,29 +15,29 @@ class AssignedEngineerTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Test creating an assigned engineer with a user.
+     * Test creating an assigned engineer with an employee.
      */
     public function test_can_create_assigned_engineer_with_user()
     {
         $project = Project::factory()->create();
         $specialization = Specialization::factory()->create(['salary' => 5000]);
-        $user = User::factory()->create();
+        $employee = Employee::factory()->create();
 
         $assignedEngineer = AssignedEngineer::create([
             'project_id' => $project->id,
             'specialization_id' => $specialization->id,
-            'user_id' => $user->id,
+            'employee_id' => $employee->id,
             'phase' => 'development',
             'months_assigned' => 6
         ]);
 
         $this->assertDatabaseHas('assigned_engineers', [
             'id' => $assignedEngineer->id,
-            'user_id' => $user->id,
+            'employee_id' => $employee->id,
             'project_id' => $project->id,
         ]);
 
-        $this->assertEquals($user->id, $assignedEngineer->user->id);
+        $this->assertEquals($employee->id, $assignedEngineer->employee->id);
         $this->assertEquals($project->id, $assignedEngineer->project->id);
         $this->assertEquals($specialization->id, $assignedEngineer->specialization->id);
     }
@@ -57,33 +58,33 @@ class AssignedEngineerTest extends TestCase
     }
 
     /**
-     * Test user_id can be null if not assigned to a specific user yet.
+     * Test employee_id can be null if not assigned to a specific employee yet.
      */
     public function test_user_id_can_be_null()
     {
-        $assignedEngineer = AssignedEngineer::factory()->create(['user_id' => null]);
+        $assignedEngineer = AssignedEngineer::factory()->create(['employee_id' => null]);
 
         $this->assertDatabaseHas('assigned_engineers', [
             'id' => $assignedEngineer->id,
-            'user_id' => null,
+            'employee_id' => null,
         ]);
 
-        $this->assertNull($assignedEngineer->user);
+        $this->assertNull($assignedEngineer->employee);
     }
 
     /**
-     * Test that deleting a user sets user_id to null in assigned_engineers.
+     * Test that deleting an employee sets employee_id to null in assigned_engineers.
      */
     public function test_deleting_user_sets_user_id_to_null()
     {
-        $user = User::factory()->create();
-        $assignedEngineer = AssignedEngineer::factory()->create(['user_id' => $user->id]);
+        $employee = Employee::factory()->create();
+        $assignedEngineer = AssignedEngineer::factory()->create(['employee_id' => $employee->id]);
 
-        $user->delete();
+        $employee->delete();
 
         $this->assertDatabaseHas('assigned_engineers', [
             'id' => $assignedEngineer->id,
-            'user_id' => null,
+            'employee_id' => null,
         ]);
     }
 }
