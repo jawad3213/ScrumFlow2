@@ -8,7 +8,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import Toast from '@/components/ui/toast';
+import Toast from '@/components/ui/Toast';
 
 // API & Utils
 import { analyzeStaffing } from '@/features/ai-analysis/api/ai';

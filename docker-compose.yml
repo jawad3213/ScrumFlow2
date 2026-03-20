@@ -1,59 +1,62 @@
-version: '3.8'
+
+# ==========================================
+# BASE CONFIGURATION
+# Defines Services, Images, Networks
+# ==========================================
 
 services:
-  # 1. Base de données PostgreSQL
-  db:
-    image: postgres:15-alpine
-    container_name: scrumflow-db
-    restart: always
-    environment:
-      POSTGRES_DB: ${DB_DATABASE:-ScrumFlow}
-      POSTGRES_USER: ${DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-your_db_password}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  # 1. Main NGINX Gateway
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: scrumflow-nginx
+    container_name: scrumflow-nginx
+    depends_on:
+      - frontend
+      - backend
+      - ai-system
     networks:
       - scrumflow-network
 
-  # 2. Backend Laravel (PHP-FPM)
+  # 2. PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: scrumflow-db
+    networks:
+      - scrumflow-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 3. Laravel Backend (PHP-FPM)
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     image: scrumflow-backend
     container_name: scrumflow-backend
-    restart: always
-    env_file: ./backend/.env
     depends_on:
       - db
     networks:
       - scrumflow-network
 
-  # 3. Frontend React (Nginx) - Port 80 pour Azure
+  # 4. React/Vue Frontend (Serves Static JS via its own lightweight Nginx)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     image: scrumflow-frontend
     container_name: scrumflow-frontend
-    restart: always
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-      - ai-system
     networks:
       - scrumflow-network
 
-  # 4. Système IA (Python + Gemini)
+  # 5. AI System
   ai-system:
     build:
       context: "./Ai System"
       dockerfile: Dockerfile
     image: scrumflow-ai
     container_name: scrumflow-ai
-    restart: always
-    #env_file: "./Ai System/.env"
     networks:
       - scrumflow-network
 
