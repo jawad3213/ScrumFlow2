@@ -1,0 +1,36 @@
+
+# ==========================================
+# PRODUCTION OVERRIDES
+# Run with `docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
+# Adds Restarts, Secret Env files, Production Ports
+# ==========================================
+
+services:
+  nginx:
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+
+  db:
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-ScrumFlowProd}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      # MUST SET DB_PASSWORD in environment manually or in root .env
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+  backend:
+    restart: always
+    env_file: 
+      - ./backend/.env.production
+
+  frontend:
+    restart: always
+    env_file:
+      - ./frontend/.env.production
+
+  ai-system:
+    restart: always
+    env_file:
+      - ./Ai System/.env.production

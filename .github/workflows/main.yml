@@ -1,4 +1,4 @@
-name: growtrack Professional CI/CD
+name: Scrumflow Professional CI/CD
 
 on:
   push:

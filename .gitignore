@@ -1,10 +1,12 @@
-﻿# Dossiers Laravel
+# Dossiers Laravel
 /backend/vendor
 /backend/node_modules
 /backend/storage/*.key
 /backend/public/hot
 /backend/public/storage
-/backend/.env*
+/backend/.env
+/backend/.env.testing
+/backend/.env.backup
 /backend/Homestead.json
 /backend/Homestead.yaml
 /backend/phpunit.xml
