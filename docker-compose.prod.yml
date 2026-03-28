@@ -1,36 +1,65 @@
-
-# ==========================================
-# PRODUCTION OVERRIDES
-# Run with `docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
-# Adds Restarts, Secret Env files, Production Ports
-# ==========================================
-
 services:
   nginx:
+    image: jaouad3243/scrumflow-nginx:latest
+    container_name: scrumflow-nginx
     restart: always
     ports:
       - "80:80"
       - "443:443"
+    depends_on:
+      - frontend
+      - backend
+      - ai-system
+    networks:
+      - scrumflow-network
 
   db:
+    image: postgres:15-alpine
+    container_name: scrumflow-db
     restart: always
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-ScrumFlowProd}
-      POSTGRES_USER: ${DB_USERNAME:-postgres}
-      # MUST SET DB_PASSWORD in environment manually or in root .env
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - scrumflow-network
 
   backend:
+    image: jaouad3243/scrumflow-backend:latest
+    container_name: scrumflow-backend
     restart: always
-    env_file: 
-      - ./backend/.env.production
+    depends_on:
+      - db
+    env_file:
+      - ./backend.env
+    environment:
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    networks:
+      - scrumflow-network
 
   frontend:
+    image: jaouad3243/scrumflow-frontend:latest
+    container_name: scrumflow-frontend
     restart: always
     env_file:
-      - ./frontend/.env.production
+      - ./frontend.env
+    networks:
+      - scrumflow-network
 
   ai-system:
+    image: jaouad3243/scrumflow-ai:latest
+    container_name: scrumflow-ai
     restart: always
-    env_file:
-      - ./Ai System/.env.production
+    networks:
+      - scrumflow-network
+
+networks:
+  scrumflow-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
