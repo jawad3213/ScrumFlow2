@@ -1,0 +1,151 @@
+name: CD
+
+# After CI succeeds on main: builds the images, pushes them to Docker Hub,
+# then deploys them on the EC2 instance created by ./terraform.
+# AWS auth: GitHub OIDC -> IAM role (no AWS access keys stored in GitHub).
+#
+# Repository secrets required (Settings > Secrets and variables > Actions > Secrets):
+#   DOCKERHUB_USERNAME, DOCKERHUB_TOKEN (Docker Hub access token, Read & Write)
+# Repository variables required (... > Variables), all printed by `terraform output`:
+#   AWS_REGION, AWS_ROLE_ARN, EC2_INSTANCE_ID
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch: # manual redeploy of the current main
+
+permissions:
+  id-token: write # required to request the OIDC token
+  contents: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  IMAGE_TAG: ${{ github.event.workflow_run.head_sha || github.sha }}
+  PARAM_PREFIX: /scrumflow/prod
+
+jobs:
+  build-push:
+    name: Build & push ${{ matrix.image }}
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    environment: production
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - image: scrumflow-backend
+            context: ./backend
+          - image: scrumflow-frontend
+            context: ./frontend
+            target: prod
+          - image: scrumflow-ai
+            context: ./Ai System
+          - image: scrumflow-nginx
+            context: ./frontend/nginx
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.IMAGE_TAG }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          target: ${{ matrix.target }}
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:${{ env.IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  deploy:
+    name: Deploy to EC2
+    needs: build-push
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.IMAGE_TAG }}
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gh-${{ github.run_id }}-deploy
+
+      - name: Send deploy command via SSM
+        id: send
+        env:
+          DOCKERHUB_NAMESPACE: ${{ secrets.DOCKERHUB_USERNAME }}
+          INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+        run: |
+          COMPOSE_B64=$(base64 -w0 docker-compose.prod.yml)
+          SCRIPT_B64=$(base64 -w0 terraform/deploy/deploy.sh)
+
+          jq -n \
+            --arg compose "$COMPOSE_B64" --arg script "$SCRIPT_B64" \
+            --arg namespace "$DOCKERHUB_NAMESPACE" --arg tag "$IMAGE_TAG" \
+            --arg region "$AWS_REGION" --arg prefix "$PARAM_PREFIX" \
+            '{commands: [
+                "set -e",
+                "mkdir -p /opt/scrumflow",
+                "echo \($compose) | base64 -d > /opt/scrumflow/docker-compose.prod.yml",
+                "echo \($script) | base64 -d > /opt/scrumflow/deploy.sh",
+                "chmod +x /opt/scrumflow/deploy.sh",
+                "DOCKERHUB_NAMESPACE=\($namespace) IMAGE_TAG=\($tag) AWS_REGION=\($region) PARAM_PREFIX=\($prefix) /opt/scrumflow/deploy.sh"
+              ]}' > params.json
+
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "ScrumFlow deploy ${IMAGE_TAG::7}" \
+            --timeout-seconds 900 \
+            --parameters file://params.json \
+            --query Command.CommandId --output text)
+          echo "command_id=$COMMAND_ID" >> "$GITHUB_OUTPUT"
+          echo "SSM command: $COMMAND_ID"
+
+      - name: Wait for deploy to finish
+        env:
+          INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+          COMMAND_ID: ${{ steps.send.outputs.command_id }}
+        run: |
+          # `aws ssm wait` gives up after 100s, image pulls can take longer.
+          for i in $(seq 1 90); do
+            STATUS=$(aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" \
+                       --query Status --output text 2>/dev/null || echo Pending)
+            case "$STATUS" in
+              Pending|InProgress|Delayed) echo "[$i] $STATUS"; sleep 10 ;;
+              *) break ;;
+            esac
+          done
+
+          echo "---------------- stdout ----------------"
+          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" \
+            --query StandardOutputContent --output text
+          echo "---------------- stderr ----------------"
+          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" \
+            --query StandardErrorContent --output text
+
+          echo "Final status: $STATUS"
+          [ "$STATUS" = "Success" ]

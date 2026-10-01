@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: jaouad3243/scrumflow-nginx:latest
+    image: ${DOCKERHUB_NAMESPACE:-jaouad3243}/scrumflow-nginx:${IMAGE_TAG:-latest}
     container_name: scrumflow-nginx
     restart: always
     ports:
@@ -27,7 +27,7 @@ services:
       - scrumflow-network
 
   backend:
-    image: jaouad3243/scrumflow-backend:latest
+    image: ${DOCKERHUB_NAMESPACE:-jaouad3243}/scrumflow-backend:${IMAGE_TAG:-latest}
     container_name: scrumflow-backend
     restart: always
     depends_on:
@@ -42,7 +42,7 @@ services:
       - scrumflow-network
 
   frontend:
-    image: jaouad3243/scrumflow-frontend:latest
+    image: ${DOCKERHUB_NAMESPACE:-jaouad3243}/scrumflow-frontend:${IMAGE_TAG:-latest}
     container_name: scrumflow-frontend
     restart: always
     env_file:
@@ -51,7 +51,7 @@ services:
       - scrumflow-network
 
   ai-system:
-    image: jaouad3243/scrumflow-ai:latest
+    image: ${DOCKERHUB_NAMESPACE:-jaouad3243}/scrumflow-ai:${IMAGE_TAG:-latest}
     container_name: scrumflow-ai
     restart: always
     networks:

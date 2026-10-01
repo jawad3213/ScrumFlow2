@@ -30,3 +30,7 @@ node_modules
 .agent/
 
 start_ec2.txt
+
+.env.production
+.mcp.json
+.vscode/mcp.json

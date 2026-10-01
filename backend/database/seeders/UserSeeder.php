@@ -13,23 +13,13 @@ class UserSeeder extends Seeder
      * Only creates chef (admin) users. Employees are now seeded separately.
      */
     public function run(): void
-    {
-        User::firstOrCreate(
-            ['email' => 'chef@projet.com'],
-            [
-                'first_name' => 'Super',
-                'last_name' => 'Chef',
-                'password' => Hash::make('password123'),
-                'role' => 'chef',
-            ]
-        );
-
+    { 
         User::firstOrCreate(
             ['email' => 'aelhail71@gmail.com'],
             [
                 'first_name' => 'Jaouad',
-                'last_name' => 'Aelhail',
-                'password' => Hash::make('Password123'),
+                'last_name' => 'El Hail',
+                'password' => Hash::make('Password0690551161'),
                 'role' => 'chef',
             ]
         );

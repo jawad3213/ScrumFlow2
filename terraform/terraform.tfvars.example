@@ -1,0 +1,20 @@
+# Copy to terraform.tfvars and adjust.
+aws_region    = "eu-west-3"
+instance_type = "t3.small"
+
+github_owner = "jawad3213"
+github_repo  = "ScrumFlow"
+
+# Set to false if the GitHub OIDC provider already exists in this AWS account.
+create_github_oidc_provider = true
+
+# Optional SSH access (otherwise: aws ssm start-session --target <instance_id>)
+# ssh_key_name      = "my-keypair"
+# ssh_allowed_cidrs = ["203.0.113.10/32"]
+
+# .env files are read from terraform/env/ (root.env, backend.env, frontend.env) and
+# uploaded to SSM Parameter Store. Override the paths here if needed:
+# env_files = { "root.env" = "env/root.env", "backend.env" = "env/backend.env" }
+
+# Only for PRIVATE Docker Hub repositories (read-only access token):
+# dockerhub_token = "dckr_pat_xxx"

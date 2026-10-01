@@ -14,6 +14,8 @@
   <img src="https://img.shields.io/badge/Python-3.12-green?logo=python" alt="Python">
   <img src="https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql" alt="PostgreSQL">
   <img src="https://img.shields.io/badge/Docker-Compose-blue?logo=docker" alt="Docker">
+  <img src="https://img.shields.io/badge/Terraform-AWS-purple?logo=terraform" alt="Terraform">
+  <img src="https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-black?logo=githubactions" alt="GitHub Actions">
   <img src="https://img.shields.io/badge/IA-Google%20Gemini-orange?logo=google" alt="Gemini AI">
 </p>
 
@@ -33,6 +35,7 @@
 - [Architecture Frontend](#-architecture-frontend)
 - [Démarrage Rapide](#-démarrage-rapide)
 - [Déploiement Docker](#-déploiement-docker)
+- [Déploiement AWS (Terraform + CI/CD)](#-déploiement-aws-terraform--cicd)
 - [Tests](#-tests)
 - [Variables d'Environnement](#-variables-denvironnement)
 - [Contribution](#-contribution)
@@ -222,8 +225,9 @@ GrowTrack suit une **architecture inspirée des microservices** avec trois servi
 
 | Service | Port Interne | Protocole | Rôle |
 |---------|:------------:|-----------|------|
-| **Frontend (Nginx)** | `80` | HTTP | Sert la SPA React + reverse-proxy API & IA |
-| **Backend (PHP-FPM)** | `9000` | FastCGI | Traite les requêtes API REST depuis Nginx |
+| **Gateway Nginx** | `80` | HTTP | Point d'entrée unique : route `/`, `/api` et `/ai` (config dans `frontend/nginx/`) |
+| **Frontend (Nginx)** | `80` | HTTP | Sert les fichiers statiques de la SPA React |
+| **Backend (PHP-FPM)** | `9000` | FastCGI | Traite les requêtes API REST depuis la gateway Nginx |
 | **Système IA (Uvicorn)** | `8001` | HTTP | Gère les requêtes d'analyse IA via proxy |
 | **Base de Données (PostgreSQL)** | `5432` | TCP | Stockage persistant des données |
 
@@ -280,10 +284,13 @@ GrowTrack suit une **architecture inspirée des microservices** avec trois servi
 ### DevOps & Infrastructure
 | Technologie | Utilité |
 |-------------|---------|
-| **Docker** | Conteneurisation des 4 services |
-| **Docker Compose** | Orchestration multi-conteneurs |
-| **Nginx** | Reverse proxy, fichiers statiques et routage |
-| **GitHub Actions** | CI/CD (`.github/workflows/`) |
+| **Docker** | Conteneurisation des 5 services (gateway Nginx, frontend, backend, IA, PostgreSQL) |
+| **Docker Compose** | Orchestration multi-conteneurs (dev & prod) |
+| **Nginx** | Gateway reverse proxy (`frontend/nginx/`) + service des fichiers statiques |
+| **GitHub Actions** | CI (`ci.yml`) et déploiement continu (`cd.yml`) |
+| **Terraform** | Infrastructure AWS as Code (`terraform/`) |
+| **Docker Hub** | Registre des images de production (`scrumflow-*`) |
+| **AWS** | EC2, Elastic IP, SSM Parameter Store, IAM (OIDC GitHub) |
 
 ---
 
@@ -292,8 +299,10 @@ GrowTrack suit une **architecture inspirée des microservices** avec trois servi
 ```
 growtrack/
 ├── 📁 frontend/                    # SPA React (Vite + TailwindCSS)
-│   ├── 📁 nginx/
-│   │   └── default.conf            # Configuration reverse proxy Nginx
+│   ├── 📁 nginx/                   # Gateway Nginx (image scrumflow-nginx)
+│   │   ├── Dockerfile              # Image de la gateway Nginx
+│   │   ├── default.conf            # Routage prod : / → frontend, /api → backend, /ai → IA
+│   │   └── dev.conf                # Routage dev (Vite 5173, artisan serve 8000, hot reload)
 │   ├── 📁 public/                  # Assets statiques
 │   ├── 📁 src/
 │   │   ├── 📁 components/
@@ -323,6 +332,7 @@ growtrack/
 │   │   ├── main.jsx                 # Point d'entrée de l'application
 │   │   └── index.css                # Styles globaux
 │   ├── Dockerfile                   # Multi-stage : Build Node → Nginx
+│   ├── nginx.conf                   # Config Nginx de l'image frontend (sert la SPA)
 │   ├── package.json
 │   ├── tailwind.config.js
 │   ├── vite.config.js
@@ -381,8 +391,26 @@ growtrack/
 │   ├── requirements.txt            # Dépendances Python
 │   └── Dockerfile                  # Python 3.12-slim + Uvicorn
 │
-├── 📁 .github/                    # Workflows GitHub Actions
-├── docker-compose.yml             # Orchestration full-stack (4 services)
+├── 📁 terraform/                  # Infrastructure AWS (Terraform)
+│   ├── 📁 deploy/
+│   │   └── deploy.sh               # Script exécuté sur l'EC2 à chaque déploiement (via SSM)
+│   ├── main.tf                     # EC2, Security Group, Elastic IP, rôle IAM de l'instance
+│   ├── 📁 env/                     # .env de production (ignorés par Git, *.example versionnés)
+│   ├── env.tf                      # Envoi des .env dans SSM Parameter Store
+│   ├── github_oidc.tf              # Fournisseur OIDC + rôle IAM pour GitHub Actions
+│   ├── variables.tf                # Variables (région, type d'instance, dépôt GitHub…)
+│   ├── outputs.tf                  # IP publique, ID d'instance, ARN du rôle, préfixe SSM
+│   ├── versions.tf                 # Versions de Terraform et du provider AWS
+│   ├── user_data.sh                # Bootstrap au premier démarrage (Docker, AWS CLI, swap)
+│   └── terraform.tfvars.example    # Exemple de configuration
+│
+├── 📁 .github/workflows/
+│   ├── ci.yml                      # Tests backend / frontend / IA + build des images
+│   └── cd.yml                      # Build & push vers Docker Hub puis déploiement sur EC2
+├── docker-compose.yml             # Configuration de base (5 services)
+├── docker-compose.override.yml    # Surcharges de développement (appliquées par défaut)
+├── docker-compose.prod.yml        # Configuration de production (utilisée sur l'EC2)
+├── .env.production.example        # Exemple du .env racine de production
 └── .gitignore
 ```
 
@@ -887,7 +915,9 @@ Le mot de passe dans `backend/.env` **doit correspondre** à celui dans `docker-
 docker-compose up --build -d
 ```
 
-Cela va : télécharger l'image PostgreSQL, construire les images Backend, Frontend et Système IA, puis démarrer les 4 conteneurs en arrière-plan.
+Cela va : télécharger l'image PostgreSQL, construire les images Gateway Nginx, Backend, Frontend et Système IA, puis démarrer les 5 conteneurs en arrière-plan.
+
+> ℹ️ `docker-compose.override.yml` est appliqué automatiquement : il active le mode développement (Vite avec hot reload, `php artisan serve`, volumes montés) et utilise `frontend/nginx/dev.conf` comme configuration de la gateway.
 
 #### Étape 5 : Initialiser le Backend Laravel
 
@@ -895,24 +925,24 @@ Exécutez ces commandes **une seule fois** après la première construction :
 
 ```bash
 # Générer la clé de l'application Laravel
-docker exec growtrack-backend php artisan key:generate
+docker exec scrumflow-backend php artisan key:generate
 
 # Exécuter les migrations de base de données
-docker exec growtrack-backend php artisan migrate
+docker exec scrumflow-backend php artisan migrate
 
 # (Optionnel) Insérer des données exemple
-docker exec growtrack-backend php artisan db:seed
+docker exec scrumflow-backend php artisan db:seed
 ```
 
 #### Étape 6 : Accéder à l'Application
 
 | Service | URL |
 |---------|-----|
-| 🌐 **Application** | `http://localhost` (port 80) |
-| 🔌 **API Backend** | `http://localhost/api/...` |
-| 🤖 **Système IA** | `http://localhost/ai/...` |
+| 🌐 **Application** | `http://localhost:8080` |
+| 🔌 **API Backend** | `http://localhost:8080/api/...` |
+| 🤖 **Système IA** | `http://localhost:8080/ai/...` |
 
-Tout est routé via Nginx sur le **port 80** — vous n'avez besoin que d'une seule URL.
+Tout est routé via la gateway Nginx — vous n'avez besoin que d'une seule URL. En développement elle est exposée sur le **port 8080** ; en production (`docker-compose.prod.yml`) sur le **port 80**.
 
 #### Étape 7 : Obtenir une Clé API Gemini (pour les fonctionnalités IA)
 
@@ -925,10 +955,11 @@ Les fonctionnalités IA nécessitent une **clé API Google Gemini** :
 
 | Service | Nom du Conteneur | Image | Port |
 |---------|-----------------|-------|------|
-| Base de données | `growtrack-db` | `postgres:15-alpine` | 5432 (interne) |
-| Backend | `growtrack-backend` | Custom (PHP 8.2-FPM) | 9000 (interne) |
-| Frontend | `growtrack-frontend` | Custom (Nginx) | **80** (exposé) |
-| Système IA | `growtrack-ai` | Custom (Python 3.12) | 8001 (interne) |
+| Gateway Nginx | `scrumflow-nginx` | Custom (`frontend/nginx/`) | **8080** dev / **80** prod (exposé) |
+| Base de données | `scrumflow-db` | `postgres:15-alpine` | 5432 (exposé en dev) |
+| Backend | `scrumflow-backend` | Custom (PHP 8.2-FPM) | 9000 (interne) / 8000 en dev |
+| Frontend | `scrumflow-frontend` | Custom (Nginx) | 80 (interne) / 5173 en dev |
+| Système IA | `scrumflow-ai` | Custom (Python 3.12) | 8001 (interne) |
 
 ### Commandes Docker Utiles
 
@@ -951,10 +982,111 @@ docker-compose up --build -d
 
 ### Réseau
 
-Tous les services communiquent sur le réseau bridge Docker `growtrack-network`. Le conteneur Nginx sert de point d'entrée unique (port 80), routant les requêtes vers :
-- `/` → Fichiers statiques de la SPA React
-- `/api/*` → Laravel (FastCGI vers backend:9000)
-- `/ai/*` → FastAPI (proxy HTTP vers ai-system:8001)
+Tous les services communiquent sur le réseau bridge Docker `scrumflow-network`. Le conteneur `scrumflow-nginx` sert de point d'entrée unique et route les requêtes selon `frontend/nginx/default.conf` (prod) :
+- `/` → conteneur frontend (fichiers statiques de la SPA React, `frontend:80`)
+- `/api/*` → Laravel (FastCGI vers `backend:9000`)
+- `/ai/*` → FastAPI (proxy HTTP vers `ai-system:8001`)
+
+En développement, `frontend/nginx/dev.conf` route vers le serveur Vite (`frontend:5173`, avec WebSocket pour le hot reload) et vers `php artisan serve` (`backend:8000`).
+
+---
+
+## ☁️ Déploiement AWS (Terraform + CI/CD)
+
+La production tourne sur une instance **EC2** unique qui exécute `docker-compose.prod.yml` avec les images publiées sur **Docker Hub**. L'infrastructure est décrite avec **Terraform** dans `terraform/`, et le déploiement est automatisé par **GitHub Actions**.
+
+```
+ push sur main ──► CI (ci.yml) ──► CD (cd.yml)
+                                    │
+                                    ├─ 1. Build & push des 4 images vers Docker Hub
+                                    │      <utilisateur>/scrumflow-{nginx,backend,frontend,ai}
+                                    │      tags : SHA du commit + latest
+                                    │
+                                    └─ 2. SSM send-command vers l'EC2
+                                            │
+                                            ▼
+                               /opt/scrumflow/deploy.sh (terraform/deploy/deploy.sh)
+                                 ├─ récupère les .env depuis SSM Parameter Store
+                                 ├─ docker compose pull (depuis Docker Hub) && up -d
+                                 ├─ php artisan migrate --force
+                                 └─ nettoyage des anciennes images
+```
+
+### Ressources créées par Terraform
+
+| Fichier | Ressources |
+|---------|------------|
+| `main.tf` | Instance EC2 Ubuntu (`t3.small` par défaut), Elastic IP, Security Group (ports 80/443, 22 optionnel), rôle IAM de l'instance (SSM + lecture des paramètres) |
+| `env.tf` | Paramètres SSM chiffrés (`SecureString`) créés à partir des fichiers `terraform/env/*.env` + token Docker Hub optionnel |
+| `github_oidc.tf` | Fournisseur OIDC GitHub + rôle IAM assumé par GitHub Actions pour lancer le déploiement (**aucune clé AWS stockée dans GitHub**) |
+| `user_data.sh` | Installation de Docker, du plugin Compose, de l'AWS CLI et d'un swap de 2 Go au premier démarrage |
+
+### Étape 1 : Préparer les fichiers .env de production
+
+Les variables d'environnement de l'EC2 sont placées dans `terraform/env/` (dossier ignoré par Git, seuls les `*.example` sont versionnés) :
+
+```bash
+cd terraform
+cp env/root.env.example     env/root.env       # DB_DATABASE, DB_USERNAME, DB_PASSWORD
+cp env/backend.env.example  env/backend.env    # configuration Laravel de production (APP_KEY, APP_URL…)
+cp env/frontend.env.example env/frontend.env   # optionnel
+```
+
+| Fichier local | Paramètre SSM | Fichier créé sur l'EC2 | Obligatoire |
+|---------------|---------------|------------------------|:-----------:|
+| `terraform/env/root.env` | `/scrumflow/prod/root.env` | `/opt/scrumflow/.env` | ✅ |
+| `terraform/env/backend.env` | `/scrumflow/prod/backend.env` | `/opt/scrumflow/backend.env` | ✅ |
+| `terraform/env/frontend.env` | `/scrumflow/prod/frontend.env` | `/opt/scrumflow/frontend.env` | ❌ |
+
+> ⚠️ Les valeurs sont aussi enregistrées dans le state Terraform (`terraform.tfstate`) : ne le partagez pas et ne le commitez pas.
+
+### Étape 2 : Créer l'infrastructure
+
+```bash
+cd terraform
+cp terraform.tfvars.example terraform.tfvars   # puis adaptez les valeurs
+terraform init
+terraform apply
+```
+
+`terraform apply` crée l'EC2 **et** envoie les fichiers `.env` dans SSM Parameter Store. Après une modification d'un `.env`, relancez `terraform apply` puis un déploiement.
+
+> ⚠️ Si un fournisseur OIDC GitHub existe déjà dans le compte AWS, mettez `create_github_oidc_provider = false`.
+>
+> 🔒 Si vos dépôts Docker Hub sont **privés**, ajoutez `dockerhub_token = "dckr_pat_..."` (token en lecture seule) dans `terraform.tfvars` pour que l'EC2 puisse se connecter à Docker Hub.
+
+### Étape 3 : Configurer GitHub
+
+Dans **Settings → Secrets and variables → Actions** :
+
+| Type | Nom | Valeur |
+|------|-----|--------|
+| Secret | `DOCKERHUB_USERNAME` | Votre nom d'utilisateur Docker Hub (ex. `jaouad3243`) |
+| Secret | `DOCKERHUB_TOKEN` | Token d'accès Docker Hub (*Account Settings → Personal access tokens*, droits **Read & Write**) |
+| Variable | `AWS_REGION` | output `aws_region` |
+| Variable | `AWS_ROLE_ARN` | output `github_actions_role_arn` |
+| Variable | `EC2_INSTANCE_ID` | output `instance_id` |
+
+Créez aussi un **environment** GitHub nommé `production`.
+
+### Étape 4 : Déployer
+
+- **Automatique** : chaque push sur `main` lance la CI ; si elle réussit, le workflow CD construit les images, les pousse sur Docker Hub puis exécute `terraform/deploy/deploy.sh` sur l'EC2 via SSM.
+- **Manuel** : onglet **Actions → CD → Run workflow**.
+
+L'application est ensuite accessible sur `http://<public_ip>` (output `app_url`).
+
+### Accès au serveur
+
+```bash
+# Shell sur l'instance sans SSH (commande donnée par l'output ssm_session_command)
+aws ssm start-session --target <instance_id> --region <aws_region>
+
+# Sur le serveur
+cd /opt/scrumflow
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs -f backend
+```
 
 ---
 
@@ -1047,6 +1179,22 @@ VITE_API_URL=http://localhost:8000/api
 
 ### Système IA
 Le système IA nécessite une **clé API Google Gemini**, qui est transmise par requête depuis le frontend (non stockée sur le serveur).
+
+### Production (EC2)
+
+En production, les fichiers `.env` ne sont **jamais** copiés à la main sur le serveur ni commités :
+
+1. Ils sont écrits dans `terraform/env/` (`root.env`, `backend.env`, `frontend.env`) à partir des fichiers `*.example`.
+2. `terraform apply` les envoie chiffrés dans **SSM Parameter Store** sous `/scrumflow/prod/`.
+3. À chaque déploiement, `terraform/deploy/deploy.sh` les télécharge dans `/opt/scrumflow/` sur l'EC2.
+
+| Fichier | Contenu |
+|---------|---------|
+| `root.env` | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` (partagés par PostgreSQL et Laravel) |
+| `backend.env` | Configuration Laravel de production (`APP_KEY`, `APP_URL`, `APP_ENV=production`, mail…) |
+| `frontend.env` | Optionnel (les variables `VITE_*` sont intégrées au moment du build) |
+
+Voir [Déploiement AWS](#-déploiement-aws-terraform--cicd) pour le détail.
 
 ---
 

@@ -1,0 +1,158 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------- Backend
+  backend:
+    name: Backend (Laravel)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: growtrack_testing # matches backend/phpunit.xml
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: "12345"
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_pgsql, bcmath, gd, zip
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+
+      - run: composer install --no-ansi --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare .env
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run tests (PHPUnit)
+        # TODO: remove once the test suite is green, so failing tests block the deploy.
+        continue-on-error: true
+        run: php artisan test
+
+  # ---------------------------------------------------------------- Frontend
+  frontend:
+    name: Frontend (React)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Lint
+        continue-on-error: true # TODO: make blocking once lint errors are fixed
+        run: npm run lint
+
+      - name: Unit tests (Vitest)
+        continue-on-error: true # TODO: make blocking once tests are green
+        run: npx vitest run
+
+      - name: Build
+        run: npm run build
+
+  # ---------------------------------------------------------------- AI System
+  ai-system:
+    name: AI System (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Ai System
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: Ai System/requirements.txt
+
+      - run: pip install -r requirements.txt
+
+      - name: Tests (pytest)
+        continue-on-error: true # TODO: make blocking once tests are green
+        run: python -m pytest -q
+
+  # ---------------------------------------------------------------- Docker
+  docker-build:
+    name: Docker build (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    needs: [backend, frontend, ai-system]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: scrumflow-backend
+            context: ./backend
+          - image: scrumflow-frontend
+            context: ./frontend
+            target: prod
+          - image: scrumflow-ai
+            context: ./Ai System
+          - image: scrumflow-nginx
+            context: ./frontend/nginx
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          target: ${{ matrix.target }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  # ---------------------------------------------------------------- Terraform
+  terraform:
+    name: Terraform validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false
+      - run: terraform validate

@@ -30,6 +30,22 @@ const cascadeItem = {
     show: { opacity: 1, y: 0 }
 };
 
+const getLevelBadge = (level) => {
+    const l = (level || '').toLowerCase();
+    
+    if (l.includes('intern') || l.includes('junior')) return { emoji: '🔵', text: level, color: 'bg-blue-50 text-blue-700 border-blue-200' };
+    if (l.includes('mid-level') || l === 'project manager') return { emoji: '🟡', text: level, color: 'bg-yellow-50 text-yellow-700 border-yellow-200' };
+    if (l.includes('senior')) return { emoji: '🔴', text: level, color: 'bg-red-50 text-red-700 border-red-200' };
+    if (l.includes('staff')) return { emoji: '⚫', text: level, color: 'bg-neutral-800 text-white border-neutral-700' };
+    if (l.includes('lead') || l.includes('program manager')) return { emoji: '🧭', text: level, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+    if (l.includes('architect') && !l.includes('cloud')) return { emoji: '🏛️', text: level, color: 'bg-indigo-50 text-indigo-700 border-indigo-200' };
+    if (l.includes('design principal') || l.includes('portfolio manager')) return { emoji: '🏛️', text: level, color: 'bg-indigo-50 text-indigo-700 border-indigo-200' };
+    if (l.includes('cloud')) return { emoji: '☁️', text: level, color: 'bg-sky-50 text-sky-700 border-sky-200' };
+    if (l.includes('sre')) return { emoji: '⚙️', text: level, color: 'bg-zinc-100 text-zinc-700 border-zinc-300' };
+
+    return { emoji: '🔵', text: level || 'Standard', color: 'bg-neutral-50 text-neutral-500 border-neutral-100' };
+};
+
 const InternalResourcePool = ({ onSync }) => {
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -195,9 +211,18 @@ const InternalResourcePool = ({ onSync }) => {
                                                 <span className="text-[11px] font-black text-neutral-700 uppercase tracking-tight">{spec}</span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="inline-flex px-3 py-1 rounded-full bg-white/60 border border-white/40 text-[8px] font-black text-neutral-500 uppercase tracking-[0.2em] shadow-sm">
-                                                    {emp.specialization?.level || 'Standard'}
-                                                </span>
+                                                {(() => {
+                                                    const badge = getLevelBadge(emp.specialization?.level);
+                                                    return (
+                                                        <span className={cn(
+                                                            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-[0.1em] shadow-sm",
+                                                            badge.color
+                                                        )}>
+                                                            <span className="text-[10px]">{badge.emoji}</span>
+                                                            <span>{badge.text}</span>
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-2 text-neutral-900 font-black text-sm">

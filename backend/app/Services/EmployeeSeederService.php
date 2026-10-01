@@ -13,30 +13,34 @@ class EmployeeSeederService
      */
     public static function seedForUser(User $user): void
     {
-        $employees = [
-            ['Ahmed', 'Aelhail', 'ahmed@projet.com', 'Frontend Developer', 'Junior'],
-            ['Emily', 'Wilson', 'emily.w@growtrack.com', 'UI/UX Designer', 'Senior'],
-            ['Marcus', 'Chen', 'marcus.c@growtrack.com', 'Fullstack Developer', 'Software Architect'],
-            ['Sarah', 'Johnson', 'sarah.j@growtrack.com', 'Backend Developer', 'Mid-level'],
-            ['David', 'Smith', 'david.s@growtrack.com', 'DevOps Engineer', 'Senior'],
-            ['Jessica', 'Davis', 'jessica.d@growtrack.com', 'Project Manager', 'Senior PM'],
-            ['Michael', 'Brown', 'michael.b@growtrack.com', 'QA Engineer', 'Junior'],
-            ['Lucas', 'Miller', 'lucas.m@growtrack.com', 'Fullstack Developer', 'Senior'],
-            ['Sophia', 'Taylor', 'sophia.t@growtrack.com', 'UI/UX Designer', 'Junior'],
-            ['Daniel', 'Anderson', 'daniel.a@growtrack.com', 'Backend Developer', 'Senior'],
+        $specializations = Specialization::all();
+
+        $moroccanFirstNames = [
+            'Amine', 'Mehdi', 'Youssef', 'Hamza', 'Omar', 'Karim', 'Hassan', 'Othmane', 'Ilyas', 'Ayoub', 'Yassine', 'Walid', 'Zakaria', 'Badr', 'Soufiane',
+            'Sara', 'Fatima', 'Salma', 'Kenza', 'Meriem', 'Houda', 'Zineb', 'Nada', 'Meryem', 'Kawtar', 'Leila', 'Imane', 'Ghita', 'Asmaa', 'Rim'
+        ];
+        
+        $moroccanLastNames = [
+            'El Fassi', 'Benjelloun', 'Berrada', 'Tazi', 'Chraibi', 'Guessous', 'Benkirane', 'Tahiri', 'Alaoui', 'Amrani', 'Lahlou', 'Boujida', 'Naciri', 'Idrissi', 'Ouazzani',
+            'Benali', 'Rhomari', 'Bekkari', 'Fettah', 'Bennis'
         ];
 
-        foreach ($employees as $emp) {
-            $specialization = Specialization::where('name', $emp[3])
-                ->where('level', $emp[4])
-                ->first();
+        foreach ($specializations as $specialization) {
+            $employeeCount = Employee::where('user_id', $user->id)
+                ->where('specialization_id', $specialization->id)
+                ->count();
 
-            if ($specialization) {
+            if ($employeeCount === 0) {
+                $firstName = $moroccanFirstNames[array_rand($moroccanFirstNames)];
+                $lastName = $moroccanLastNames[array_rand($moroccanLastNames)];
+                
+                $emailPrefix = strtolower(str_replace(' ', '', $firstName . '.' . $lastName));
+                
                 Employee::create([
                     'user_id' => $user->id,
-                    'first_name' => $emp[0],
-                    'last_name' => $emp[1],
-                    'email' => $emp[2],
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'email' => $emailPrefix . '@growtrack.com',
                     'specialization_id' => $specialization->id,
                     'is_engaged' => false,
                 ]);

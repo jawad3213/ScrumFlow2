@@ -14,68 +14,64 @@ class SpecializationSeeder extends Seeder
     {
         // 1. Define the roles and their specific levels
         $roles = [
-            'Frontend Developer' => ['Intern', 'Junior', 'Mid-level', 'Senior', 'Staff Engineer'],
+            'Frontend Developer' => ['Intern', 'Junior', 'Mid-level', 'Senior'],
             'Backend Developer'  => ['Intern', 'Junior', 'Mid-level', 'Senior', 'Staff Engineer', 'Software Architect'],
-            'Fullstack Developer'=> ['Intern', 'Junior', 'Mid-level', 'Senior', 'Tech Lead', 'Software Architect'],
+            'Fullstack Developer'=> ['Intern', 'Junior', 'Mid-level', 'Senior', 'Tech Lead'],
             'UI/UX Designer'     => ['Junior', 'Mid-level', 'Senior', 'Lead Designer', 'Design Principal'],
             'DevOps Engineer'    => ['Junior', 'Mid-level', 'Senior', 'SRE', 'Cloud Architect'],
             'Project Manager'    => ['Junior PM', 'Project Manager', 'Senior PM', 'Program Manager', 'Portfolio Manager'],
-            'QA Engineer'        => ['Intern', 'Junior', 'Mid-level', 'Senior', 'Staff Engineer', 'Software Architect'],
+            'QA Engineer'        => ['Junior', 'Mid-level', 'Senior', 'QA Lead'],
         ];
 
         // 2. Define salary mapping (mid-range values in MAD/month)
         $salaryMap = [
             // Frontend Developer
-            'Frontend Developer|Intern' => 1000,
-            'Frontend Developer|Junior' => 8500,
-            'Frontend Developer|Mid-level' => 15000,
-            'Frontend Developer|Senior' => 27500,
-            'Frontend Developer|Staff Engineer' => 42500,
+            'Frontend Developer|Intern' => 3000,
+            'Frontend Developer|Junior' => 7000,
+            'Frontend Developer|Mid-level' => 14000,
+            'Frontend Developer|Senior' => 20000,
             
             // Backend Developer
-            'Backend Developer|Intern' => 1250,
-            'Backend Developer|Junior' => 9500,
-            'Backend Developer|Mid-level' => 16000,
-            'Backend Developer|Senior' => 30000,
-            'Backend Developer|Staff Engineer' => 46500,
-            'Backend Developer|Software Architect' => 61500,
+            'Backend Developer|Intern' => 3000,
+            'Backend Developer|Junior' => 7000,
+            'Backend Developer|Mid-level' => 14000,
+            'Backend Developer|Senior' => 25000,
+            'Backend Developer|Staff Engineer' => 34000,
+            'Backend Developer|Software Architect' => 42500,
             
             // Fullstack Developer
-            'Fullstack Developer|Intern' => 1500,
-            'Fullstack Developer|Junior' => 10500,
-            'Fullstack Developer|Mid-level' => 17000,
-            'Fullstack Developer|Senior' => 31000,
-            'Fullstack Developer|Tech Lead' => 45000,
-            'Fullstack Developer|Software Architect' => 60000,
+            'Fullstack Developer|Intern' => 3000,
+            'Fullstack Developer|Junior' => 7000,
+            'Fullstack Developer|Mid-level' => 14000,
+            'Fullstack Developer|Senior' => 26000,
+            'Fullstack Developer|Tech Lead' => 37500,
             
             // UI/UX Designer
-            'UI/UX Designer|Junior' => 9000,
-            'UI/UX Designer|Mid-level' => 14500,
-            'UI/UX Designer|Senior' => 23000,
-            'UI/UX Designer|Lead Designer' => 37500,
-            'UI/UX Designer|Design Principal' => 52500,
+            'UI/UX Designer|Junior' => 5500,
+            'UI/UX Designer|Mid-level' => 11000,
+            'UI/UX Designer|Senior' => 20000,
+            'UI/UX Designer|Lead Designer' => 28500,
+            'UI/UX Designer|Design Principal' => 37500,
             
             // DevOps Engineer
-            'DevOps Engineer|Junior' => 11500,
-            'DevOps Engineer|Mid-level' => 19500,
-            'DevOps Engineer|Senior' => 35500,
-            'DevOps Engineer|SRE' => 38000,
-            'DevOps Engineer|Cloud Architect' => 47500,
+            'DevOps Engineer|Junior' => 8000,
+            'DevOps Engineer|Mid-level' => 16000,
+            'DevOps Engineer|Senior' => 28500,
+            'DevOps Engineer|SRE' => 32500,
+            'DevOps Engineer|Cloud Architect' => 45000,
             
             // Project Manager
-            'Project Manager|Junior PM' => 10500,
-            'Project Manager|Project Manager' => 18000,
-            'Project Manager|Senior PM' => 35000,
-            'Project Manager|Program Manager' => 45000,
-            'Project Manager|Portfolio Manager' => 57500,
+            'Project Manager|Junior PM' => 7000,
+            'Project Manager|Project Manager' => 14000,
+            'Project Manager|Senior PM' => 23000,
+            'Project Manager|Program Manager' => 32500,
+            'Project Manager|Portfolio Manager' => 45000,
             
             // QA Engineer
-            'QA Engineer|Intern' => 2000,
-            'QA Engineer|Junior' => 10500,
-            'QA Engineer|Mid-level' => 17500,
-            'QA Engineer|Senior' => 30500,
-            'QA Engineer|Staff Engineer' => 46500,
-            'QA Engineer|Software Architect' => 57500,
+            'QA Engineer|Junior' => 5500,
+            'QA Engineer|Mid-level' => 11000,
+            'QA Engineer|Senior' => 18000,
+            'QA Engineer|QA Lead' => 26000,
         ];
 
         foreach ($roles as $role => $levels) {
@@ -83,7 +79,7 @@ class SpecializationSeeder extends Seeder
                 $key = $role . '|' . $level;
                 $baseSalary = $salaryMap[$key] ?? 10000;
                 
-                Specialization::firstOrCreate(
+                Specialization::updateOrCreate(
                     ['name' => $role, 'level' => $level],
                     ['salary' => $baseSalary]
                 );
