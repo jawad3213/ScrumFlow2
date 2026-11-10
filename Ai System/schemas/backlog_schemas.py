@@ -15,7 +15,7 @@ class Task(BaseModel):
         description=(
             "Guide d'implémentation technique détaillé pour le développeur assigné. "
             "Doit inclure : "
-            "1. La stack technologique recommandée (ex: React, Laravel, AWS). "
+            "1. La stack technologique recommandée (ex: React, Spring Boot, Java, Terraform, AWS). "
             "2. Les étapes clés du développement (pseudocode ou logique). "
             "3. Les bonnes pratiques de sécurité ou de performance à respecter. "
             "4. Le ton doit être impératif et direct."

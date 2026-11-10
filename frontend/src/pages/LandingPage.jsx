@@ -1170,7 +1170,7 @@ const LandingPage = () => {
                                 {[
                                     {
                                         role: 'Développeur Fullstack',
-                                        specialization: 'React / Laravel',
+                                        specialization: 'React / Spring Boot',
                                         level: 'Senior',
                                         levelColor: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
                                         salary: '18 000',

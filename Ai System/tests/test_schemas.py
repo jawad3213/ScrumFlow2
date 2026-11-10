@@ -91,13 +91,13 @@ def test_stack_choice_schema():
             "synergy_explanation": "Next.js fits everything"
         },
         "alternative_recommendation": {
-            "strategy_name": "Laravel",
+            "strategy_name": "Spring Boot",
             "frontend": [],
             "backend": [],
             "database": [],
             "devops_infrastructure": [],
             "architecture_pattern": "Monolith",
-            "synergy_explanation": "Laravel is solid"
+            "synergy_explanation": "Spring Boot is solid"
         },
         "risk_assessment": ["Small team"],
         "junior_developer_tips": ["Start slow"]

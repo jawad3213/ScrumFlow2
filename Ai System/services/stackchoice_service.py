@@ -31,8 +31,8 @@ When filling out the JSON schema, adhere to these principles:
 
 1.  **The "Primary Recommendation" (The Sweet Spot):**
     * Choose the stack that balances *speed of development* with *future scalability*.
-    * Prioritize technologies with excellent documentation and large ecosystems (e.g., if Python is needed for AI, suggest FastAPI/Django; if it's a standard web app, consider Next.js/Laravel based on the problem fit).
-    * **Synergy is key:** Explain *why* the frontend plays nicely with the backend (e.g., "T3 Stack" or "Inertia.js with Laravel").
+    * Prioritize technologies with excellent documentation and large ecosystems (e.g., if Python is needed for AI, suggest FastAPI/Django; if it's an enterprise or robust web app, consider React/Spring Boot (Java) or Next.js based on the problem fit).
+    * **Synergy is key:** Explain *why* the frontend plays nicely with the backend (e.g., "React with Spring Boot REST API", "T3 Stack").
 
 2.  **The "Alternative Recommendation" (The Contrast):**
     * If the Primary is "Speed," make the Alternative "Performance/Scale" (e.g., Rust/Go).

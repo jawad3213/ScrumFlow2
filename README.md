@@ -11,6 +11,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/React-19.2-blue?logo=react" alt="React">
   <img src="https://img.shields.io/badge/Spring_Boot-4.1-green?logo=springboot" alt="Spring Boot">
+  <img src="https://img.shields.io/badge/Java-21-orange?logo=openjdk" alt="Java 21">
   <img src="https://img.shields.io/badge/Python-3.12-green?logo=python" alt="Python">
   <img src="https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql" alt="PostgreSQL">
   <img src="https://img.shields.io/badge/Docker-Compose-blue?logo=docker" alt="Docker">
@@ -25,7 +26,8 @@
 
 - [Aperçu](#-aperçu)
 - [Fonctionnalités Clés](#-fonctionnalités-clés)
-- [Architecture](#-architecture)
+- [Architecture Système](#-architecture-système)
+- [Architecture Backend Spring Boot & Ce qui a changé](#-architecture-backend-spring-boot--ce-qui-a-changé)
 - [Stack Technologique](#-stack-technologique)
 - [Structure du Projet](#-structure-du-projet)
 - [Schéma de Base de Données](#-schéma-de-base-de-données)
@@ -196,41 +198,180 @@ Un visualiseur interactif de backlog Agile présenté sous forme de wizard navig
 
 ---
 
-## 🏛️ Architecture
+## 🏛️ Architecture Système
 
-GrowTrack suit une **architecture inspirée des microservices** avec trois services distincts orchestrés via Docker Compose :
+GrowTrack suit une **architecture conteneurisée inspirée des microservices**, articulée autour de 5 conteneurs orchestrés avec Docker Compose et supervisés en production :
 
 ```
-┌───────────────────────────────────────────────────────────────┐
-│                        NGINX (Port 80)                        │
-│                    Reverse Proxy & Fichiers Statiques          │
-├────────────┬─────────────────────────┬────────────────────────┤
-│   /  (SPA) │    /api/* (API REST)    │    /ai/* (Moteur IA)   │
-│            │                         │                        │
-│  React App │   Backend Spring Boot   │   FastAPI (Python)     │
-│  (Statique)│   (Java 21, HTTP:8000)  │   (Uvicorn:8001)      │
-│            │                         │                        │
-│  Vite      │   Spring Security       │   Google Gemini API    │
-│ TailwindCSS│   PostgreSQL 15         │   Schémas Pydantic     │
-│  React 19  │   JPA / Hibernate       │   PyMuPDF (Parse PDF)  │
-└────────────┴──────────┬──────────────┴────────────────────────┘
-                        │
-                 ┌──────┴──────┐
-                 │ PostgreSQL  │
-                 │   15-Alpine │
-                 │  (Port 5432)│
-                 └─────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   NGINX (Port 80 prod / 8080 dev)                      │
+│                           Reverse Proxy & Fichiers Statiques (Gateway)                 │
+├────────────────────┬─────────────────────────────────┬─────────────────────────────────┤
+│     /  (SPA)       │        /api/* & /storage/*      │        /ai/* (Moteur IA)        │
+│                    │                                 │                                 │
+│    Frontend React  │       Backend Spring Boot       │       FastAPI (Python 3.12)     │
+│    (Nginx / Vite)  │      (Java 21, HTTP:8000)       │          (Uvicorn:8001)         │
+│                    │                                 │                                 │
+│   • Vite / React 19│   • Spring Security 7 (JWT)     │   • Google Gemini 2.5 Flash     │
+│   • TailwindCSS 4  │   • Spring Data JPA / Hibernate │   • Pydantic + Instructor       │
+│   • TanStack Query │   • HikariCP Pool               │   • PyMuPDF (Extraction PDF)    │
+│                    │   • Actuator (:8081 interne)    │                                 │
+└────────────────────┴────────────────┬────────────────┴─────────────────────────────────┘
+                                      │
+                       ┌──────────────┴──────────────┐
+                       │     PostgreSQL 15-Alpine    │
+                       │     (Port 5432 persistant)  │
+                       │    Migrations Flyway V1/V2  │
+                       └──────────────┬──────────────┘
+                                      │ Métriques & Santé (:8081)
+                       ┌──────────────┴──────────────┐
+                       │    Supervision & Métriques  │
+                       │    Prometheus (Scrape 8081) │
+                       │    Grafana (Dashboard dédié)│
+                       └─────────────────────────────┘
 ```
 
 ### Communication entre Services
 
-| Service | Port Interne | Protocole | Rôle |
-|---------|:------------:|-----------|------|
-| **Gateway Nginx** | `80` | HTTP | Point d'entrée unique : route `/`, `/api` et `/ai` (config dans `frontend/nginx/`) |
-| **Frontend (Nginx)** | `80` | HTTP | Sert les fichiers statiques de la SPA React |
-| **Backend (Spring Boot)** | `8000` | HTTP | Traite les requêtes API REST (`/api`) et sert les fichiers uploadés (`/storage`) |
-| **Système IA (Uvicorn)** | `8001` | HTTP | Gère les requêtes d'analyse IA via proxy |
-| **Base de Données (PostgreSQL)** | `5432` | TCP | Stockage persistant des données |
+| Service | Port Interne | Protocole | Rôle & Visibilité |
+|---------|:------------:|:---------:|-------------------|
+| **Gateway Nginx** | `80` (prod) / `8080` (dev) | HTTP | Point d'entrée unique : reverse proxy vers frontend, backend, IA et Grafana (`/grafana/`) |
+| **Frontend (Nginx)** | `80` (prod) / `5173` (dev) | HTTP | Sert les fichiers statiques de la SPA React 19 (ou dev server Vite avec HMR) |
+| **Backend (Spring Boot)** | `8000` | HTTP | Traite les requêtes API REST (`/api/*`) et sert les avatars (`/storage/*`) |
+| **Backend Actuator (Spring)** | `8081` | HTTP | Métriques Prometheus (`/actuator/prometheus`) et santé (`/actuator/health`), réseau Docker uniquement |
+| **Système IA (Uvicorn)** | `8001` | HTTP | Microservice Python FastAPI pour les pipelines d'analyse LLM Gemini |
+| **Base de Données (PostgreSQL)** | `5432` | TCP | Persistance des données relationnelles, schéma versionné par Flyway |
+| **Prometheus** | `9090` | HTTP | Collecteur de métriques temps réel (JVM, HikariCP, latences HTTP, OS) |
+| **Grafana** | `3000` | HTTP | Visualisation unifiée via le dashboard *ScrumFlow Platform* routé sous `/grafana/` |
+
+---
+
+## ☕ Architecture Backend Spring Boot & Ce qui a changé
+
+Le backend de GrowTrack (ScrumFlow) a fait l'objet d'une **refonte architecturale majeure**, passant d'une pile monolithique **PHP / Laravel** à une architecture d'entreprise moderne propulsée par **Java 21**, **Spring Boot 4.1**, **Spring Security 7**, **Spring Data JPA (Hibernate 7)** et **Flyway 12**.
+
+### 🎯 Pourquoi cette Refonte ?
+
+1. **Performances & Gestion de la Concurrence** : Remplacement de l'exécution séquentielle par processus PHP-FPM par le modèle multi-threadé natif de la JVM Java 21, offrant un débit considérablement supérieur et une latence réduite lors des pics de charge.
+2. **Typage Fort & Fiabilité à la Compilation** : Élimination des erreurs à l'exécution courantes dans le monde PHP grâce au typage statique de Java, à la validation déclarative (`jakarta.validation`), et aux entités JPA rigoureusement structurées.
+3. **Observabilité Native de Classe Entreprise** : Intégration de Spring Boot Actuator et Micrometer exportant en direct les métriques JVM, HikariCP et percentiles de latence vers Prometheus et Grafana.
+4. **Standardisation & Sécurité Renforcée** : Chaîne de filtres Spring Security 7 centralisée, validation cryptographique des jetons Firebase Google OAuth via `spring-security-oauth2-jose`, et tokens JWT courts avec cookies sécurisés HttpOnly.
+5. **Gestion Déclarative du Schéma BDD** : Abandon des migrations procédurales Laravel au profit de scripts SQL versionnés et déterministes pilotés par **Flyway**.
+
+---
+
+### 🔄 Matrice Comparative : Ancien Backend (Laravel) vs Nouveau Backend (Spring Boot)
+
+Ce tableau synthétise l'ensemble des transformations techniques apportées au backend :
+
+| Domaine | Ancien Backend (Laravel / PHP) | Nouveau Backend (Spring Boot 4 / Java 21) | Ce qui a changé & Bénéfices |
+|---|---|---|---|
+| **Langage & Runtime** | PHP 8.x (Interprété, processus FPM) | **Java 21 LTS** (Compilé, JVM, JIT compiler C2) | Exécution binaire optimisée, faible consommation par requête sous forte charge. |
+| **Framework Principal** | Laravel 11.x | **Spring Boot 4.1** (Spring Web MVC) | Architecture d'entreprise, composants découplés par injection de dépendances. |
+| **Modèle de Concurrence** | 1 processus FPM = 1 requête bloquante | **Pool de Threads JVM** géré de manière asynchrone | Concurrence native, gestion efficace de centaines de requêtes simultanées. |
+| **Accès aux Données (ORM)** | Eloquent ORM (Active Record, typage dynamique) | **Spring Data JPA & Hibernate 7** (Data Mapper) | Découplage strict entre entités métier et requêtes SQL, requêtes typées et sécurisées. |
+| **Pool de Connexions BDD** | Reconnexion TCP fréquente via PHP-FPM | **HikariCP** (Pool persistant ultra-performant) | Connexions BDD pré-allouées et réutilisées, élimination de la latence de handshake. |
+| **Évolution du Schéma BDD** | Migrations Laravel PHP (`2024_*.php`, 20 fichiers) | **Flyway 12** (`V1__...sql`, `V2__...sql`) | Schéma SQL pur versionné, migrations idempotentes, zéro dépendance applicative. |
+| **Sécurité & Filtrage** | Middlewares Laravel & sessions PHP | **Spring Security 7 (`SecurityFilterChain`)** | Chaîne de sécurité déclarative et centralisée protégeant chaque point d'entrée REST. |
+| **Authentification & Sessions** | Laravel Sanctum | **Double Token Stateless** (JWT HS256 + Refresh Cookie) | Token d'accès en mémoire JS (15 min) + Refresh token HttpOnly, résistant aux attaques XSS. |
+| **Authentification Google** | Vérification manuelle côté contrôleur | **`spring-security-oauth2-jose`** (Firebase JWKS) | Validation cryptographique standardisée des clés publiques Firebase/Google. |
+| **Hachage des Mots de Passe** | BCrypt `$2y$` (coût 12) | **BCryptPasswordEncoder** Spring Security (`$2y$`, coût 12) | **100% rétrocompatible** : les utilisateurs de l'ancien système se connectent sans friction. |
+| **Initialisation & Seeding** | `php artisan db:seed` (DatabaseSeeder PHP) | **DatabaseSeeder Spring** basé sur JSON (`seed/*.json`) | Seeding déterministe activable via variables d'environnement (`SEED_DATABASE=true`). |
+| **Gestion des Erreurs** | Exceptions Handler Laravel (`render()`) | **`@RestControllerAdvice`** (`GlobalExceptionHandler`) | Réponses d'erreur JSON uniformes respectant exactement les codes HTTP et formats attendus. |
+| **Supervision & Santé** | Nécessitait des packages tiers complexes | **Spring Boot Actuator + Micrometer** (:8081) | Endpoints `/actuator/health` et `/actuator/prometheus` natifs avec métriques p50/p95/p99. |
+| **Tests Automatisés** | PHPUnit / Pest | **JUnit 5 + AssertJ + Spring Boot Test** | Tests d'intégration exécutés sur une vraie base PostgreSQL (`growtrack_testing`). |
+| **Build & Conteneurisation** | Image Nginx + PHP-FPM multi-processus | **Multi-stage Dockerfile** (Maven Build → JRE 21 Temurin) | Conteneur unique, allégé, sans composant serveur web intermédiaire dans le conteneur. |
+
+---
+
+### 🛡️ Garantie de Zéro Rupture (Zero Breaking Changes)
+
+Bien que l'architecture interne ait été réécrite de fond en comble, **aucune rupture n'a été introduite** pour le reste de l'écosystème :
+
+1. **Contrat d'API REST 100% Préservé** :
+   - Tous les endpoints `/api/**` (authentification, projets, employés, spécialisations, profil, assignations) conservent les mêmes routes, méthodes HTTP, paramètres et formats JSON de réponse.
+   - Le frontend React 19 communique avec le backend sans la moindre modification de code.
+2. **Transition de Base de Données sans Perte** :
+   - La migration Flyway `V1__baseline_laravel_schema.sql` reproduit fidèlement la structure de tables héritée de Laravel (`users`, `employees`, `projects`, `project_epics`, `project_stories`, etc.).
+   - Avec l'option `baseline-on-migrate: true`, Flyway adopte une base PostgreSQL existante sans toucher aux données déjà présentes.
+   - Les tables résiduelles de Laravel (`migrations`, `sessions`, `cache`) restent inoffensives et le schéma continue d'évoluer via `V2__...sql`.
+3. **Pérennité des Comptes & Sessions** :
+   - Les mots de passe stockés au format BCrypt `$2y$` sont reconnus et validés directement par Spring Security.
+   - La table `personal_access_tokens` est conservée pour garantir la continuité des sessions actives.
+
+---
+
+### 🏗️ Architecture Interne en Couches (Clean Layered Architecture)
+
+Le code Java de `backend/src/main/java/com/scrumflow/backend/` est découpé selon les règles de l'architecture hexagonale / en couches :
+
+```
+com.scrumflow.backend/
+│
+├── 🌐 web/                  # Couche Présentation REST
+│   ├── AuthController.java            # Connexion, Inscription, Refresh, Logout, OAuth Google
+│   ├── ProjectController.java         # CRUD projets, blueprint IA, export architecture
+│   ├── EmployeeController.java        # CRUD employés du chef de projet, suppressions en masse
+│   ├── SpecializationController.java  # Gestion du catalogue des compétences
+│   ├── ProfileController.java         # Gestion compte, changement mot de passe, avatar
+│   ├── ProjectTeamController.java     # Assignation & désassignation d'ingénieurs
+│   └── GlobalExceptionHandler.java    # Traduction unifiée des exceptions en JSON (401, 404, 422, 500)
+│
+├── 🔒 security/             # Couche Sécurité & Jetons
+│   ├── BearerTokenAuthenticationFilter.java  # Extraction et validation des tokens JWT Bearer
+│   ├── JwtService.java                       # Signature et vérification HMAC-SHA256
+│   ├── RefreshTokenService.java              # Rotation sécurisée du cookie HttpOnly
+│   └── FirebaseAuthenticationProvider.java   # Validation des JWT ID Google/Firebase
+│
+├── ⚙️ config/               # Configuration Spring & Sécurité
+│   ├── SecurityConfig.java            # Filtres Spring Security 7, politiques CORS, CSRF désactivé
+│   ├── WebMvcConfig.java              # Mappage des fichiers statiques d'avatars (/storage/**)
+│   └── AppProperties.java             # Propriétés typées injectées depuis backend/.env
+│
+├── 💼 service/              # Couche Logique Métier
+│   ├── ProjectService.java            # Calcul automatique des dates de fin, règles projet
+│   ├── DashboardService.java          # Agrégation des KPIs et statistiques pour le chef de projet
+│   ├── AiBlueprintImportService.java  # Import atomique des plans de staffing/backlog IA
+│   ├── EmailService.java              # Envoi d'e-mails HTML (Thymeleaf) pour reset de mot de passe
+│   └── Views.java                     # Sérialisation et formatage JSON optimisé
+│
+├── 📦 domain/               # Entités Métier JPA (PostgreSQL)
+│   ├── User.java                      # Compte Chef de Projet (relation 1:N vers Projects et Employees)
+│   ├── Project.java                   # Entité principale avec calcul planned_end_date
+│   ├── Employee.java                  # Ressource gérée par un chef de projet (is_engaged)
+│   ├── AssignedEngineer.java          # Association ingénieur-projet avec coût et rôle
+│   ├── ProjectEpic.java / Story / Task# Arborescence Scrum hiérarchique
+│   └── Specialization.java            # Métiers et compétences disponibles
+│
+├── 🗄️ repository/           # Couche Persistance (Spring Data JPA)
+│   ├── UserRepository.java            # Requêtes dérivées et par email
+│   ├── ProjectRepository.java         # Filtrage des projets par chef de projet
+│   ├── EmployeeRepository.java        # Recherche d'employés disponibles
+│   └── SpecializationRepository.java
+│
+├── 🛠️ support/              # Utilitaires & Validation
+│   ├── InputNormalizer.java           # Trimming automatique et nettoyage des entrées
+│   ├── ValidationErrorResponse.java   # Structure d'erreur 422 standardisée
+│   └── DateUtils.java
+│
+└── 🌱 seed/                 # Amorçage des Données
+    └── DatabaseSeeder.java            # Chargement JSON (spécialisations, admin, démo)
+```
+
+---
+
+### 📊 Observabilité Intégrée : Actuator & Prometheus
+
+Le backend intègre un serveur de management dédié sur le port interne **8081** (non exposé vers Internet par Nginx) :
+
+- **`/actuator/health`** : Contrôle l'état de la connexion PostgreSQL et la disponibilité du service.
+- **`/actuator/prometheus`** : Expose les métriques format OpenMetrics scrapées toutes les 15 secondes par le conteneur Prometheus :
+  - **JVM** : Utilisation de la mémoire Heap/Non-Heap, Garbage Collection (G1GC), nombre de threads actifs.
+  - **HikariCP** : Connexions actives, idle, en attente et temps moyen d'acquisition de connexion PostgreSQL.
+  - **Requêtes HTTP** : Débit par endpoint, codes de réponse (2xx, 4xx, 5xx), et distribution des latences aux percentiles **p50, p95 et p99**.
+  - Ces données alimentent directement le tableau de bord Grafana **ScrumFlow Platform**.
+
+---
 
 ---
 
@@ -401,7 +542,7 @@ growtrack/
 
 ## 🗄️ Schéma de Base de Données
 
-GrowTrack utilise **PostgreSQL 15** avec **20 fichiers de migration** définissant les relations suivantes :
+GrowTrack utilise **PostgreSQL 15** avec un schéma géré et versionné par **Flyway 12** (migration baseline `V1__baseline_laravel_schema.sql` adoptant le schéma historique sans perte de données, puis évolutions versionnées comme `V2__users_is_admin.sql`), définissant les relations suivantes :
 
 > **Modèle de rôles :** Seul le **Chef de Projet** (table `users`) possède un compte et peut se connecter. Les **Employés** (table `employees`) sont des ressources gérées par le chef de projet — ils n'ont pas de compte utilisateur et ne se connectent pas à la plateforme. Le chef de projet crée, modifie et supprime ses propres employés.
 
@@ -513,7 +654,8 @@ GrowTrack utilise **PostgreSQL 15** avec **20 fichiers de migration** définissa
 - **Colonnes JSON** — `stack_analysis_data`, `architecture_plan` et `recommended_stack` stockent les réponses complètes de l'IA en JSON
 - **Support Google OAuth** — Champ `google_id` sur les utilisateurs pour la connexion Google
 - **Suppression en cascade** — La suppression d'un projet supprime tous les enfants associés (ingénieurs, gains, KPIs, risques, epics)
-- **Support Factories & Seeders** — Factories et seeders pré-construits pour Users, Projects, Specializations et AssignedEngineers
+- **Seeder Automatisé via JSON** — Chargement déterministe des spécialisations (`specializations.json`), du compte administrateur et d'un projet de démonstration complet avec employés (`demo-project.json`) géré par le composant `DatabaseSeeder` via la variable `SEED_DATABASE=true`
+- **Gestionnaire de Schéma Flyway** — Contrôle de version SQL strict évitant les dérives entre environnements (dev, CI, prod AWS)
 
 ---
 
@@ -668,12 +810,12 @@ GrowTrack implémente un **pattern d'authentification par double token** avec su
 ```
 ┌─────────────┐   Connexion   ┌────────────────┐
 │  Navigateur │───────────────▶│   API Spring   │
-│             │◀───────────────│                │
+│             │◀───────────────│   (Java 21)    │
 │  Stocke :   │   Réponse :    │  Génère :      │
 │  - Token    │   {            │  - Token       │
 │    d'accès  │    access_     │    d'accès     │
-│   (mémoire) │    token,      │   (courte durée│
-│             │    user        │    ~60 min)    │
+│   (mémoire) │    token,      │    (JWT HS256, │
+│             │    user        │     ~15 min)   │
 │  Cookie :   │   }            │  - Token de    │
 │  - Token de │  + Set-Cookie  │    refresh     │
 │    refresh  │                │   (cookie      │
@@ -682,14 +824,14 @@ GrowTrack implémente un **pattern d'authentification par double token** avec su
 ```
 
 ### Mesures de Sécurité
-1. **Token d'accès en mémoire** — Le token de courte durée est stocké dans une variable JavaScript (jamais dans `localStorage`), empêchant le vol de token par XSS
-2. **Cookie HttpOnly de refresh** — Le token de refresh est stocké dans un cookie HttpOnly, invisible au JavaScript
-3. **Rafraîchissement automatique** — Un intercepteur Axios rafraîchit automatiquement les tokens d'accès expirés via le cookie
-4. **File d'attente de requêtes** — Pendant le rafraîchissement, les requêtes 401 suivantes sont mises en file d'attente et rejouées après succès
-5. **Google OAuth** — Connexion Google stateless via Firebase comme alternative à l'email/mot de passe
-6. **Liste blanche CORS** — Le backend n'accepte que les requêtes des origines frontend configurées
-7. **Spring Security** — Toutes les routes `/api/**` (sauf connexion, inscription, Google, mot de passe oublié et refresh) exigent un token Bearer valide, vérifié par un filtre de la chaîne Spring Security
-8. **Hachage des mots de passe** — BCrypt (coût 12, format `$2y$`), compatible avec les mots de passe créés par l'ancien backend Laravel
+1. **Token d'accès en mémoire** — Le token JWT de courte durée (15 min) est signé en HMAC-SHA256 (`JWT_SECRET`) et stocké uniquement dans une variable JavaScript en mémoire (jamais dans `localStorage`), immunisant l'application contre le vol de jetons par vulnérabilité XSS.
+2. **Cookie HttpOnly de refresh** — Le token de rafraîchissement est isolé dans un cookie `HttpOnly` avec attribut `SameSite=Lax` (et `Secure` activé en production), invisible aux scripts client.
+3. **Rafraîchissement automatique** — Un intercepteur Axios détecte les expirations (401), sollicite silencieusement `/api/refresh-token` et rejoue la requête originale.
+4. **File d'attente de requêtes** — En cas de requêtes concurrentes pendant le refresh, les appels suivants sont automatiquement mis en file d'attente et débloqués dès l'obtention du nouveau token.
+5. **Google OAuth via Spring Security JOSE** — Intégration Firebase OAuth sans état via `spring-security-oauth2-jose`, assurant la vérification cryptographique locale des clés de signature Google (JWKS).
+6. **Politique CORS Dynamique** — Le backend n'autorise que les origines déclarées dans la variable `CORS_ALLOWED_ORIGINS`.
+7. **Chaîne de Sécurité Spring Security 7** — Toutes les routes `/api/**` (hormis login, register, oauth google, forgot/reset password et refresh) exigent un token Bearer valide validé par le filtre `BearerTokenAuthenticationFilter`.
+8. **Hachage BCrypt Rétrocompatible** — BCrypt (coût 12, préfixe `$2y$`), garantissant une compatibilité totale et transparente avec les mots de passe de l'ancien backend Laravel.
 
 ---
 
@@ -873,14 +1015,17 @@ cd TaskFlow
 cp backend/.env.example backend/.env
 ```
 
-Modifiez `backend/.env` et mettez à jour ces valeurs :
+Modifiez `backend/.env` et personnalisez les valeurs selon vos besoins :
 
-| Variable | Modification | Exemple |
-|----------|-------------|---------|
-| `APP_URL` | IP ou domaine de votre serveur | `http://localhost` |
-| `DB_PASSWORD` | Définir un mot de passe **fort** | `MonMotDePasse!` |
+| Variable | Modification | Exemple / Recommandation |
+|----------|-------------|--------------------------|
+| `DB_PASSWORD` | Définir un mot de passe de base de données **fort** | `MonMotDePasseFort!` |
+| `FRONTEND_URL` | URL de base du frontend (liens de réinitialisation e-mail) | `http://localhost:8080` (Docker) ou `http://localhost:5173` |
+| `CORS_ALLOWED_ORIGINS` | Origines autorisées pour les requêtes du navigateur | `http://localhost:8080,http://localhost:5173` |
+| `JWT_SECRET` | Clé secrète HMAC-SHA256 (vide = générée au démarrage) | `openssl rand -base64 48` (min. 32 caractères en prod) |
+| `COOKIE_SECURE` | Activer `true` uniquement en production HTTPS | `false` en dev, `true` en prod |
 
-> ⚠️ **Important** : Gardez `DB_HOST=db` — cela fait référence au nom du conteneur Docker.
+> ⚠️ **Important** : En développement Docker, `docker-compose.override.yml` configure automatiquement `DB_HOST=db` et `STORAGE_PATH=/app/storage`.
 
 #### Étape 3 : Synchroniser le Mot de Passe BDD
 
@@ -931,7 +1076,7 @@ Les fonctionnalités IA nécessitent une **clé API Google Gemini** :
 |---------|-----------------|-------|------|
 | Gateway Nginx | `scrumflow-nginx` | Custom (`frontend/nginx/`) | **8080** dev / **80** prod (exposé) |
 | Base de données | `scrumflow-db` | `postgres:15-alpine` | 5432 (exposé en dev) |
-| Backend | `scrumflow-backend` | Custom (Java 21, Spring Boot) | 8000 (interne, exposé en dev) |
+| Backend Spring Boot | `scrumflow-backend` | Custom (Java 21, Spring Boot 4) | 8000 (API, exposé en dev) / 8081 (Actuator) |
 | Frontend | `scrumflow-frontend` | Custom (Nginx) | 80 (interne) / 5173 en dev |
 | Système IA | `scrumflow-ai` | Custom (Python 3.12) | 8001 (interne) |
 
@@ -1107,7 +1252,7 @@ npm test -- --watch   # Mode surveillance
 - ✅ Tests d'intégration des contextes (AuthContext, ProjectContext)
 - ✅ Tests d'intégration des layouts (Navbar, Sidebar, PrivateLayout)
 
-### Tests Backend (JUnit)
+### Tests Backend (JUnit 5 + Spring Boot Test)
 ```bash
 cd backend
 # PostgreSQL requis : localhost:5432/growtrack_testing (postgres / 12345), défini dans src/test/resources/test.env
@@ -1115,10 +1260,11 @@ mvn verify
 ```
 
 **Couverture des tests :**
-- ✅ Tests d'intégration HTTP (authentification, refresh/logout, reset de mot de passe, projets, équipe, employés) à travers Spring Security
-- ✅ Tests unitaires (validation, normalisation des entrées, calcul de date de fin)
-- ✅ Factories de modèles pour la génération de données de test
-- ✅ Base de données de test PostgreSQL dédiée (`growtrack_testing`)
+- ✅ **Tests d'intégration HTTP** (`AuthApiTest`, `ProjectApiTest`) — validation de l'ensemble des flux (login, refresh, logout, reset password, gestion des projets et équipes) via Spring Security
+- ✅ **Tests des métriques & Actuator** (`MetricsApiTest`) — validation de l'exposition correcte des compteurs et histogrammes sur `/actuator/prometheus`
+- ✅ **Tests de validation OAuth** (`FirebaseTokenVerifierTest`) — simulation et vérification cryptographique des tokens Google Firebase ID
+- ✅ **Tests unitaires** (`UnitTests`) — normalisation des entrées, validations métier, calcul automatique de `planned_end_date`
+- ✅ **Base de données de test PostgreSQL dédiée** (`growtrack_testing`) pour garantir des tests fidèles à l'environnement de production
 
 ### Tests Système IA (pytest)
 ```bash
@@ -1138,37 +1284,48 @@ pytest -v             # Sortie détaillée
 ## ⚙️ Variables d'Environnement
 
 ### Backend (`backend/.env`)
-```env
-# Application
-APP_NAME=GrowTrack
-APP_ENV=production
-APP_KEY=base64:...
-APP_DEBUG=false
-APP_URL=http://votre-ip-serveur
 
-# Base de données
-DB_CONNECTION=pgsql
-DB_HOST=db                    # Nom du service Docker
+Le backend Spring Boot est configuré via `backend/.env` (modèle dans `backend/.env.example`). L'application exige la présence de ces variables (sans guillemets) au démarrage :
+
+```env
+# Connexion PostgreSQL
+DB_HOST=localhost             # En Docker Compose dev : db
 DB_PORT=5432
 DB_DATABASE=growtrack_db
 DB_USERNAME=postgres
-DB_PASSWORD=votre_mot_de_passe
+DB_PASSWORD=your_db_password
 
-# Authentification
-SESSION_DRIVER=database
-BCRYPT_ROUNDS=12
+# Ports HTTP & Management
+PORT=8000                     # Port d'écoute de l'API REST
+MANAGEMENT_PORT=8081          # Port interne Actuator & Prometheus (non exposé)
 
-# File d'attente & Cache
-QUEUE_CONNECTION=database
-CACHE_STORE=database
+# Frontend & Sécurité CORS
+FRONTEND_URL=http://localhost:5173
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080
+COOKIE_SECURE=false           # Passer à true en production avec certificat SSL/TLS
 
-# Mail (pour réinitialisation de mot de passe)
-MAIL_MAILER=smtp
-MAIL_HOST=votre-serveur-smtp
-MAIL_PORT=587
-MAIL_USERNAME=votre-email
-MAIL_PASSWORD=votre-mot-de-passe
-MAIL_FROM_ADDRESS=noreply@growtrack.com
+# Sécurité & Tokens
+JWT_SECRET=                   # Clé HMAC-SHA256 (min. 32 caractères ; vide = clé aléatoire par exécution)
+FIREBASE_PROJECT_ID=scrumflow-af1fd  # Projet Firebase vérifiant les tokens Google OAuth
+
+# Stockage statique des avatars (/storage/...)
+STORAGE_PATH=storage          # En conteneur Docker : /app/storage
+
+# E-mails (réinitialisation de mot de passe)
+MAIL_MAILER=log               # "log" (console de dev) ou "smtp" (envoi réel)
+MAIL_HOST=127.0.0.1
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_SCHEME=null              # "smtps" pour TLS implicite (port 465), sinon STARTTLS
+MAIL_FROM_ADDRESS=hello@example.com
+MAIL_FROM_NAME=ScrumFlow
+
+# Amorçage des données (équivalent db:seed)
+SEED_DATABASE=false           # Mettre à true pour charger le catalogue, l'admin et le projet démo
+SEED_EXIT=false               # Mettre à true si l'on souhaite arrêter le conteneur après le seed
+SEED_ADMIN_EMAIL=aelhail71@gmail.com
+SEED_ADMIN_PASSWORD=          # Renseigner pour créer le chef de projet administrateur
 ```
 
 ### Frontend (`frontend/.env`)

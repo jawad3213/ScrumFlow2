@@ -60,17 +60,19 @@ export const TEST_STACK_DATA = {
     ],
     "backend": [
       {
-        "name": "Laravel (PHP)",
+        "name": "Spring Boot (Java 21)",
         "category": "Backend",
-        "justification": "Explicitly mentioned in the backlog, Laravel is ideal for rapid API development, handling core CRUD operations, authentication, business logic, queues, and mail, perfectly fitting a modular monolith strategy for most features.",
+        "justification": "Enterprise-grade, high-performance REST API platform powered by Java 21 LTS. Handles core CRUD operations, JWT token-based authentication, Spring Data JPA/Hibernate persistence, transactions, and Actuator metrics for Prometheus.",
         "pros": [
-          "High developer productivity and robust features (ORM, Auth, Queues)",
-          "Large and supportive ecosystem, extensive documentation",  
-          "Strong security features out-of-the-box"
+          "High performance with native JVM multi-threading and low latency",
+          "Strong compile-time type safety and robust enterprise patterns",
+          "Spring Data JPA & Hibernate for type-safe database interactions",
+          "Built-in Actuator and Micrometer for native Prometheus observability",
+          "Comprehensive security controls with Spring Security 7"
         ],
         "cons": [
-          "Performance can be lower than compiled languages (Go, Rust) under extreme load",
-          "PHP runtime overhead compared to more 'bare metal' solutions"
+          "Higher initial memory footprint than micro-frameworks",
+          "More structured configuration required than dynamic languages"
         ]
       },
       {
@@ -80,11 +82,11 @@ export const TEST_STACK_DATA = {
         "pros": [
           "Best-in-class for AI/ML tasks and integrations",
           "High performance with asynchronous capabilities",
-          "Automatic OpenAPI documentation for API consistency"       
+          "Automatic OpenAPI documentation for API consistency"
         ],
         "cons": [
           "Adds another language and runtime to the stack",
-          "Requires careful integration and communication with the main Laravel backend"
+          "Requires HTTP reverse-proxy integration via the gateway"
         ]
       }
     ],
@@ -120,25 +122,40 @@ export const TEST_STACK_DATA = {
     ],
     "devops_infrastructure": [
       {
-        "name": "AWS (EC2 / Fargate)",
+        "name": "Terraform (AWS Infrastructure as Code)",
         "category": "DevOps",
-        "justification": "Leverages existing mention of S3. Provides a comprehensive, scalable, and reliable cloud environment. EC2 for the Laravel application and Fargate (ECS) for managed container deployment of the FastAPI microservice simplify operations.",
+        "justification": "Declarative Infrastructure as Code (IaC) with Terraform for automated provisioning of AWS resources (EC2, Elastic IP, Security Groups, IAM OIDC for GitHub Actions, and SSM Parameter Store for secure encrypted configuration).",
+        "pros": [
+          "100% reproducible and version-controlled cloud infrastructure",
+          "Automated cloud provisioning eliminating manual configuration drift",
+          "Secure secret management integrated with AWS SSM Parameter Store",
+          "Modular design (network, compute, config, github-oidc)"
+        ],
+        "cons": [
+          "State management requires careful handling",
+          "Initial learning curve for HCL and AWS provider"
+        ]
+      },
+      {
+        "name": "AWS (EC2 / Elastic IP / SSM)",
+        "category": "DevOps",
+        "justification": "Provides a comprehensive, scalable, and reliable cloud environment. EC2 hosts Docker Compose running the 5 microservices (Gateway Nginx, React, Spring Boot, FastAPI, PostgreSQL) alongside Prometheus and Grafana for monitoring.",
         "pros": [
           "Vast array of integrated services",
           "High scalability and reliability",
-          "S3 for highly durable object storage"
+          "SSM Session Manager enables secure SSH-less access"
         ],
         "cons": [
-          "Can be complex to configure and manage initial setup",     
+          "Can be complex to configure initial networking and IAM policies",
           "Cost optimization requires continuous monitoring"
         ]
       },
       {
-        "name": "Docker",
+        "name": "Docker & Docker Compose",
         "category": "DevOps",
-        "justification": "Essential for containerizing the FastAPI microservice, ensuring consistent development and deployment environments, and enabling easy scaling.",
+        "justification": "Essential for containerizing the FastAPI microservice, Spring Boot backend, and React frontend, ensuring consistent development and deployment environments.",
         "pros": [
-          "Environment consistency across dev, staging, prod",        
+          "Environment consistency across dev, staging, prod",
           "Portability and isolation of services",
           "Simplified dependency management"
         ],
@@ -150,15 +167,15 @@ export const TEST_STACK_DATA = {
       {
         "name": "Redis",
         "category": "DevOps",
-        "justification": "Powers Laravel's queue system for asynchronous processing (e.g., AI analysis, email sending), serves as a high-performance cache, and can enable real-time features with Laravel Echo/Websockets for Kanban boards.",
+        "justification": "High-performance in-memory cache and message broker for asynchronous processing, background task queues, and real-time board updates.",
         "pros": [
-          "Extremely high performance for caching and queues",        
+          "Extremely high performance for caching and queues",
           "Versatile use cases (cache, message broker, session store)",
-          "Simplifies asynchronous task management in Laravel"        
+          "Low-latency in-memory data store"
         ],
         "cons": [
           "In-memory data store requires persistence strategies for durability",
-          "Can be a single point of failure if not highly available"  
+          "Can be a single point of failure if not highly available"
         ]
       },
       {
@@ -167,7 +184,7 @@ export const TEST_STACK_DATA = {
         "justification": "Explicitly required for storing PDF documents (cahiers des charges) and user profile pictures, offering highly scalable, durable, and secure object storage.",
         "pros": [
           "Industry-leading object storage with high durability and availability",
-          "Cost-effective for large volumes of unstructured data",    
+          "Cost-effective for large volumes of unstructured data",
           "Robust security features and access controls"
         ],
         "cons": [
@@ -180,7 +197,7 @@ export const TEST_STACK_DATA = {
         "category": "DevOps",
         "justification": "For reliable and scalable transactional email sending (user invites, password resets, impediment notifications).",
         "pros": [
-          "Highly reliable and scalable email delivery service",      
+          "Highly reliable and scalable email delivery service",
           "Cost-effective for high volumes of emails",
           "Good deliverability rates"
         ],
@@ -190,8 +207,8 @@ export const TEST_STACK_DATA = {
         ]
       }
     ],
-    "architecture_pattern": "Modular Monolith",
-    "synergy_explanation": "Next.js (React) provides a dynamic, interactive frontend, consuming APIs from the Laravel backend. Laravel acts as a robust modular monolith, handling core business logic, user management, and project data with PostgreSQL. Critical AI-driven PDF analysis is offloaded to a FastAPI Python microservice via Laravel's Redis-backed queue system, ensuring asynchronous, scalable processing. AWS S3 provides secure file storage, while AWS SES manages reliable email delivery. This blend optimizes for rapid development, leveraging existing expertise, with targeted performance for the specialized AI component, all within a coherent AWS cloud environment."
+    "architecture_pattern": "Modular Monolith & Microservices",
+    "synergy_explanation": "React provides a dynamic, interactive frontend, consuming APIs from the Spring Boot (Java 21) backend. Spring Boot acts as a robust enterprise core, handling business logic, user management, and project data with PostgreSQL and Spring Data JPA. Critical AI-driven PDF analysis is offloaded to a FastAPI Python microservice. Cloud infrastructure is provisioned reproducibly with Terraform on AWS (EC2, Elastic IP, SSM Parameter Store), while GitHub Actions provides continuous deployment with zero manual steps. This blend optimizes for enterprise performance, type safety, and maintainability within a coherent cloud environment."
   },
   "alternative_recommendation": {
     "strategy_name": "The High-Performance Go-Powered Engine",        
@@ -226,7 +243,7 @@ export const TEST_STACK_DATA = {
       {
         "name": "Go (with Gin or Echo framework)",
         "category": "Backend",
-        "justification": "Chosen for its superior raw performance, excellent concurrency model, and lower resource consumption, making it ideal for applications requiring high throughput and scalability from the outset. This would replace Laravel for the main application logic.",
+        "justification": "Chosen for its superior raw performance, excellent concurrency model, and lower resource consumption, making it ideal for applications requiring high throughput and scalability from the outset. This would replace Spring Boot for the main application logic.",
         "pros": [
           "Exceptional performance and efficiency",
           "Strong concurrency primitives (goroutines, channels)",     
@@ -234,7 +251,7 @@ export const TEST_STACK_DATA = {
           "Strong typing for robust applications"
         ],
         "cons": [
-          "More verbose for CRUD operations compared to opinionated frameworks like Laravel",
+          "More verbose for CRUD operations compared to full-featured frameworks like Spring Boot",
           "Smaller ecosystem of web development frameworks/libraries",
           "Steeper learning curve for teams unfamiliar with Go"       
         ]
@@ -340,7 +357,7 @@ export const TEST_STACK_DATA = {
     "Complexity of Data Modeling for Backlog and Project Entities: The hierarchical nature of Epics, User Stories, and Tasks, along with their relationships to projects, sprints, users, and various attributes (story points, status, priority, time entries), requires a well-designed and flexible PostgreSQL schema that can evolve without major refactors."
   ],
   "junior_developer_tips": [
-    "Master Laravel's Eloquent ORM: The project involves complex relationships (Epics, Stories, Tasks, Sprints, Users). A deep understanding of Eloquent relationships (one-to-many, many-to-many) will be crucial for efficient data management and query optimization.",
+    "Master Spring Data JPA & Hibernate: The project involves complex relationships (Epics, Stories, Tasks, Sprints, Users). A deep understanding of JPA entity mappings, lazy loading, and repository queries will be crucial for efficient data management and query optimization.",
     "Deep Dive into React State Management: For highly interactive components like Kanban boards and drag & drop prioritization, thoroughly understand React Hooks (useState, useEffect, useContext). Consider learning a lightweight state management library like Zustand or TanStack Query for server state management to keep your components clean and performant.",
     "Focus on API Contract and Testing: With a distinct frontend, backend, and an AI microservice, clearly defined API contracts (using OpenAPI/Swagger) are paramount. Utilize tools like Postman or Insomnia to test API endpoints rigorously before frontend integration.",
     "Prioritize Security Best Practices: Always sanitize user inputs, correctly hash passwords, use environment variables for sensitive API keys (e.g., Gemini API, AWS S3), and implement robust authorization checks on every backend endpoint. Security is not an afterthought.",

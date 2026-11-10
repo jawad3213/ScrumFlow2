@@ -16,7 +16,7 @@ def sample_employee_pool():
 
 @pytest.fixture
 def sample_project_text():
-    return "Nous avons besoin d'une plateforme SaaS pour la gestion des tâches avec un frontend React et un backend Laravel. Le projet doit être sécurisé et scalable."
+    return "Nous avons besoin d'une plateforme SaaS pour la gestion des tâches avec un frontend React et un backend Spring Boot (Java 21). L'infrastructure sera provisionnée avec Terraform sur AWS. Le projet doit être sécurisé et scalable."
 
 @pytest.fixture
 def sample_backlog_json():
