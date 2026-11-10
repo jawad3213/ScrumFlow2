@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🚀 GrowTrack</h1>
+  <h1 align="center">🚀 ScrumFlow</h1>
   <p align="center">
     <strong>Plateforme de Gestion de Projets & Planification Financière propulsée par l'IA</strong>
   </p>
@@ -48,7 +48,7 @@
 
 ## 🌟 Aperçu
 
-**GrowTrack** est une plateforme complète de gestion de projets destinée aux **Chefs de Projet**. Elle intègre de manière unique une analyse propulsée par l'IA dans le cycle de vie du projet, transformant les documents d'exigences bruts (PDFs — *Cahier des Charges*) en plans de staffing actionnables, backlogs détaillés, recommandations technologiques et prévisions financières.
+**ScrumFlow** est une plateforme complète de gestion de projets destinée aux **Chefs de Projet**. Elle intègre de manière unique une analyse propulsée par l'IA dans le cycle de vie du projet, transformant les documents d'exigences bruts (PDFs — *Cahier des Charges*) en plans de staffing actionnables, backlogs détaillés, recommandations technologiques et prévisions financières.
 
 ### Le Problème
 
@@ -60,7 +60,7 @@ Les chefs de projet passent un temps considérable à :
 
 ### La Solution
 
-GrowTrack automatise tout cela grâce à **Google Gemini AI**, fournissant des résultats structurés et basés sur les données via une interface de type wizard qui guide le chef de projet à travers l'ensemble du processus de création de projet.
+ScrumFlow automatise tout cela grâce à **Google Gemini AI**, fournissant des résultats structurés et basés sur les données via une interface de type wizard qui guide le chef de projet à travers l'ensemble du processus de création de projet.
 
 ---
 
@@ -200,7 +200,7 @@ Un visualiseur interactif de backlog Agile présenté sous forme de wizard navig
 
 ## 🏛️ Architecture Système
 
-GrowTrack suit une **architecture conteneurisée inspirée des microservices**, articulée autour de 5 conteneurs orchestrés avec Docker Compose et supervisés en production :
+ScrumFlow suit une **architecture conteneurisée inspirée des microservices**, articulée autour de 5 conteneurs orchestrés avec Docker Compose et supervisés en production :
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -248,7 +248,7 @@ GrowTrack suit une **architecture conteneurisée inspirée des microservices**, 
 
 ## ☕ Architecture Backend Spring Boot & Ce qui a changé
 
-Le backend de GrowTrack (ScrumFlow) a fait l'objet d'une **refonte architecturale majeure**, passant d'une pile monolithique **PHP / Laravel** à une architecture d'entreprise moderne propulsée par **Java 21**, **Spring Boot 4.1**, **Spring Security 7**, **Spring Data JPA (Hibernate 7)** et **Flyway 12**.
+Le backend de **ScrumFlow** a fait l'objet d'une **refonte architecturale majeure**, passant d'une pile monolithique **PHP / Laravel** à une architecture d'entreprise moderne propulsée par **Java 21**, **Spring Boot 4.1**, **Spring Security 7**, **Spring Data JPA (Hibernate 7)** et **Flyway 12**.
 
 ### 🎯 Pourquoi cette Refonte ?
 
@@ -440,7 +440,7 @@ Le backend intègre un serveur de management dédié sur le port interne **8081*
 ## 📂 Structure du Projet
 
 ```
-growtrack/
+scrumflow/
 ├── 📁 frontend/                    # SPA React (Vite + TailwindCSS)
 │   ├── 📁 nginx/                   # Gateway Nginx (image scrumflow-nginx)
 │   │   ├── Dockerfile              # Image de la gateway Nginx
@@ -542,7 +542,7 @@ growtrack/
 
 ## 🗄️ Schéma de Base de Données
 
-GrowTrack utilise **PostgreSQL 15** avec un schéma géré et versionné par **Flyway 12** (migration baseline `V1__baseline_laravel_schema.sql` adoptant le schéma historique sans perte de données, puis évolutions versionnées comme `V2__users_is_admin.sql`), définissant les relations suivantes :
+ScrumFlow utilise **PostgreSQL 15** avec un schéma géré et versionné par **Flyway 12** (migration baseline `V1__baseline_laravel_schema.sql` adoptant le schéma historique sans perte de données, puis évolutions versionnées comme `V2__users_is_admin.sql`), définissant les relations suivantes :
 
 > **Modèle de rôles :** Seul le **Chef de Projet** (table `users`) possède un compte et peut se connecter. Les **Employés** (table `employees`) sont des ressources gérées par le chef de projet — ils n'ont pas de compte utilisateur et ne se connectent pas à la plateforme. Le chef de projet crée, modifie et supprime ses propres employés.
 
@@ -803,7 +803,7 @@ Toutes les sorties IA sont validées contre des schémas Pydantic stricts via la
 
 ## 🔐 Authentification & Sécurité
 
-GrowTrack implémente un **pattern d'authentification par double token** avec support Google OAuth pour une sécurité maximale :
+ScrumFlow implémente un **pattern d'authentification par double token** avec support Google OAuth pour une sécurité maximale :
 
 ### Architecture des Tokens
 
@@ -995,7 +995,7 @@ npm run all           # Démarre frontend + backend + système IA en parallèle
 
 ## 🐳 Déploiement Docker
 
-GrowTrack est entièrement conteneurisé avec Docker Compose pour un déploiement facile.
+ScrumFlow est entièrement conteneurisé avec Docker Compose pour un déploiement facile.
 
 ### Prérequis
 
@@ -1235,7 +1235,7 @@ Détails : [`monitoring/README.md`](monitoring/README.md).
 
 ## 🧪 Tests
 
-GrowTrack inclut des suites de tests complètes sur les trois services.
+ScrumFlow inclut des suites de tests complètes sur les trois services.
 
 ### Tests Frontend (Vitest + React Testing Library)
 ```bash
