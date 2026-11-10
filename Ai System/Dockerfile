@@ -1,27 +1,26 @@
-# Utilisation de la version 3.12 pour de meilleures performances
+# AI service (FastAPI + Uvicorn) on port 8001, behind nginx at /ai/.
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# 1. Optimisation des ressources (Évite de consommer du stockage inutile)
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# No .pyc files in the image, logs flushed immediately
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# 2. Installation des dépendances système légères pour PyMuPDF (fitz)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# 3. Installation des dépendances Python
+# Dependencies first, in their own cached layer (PyMuPDF installs from a prebuilt wheel: no compiler needed)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 4. Copie du code source
 COPY . .
 
-# 5. Exposition du port (On garde le 5000 pour rester cohérent avec notre Nginx)
+# Unprivileged user; uploaded PDFs are written to /tmp while they are read
+RUN useradd --system --no-create-home app
+USER app
+
+# Settings (AI_CORS_ALLOWED_ORIGINS) come from the environment: env_file / docker-compose, no defaults here
 EXPOSE 8001
 
-# 6. Utilisation d'Uvicorn (Asynchrone et très rapide pour l'IA)
-# On adapte le port à 5000 pour correspondre à ton Nginx default.conf
+HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=5 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health', timeout=4)" || exit 1
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]

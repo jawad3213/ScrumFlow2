@@ -12,8 +12,13 @@ vi.mock('@/features/team/api/useSpecializationsQuery', () => ({
     useSpecializations: vi.fn(),
 }));
 
+vi.mock('@/features/auth/hooks/useAuth', () => ({
+    useAuth: vi.fn(),
+}));
+
 import { useEmployees } from '@/features/team/api/useEmployeesQuery';
 import { useSpecializations } from '@/features/team/api/useSpecializationsQuery';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 // --- MOCKS DES COMPOSANTS ENFANTS ---
 vi.mock('@/features/team/components/TeamTable', () => ({
@@ -54,6 +59,16 @@ describe('TeamPage Component', () => {
         // Setup par défaut
         useEmployees.mockReturnValue({ data: [], isLoading: false, refetch: vi.fn() });
         useSpecializations.mockReturnValue({ data: [], isLoading: false, refetch: vi.fn() });
+        useAuth.mockReturnValue({ user: { is_admin: true } });
+    });
+
+    it('ne propose pas d\'ajouter une spécialisation aux non-administrateurs', async () => {
+        useAuth.mockReturnValue({ user: { is_admin: false } });
+        render(<TeamPage />);
+
+        await user.click(screen.getByRole('tab', { name: /Specializations/i }));
+
+        expect(screen.queryByText('Add Specialization Button')).not.toBeInTheDocument();
     });
 
     it('doit afficher l\'état de chargement initial', () => {

@@ -1,59 +1,236 @@
+# ==========================================
+# PRODUCTION (EC2): images from Docker Hub, run by terraform/scripts/deploy.sh
+# Settings come only from the env files deploy.sh downloads from SSM: .env (root.env), backend.env
+# (and the optional frontend.env). A missing variable stops `docker compose` with its name.
+# ==========================================
+
+# Rotated container logs, so they cannot fill the disk
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
   nginx:
-    image: ${DOCKERHUB_NAMESPACE:-jaouad3243}/scrumflow-nginx:${IMAGE_TAG:-latest}
+    image: ${DOCKERHUB_NAMESPACE:?set DOCKERHUB_NAMESPACE in .env}/scrumflow-nginx:${IMAGE_TAG:?set IMAGE_TAG in .env}
     container_name: scrumflow-nginx
     restart: always
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      # Empty = HTTP only. Set in .env (root.env) to serve HTTPS once certbot has the certificate.
+      TLS_DOMAIN: ${TLS_DOMAIN?set TLS_DOMAIN in .env, empty = HTTP only}
+    volumes:
+      - certbot_conf:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
     depends_on:
-      - frontend
-      - backend
-      - ai-system
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_healthy
+      ai-system:
+        condition: service_healthy
+    logging: *logging
     networks:
       - scrumflow-network
+
+  # Issues the Let's Encrypt certificate for TLS_DOMAIN, then renews it (does nothing without TLS_DOMAIN)
+  certbot:
+    image: certbot/certbot:v2.11.0
+    container_name: scrumflow-certbot
+    restart: always
+    environment:
+      TLS_DOMAIN: ${TLS_DOMAIN?set TLS_DOMAIN in .env, empty = HTTP only}
+      TLS_EMAIL: ${TLS_EMAIL?set TLS_EMAIL in .env, may be empty}
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    depends_on:
+      - nginx
+    logging: *logging
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        trap exit TERM
+        if [ -z "$$TLS_DOMAIN" ]; then
+          echo "TLS_DOMAIN is not set: no certificate requested"
+          while :; do sleep 86400 & wait $$!; done
+        fi
+        if [ -n "$$TLS_EMAIL" ]; then contact="--email $$TLS_EMAIL"; else contact="--register-unsafely-without-email"; fi
+        while :; do
+          if [ -f "/etc/letsencrypt/live/$$TLS_DOMAIN/fullchain.pem" ]; then
+            certbot renew --webroot -w /var/www/certbot --quiet || true
+            delay=43200
+          else
+            sleep 30 & wait $$!  # let nginx start serving the challenge files
+            certbot certonly --webroot -w /var/www/certbot -d "$$TLS_DOMAIN" $$contact \
+              --agree-tos --no-eff-email --non-interactive && delay=43200 || delay=3600
+          fi
+          sleep $$delay & wait $$!
+        done
 
   db:
     image: postgres:15-alpine
     container_name: scrumflow-db
     restart: always
     environment:
-      POSTGRES_DB: ${DB_DATABASE}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE:?set DB_DATABASE in .env}
+      POSTGRES_USER: ${DB_USERNAME:?set DB_USERNAME in .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *logging
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - scrumflow-network
 
   backend:
-    image: ${DOCKERHUB_NAMESPACE:-jaouad3243}/scrumflow-backend:${IMAGE_TAG:-latest}
+    image: ${DOCKERHUB_NAMESPACE:?set DOCKERHUB_NAMESPACE in .env}/scrumflow-backend:${IMAGE_TAG:?set IMAGE_TAG in .env}
     container_name: scrumflow-backend
     restart: always
+    # Healthy once /up answers (HEALTHCHECK in backend/Dockerfile)
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file:
       - ./backend.env
     environment:
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE:?set DB_DATABASE in .env}
+      - DB_USERNAME=${DB_USERNAME:?set DB_USERNAME in .env}
+      - DB_PASSWORD=${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - backend_storage:/app/storage
+    logging: *logging
     networks:
       - scrumflow-network
 
   frontend:
-    image: ${DOCKERHUB_NAMESPACE:-jaouad3243}/scrumflow-frontend:${IMAGE_TAG:-latest}
+    image: ${DOCKERHUB_NAMESPACE:?set DOCKERHUB_NAMESPACE in .env}/scrumflow-frontend:${IMAGE_TAG:?set IMAGE_TAG in .env}
     container_name: scrumflow-frontend
     restart: always
     env_file:
       - ./frontend.env
+    logging: *logging
     networks:
       - scrumflow-network
 
   ai-system:
-    image: ${DOCKERHUB_NAMESPACE:-jaouad3243}/scrumflow-ai:${IMAGE_TAG:-latest}
+    image: ${DOCKERHUB_NAMESPACE:?set DOCKERHUB_NAMESPACE in .env}/scrumflow-ai:${IMAGE_TAG:?set IMAGE_TAG in .env}
     container_name: scrumflow-ai
     restart: always
+    environment:
+      # Behind nginx the frontend is same-origin: normally empty
+      AI_CORS_ALLOWED_ORIGINS: ${AI_CORS_ALLOWED_ORIGINS?set AI_CORS_ALLOWED_ORIGINS in .env, may be empty}
+    # Healthy once /health answers (HEALTHCHECK in "Ai System/Dockerfile")
+    logging: *logging
+    networks:
+      - scrumflow-network
+
+  # ---------------------------------------------------------------- Monitoring
+  # Prometheus, its exporters and Grafana (dashboard "ScrumFlow Platform" at /grafana/ on the gateway).
+  # No port is published: Grafana is reached through nginx, Prometheus only through Grafana.
+  # Memory is capped so monitoring cannot starve the application on the shared instance.
+  prometheus:
+    image: ${DOCKERHUB_NAMESPACE:?set DOCKERHUB_NAMESPACE in .env}/scrumflow-prometheus:${IMAGE_TAG:?set IMAGE_TAG in .env}
+    container_name: scrumflow-prometheus
+    restart: always
+    mem_limit: 400m
+    volumes:
+      - prometheus_data:/prometheus
+    logging: *logging
+    networks:
+      - scrumflow-network
+
+  grafana:
+    image: ${DOCKERHUB_NAMESPACE:?set DOCKERHUB_NAMESPACE in .env}/scrumflow-grafana:${IMAGE_TAG:?set IMAGE_TAG in .env}
+    container_name: scrumflow-grafana
+    restart: always
+    mem_limit: 256m
+    environment:
+      # Used when Grafana first creates its database; change it later in Grafana (Profile > Change password)
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:?set GRAFANA_ROOT_URL in .env}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    logging: *logging
+    networks:
+      - scrumflow-network
+
+  # The EC2 host: CPU, memory, disks
+  node-exporter:
+    image: prom/node-exporter:v1.12.1
+    container_name: scrumflow-node-exporter
+    restart: always
+    mem_limit: 64m
+    pid: host
+    command:
+      - --path.rootfs=/host
+    volumes:
+      - /:/host:ro,rslave
+    logging: *logging
+    networks:
+      - scrumflow-network
+
+  # Per-container CPU, memory and network
+  cadvisor:
+    image: ghcr.io/google/cadvisor:v0.60.6
+    container_name: scrumflow-cadvisor
+    restart: always
+    mem_limit: 200m
+    privileged: true
+    devices:
+      - /dev/kmsg
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=30s
+      - --store_container_labels=false
+      - --disable_metrics=percpu,sched,tcp,udp,disk,diskIO,hugetlb,referenced_memory,cpu_topology,resctrl,advtcp,process,memory_numa,cpuset,oom_event
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    logging: *logging
+    networks:
+      - scrumflow-network
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.20.1
+    container_name: scrumflow-postgres-exporter
+    restart: always
+    mem_limit: 64m
+    environment:
+      DATA_SOURCE_URI: db:5432/${DB_DATABASE:?set DB_DATABASE in .env}?sslmode=disable
+      DATA_SOURCE_USER: ${DB_USERNAME:?set DB_USERNAME in .env}
+      DATA_SOURCE_PASS: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    logging: *logging
+    networks:
+      - scrumflow-network
+
+  # Reads nginx's stub_status on the internal port 8080 (frontend/nginx/10-status.conf)
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.5.3
+    container_name: scrumflow-nginx-exporter
+    restart: always
+    mem_limit: 32m
+    command:
+      - --nginx.scrape-uri=http://nginx:8080/stub_status
+    depends_on:
+      - nginx
+    logging: *logging
     networks:
       - scrumflow-network
 
@@ -63,3 +240,8 @@ networks:
 
 volumes:
   postgres_data:
+  backend_storage:
+  certbot_conf:
+  certbot_www:
+  prometheus_data:
+  grafana_data:

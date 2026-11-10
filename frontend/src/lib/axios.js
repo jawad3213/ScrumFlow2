@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { toast } from 'sonner';
-import API_BASE_URL from '@/utils/api';
+import API_BASE_URL, { AI_SERVICE_URL } from '@/utils/api';
 import StorageService from '@/utils/storage';
 
 let accessToken = null;
@@ -163,11 +163,14 @@ const client = async (endpoint, { body, ...customConfig } = {}) => {
      config.headers['Content-Type'] = undefined; 
   }
 
-  // If the endpoint is a full URL (external service like the AI backend),
-  // or if it explicitly targets our '/ai' reverse proxy,
-  // use a plain axios call to avoid sending auth cookies/headers and to bypass the '/api' baseURL.
-  const isExternalOrAiProxy = endpoint.startsWith('http://') || endpoint.startsWith('https://') || endpoint.startsWith('/ai');
-  if (isExternalOrAiProxy) {
+  // The AI service sits behind nginx, which only lets requests with a valid bearer token through:
+  // send it with the authenticated instance (token + refresh on 401), bypassing the '/api' baseURL.
+  if (endpoint.startsWith(AI_SERVICE_URL)) {
+    return axiosInstance({ ...config, baseURL: '' });
+  }
+
+  // Other full URLs are external services: plain axios, so no auth cookies/headers are sent.
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
     return axios(config).then(res => res.data);
   }
 

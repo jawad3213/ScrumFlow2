@@ -79,8 +79,8 @@ describe('UpdatePasswordForm', () => {
     render(<UpdatePasswordForm />);
     const submitBtn = screen.getByRole('button', { name: /Change Password/i });
 
-    fireEvent.change(screen.getByPlaceholderText(/Min 8 chars/i), { target: { value: 'abcyour_db_password' } });
-    fireEvent.change(screen.getByPlaceholderText(/Confirm new password/i), { target: { value: 'abcyour_db_password' } });
+    fireEvent.change(screen.getByPlaceholderText(/Min 8 chars/i), { target: { value: 'abc12345678' } });
+    fireEvent.change(screen.getByPlaceholderText(/Confirm new password/i), { target: { value: 'abc12345678' } });
 
     fireEvent.click(submitBtn);
 

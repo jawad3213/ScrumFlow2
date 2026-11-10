@@ -1,0 +1,12 @@
+apiVersion: 1
+
+# Dashboards shipped in the image (monitoring/grafana/dashboards). They are read-only in Grafana:
+# change the JSON file in the repository, or save an edited copy under another name.
+providers:
+  - name: scrumflow
+    folder: ScrumFlow
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/dashboards

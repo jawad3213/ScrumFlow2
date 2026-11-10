@@ -17,21 +17,27 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-ScrumFlow}
-      POSTGRES_USER: ${DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-12345}
+      POSTGRES_DB: ${DB_DATABASE:?set DB_DATABASE in .env}
+      POSTGRES_USER: ${DB_USERNAME:?set DB_USERNAME in .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
 
   backend:
     restart: unless-stopped
-    command: php artisan serve --host=0.0.0.0 --port=8000
     ports:
       - "8000:8000"
-    env_file: 
+    env_file:
       - ./backend/.env
+    # Container wiring, over backend/.env: the database container, its credentials (root .env, shared
+    # with the db service above) and the storage volume
     environment:
       - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:?set DB_DATABASE in .env}
+      - DB_USERNAME=${DB_USERNAME:?set DB_USERNAME in .env}
+      - DB_PASSWORD=${DB_PASSWORD:?set DB_PASSWORD in .env}
+      - STORAGE_PATH=/app/storage
     volumes:
-      - ./backend:/var/www
+      - backend_storage:/app/storage
 
   frontend:
     build:
@@ -46,6 +52,14 @@ services:
       - ./frontend:/app
       - /app/node_modules
 
+  prometheus:
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+
+  grafana:
+    restart: unless-stopped
+
   ai-system:
     restart: unless-stopped
     ports:
@@ -54,3 +68,6 @@ services:
       - ./Ai System/.env
     volumes:
       - "./Ai System:/app"
+
+volumes:
+  backend_storage:

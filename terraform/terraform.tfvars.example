@@ -3,7 +3,7 @@ aws_region    = "eu-west-3"
 instance_type = "t3.small"
 
 github_owner = "jawad3213"
-github_repo  = "ScrumFlow"
+github_repo  = "ScrumFlow2"
 
 # Set to false if the GitHub OIDC provider already exists in this AWS account.
 create_github_oidc_provider = true

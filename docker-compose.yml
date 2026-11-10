@@ -1,11 +1,12 @@
-
 # ==========================================
-# BASE CONFIGURATION
-# Defines Services, Images, Networks
+# BASE CONFIGURATION (local development, merged with docker-compose.override.yml)
+# Services, images, healthchecks and start order. Settings come from the .env files only:
+#   .env (DB credentials, shared by db and backend), backend/.env, "Ai System/.env", frontend/.env
+# Production: docker-compose.prod.yml (images from Docker Hub, HTTPS, certbot).
 # ==========================================
 
 services:
-  # 1. Main NGINX Gateway
+  # 1. Main nginx gateway: /, /api, /storage, /ai, /grafana
   nginx:
     build:
       context: ./frontend/nginx
@@ -13,22 +14,30 @@ services:
     image: scrumflow-nginx
     container_name: scrumflow-nginx
     depends_on:
-      - frontend
-      - backend
-      - ai-system
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_healthy
+      ai-system:
+        condition: service_healthy
     networks:
       - scrumflow-network
 
-  # 2. PostgreSQL Database
+  # 2. PostgreSQL
   db:
     image: postgres:15-alpine
     container_name: scrumflow-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - scrumflow-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # 3. Laravel Backend (PHP-FPM)
+  # 3. Spring Boot backend (Java 21); healthy once /up answers (HEALTHCHECK in its Dockerfile)
   backend:
     build:
       context: ./backend
@@ -36,11 +45,12 @@ services:
     image: scrumflow-backend
     container_name: scrumflow-backend
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - scrumflow-network
 
-  # 4. React/Vue Frontend (Serves Static JS via its own lightweight Nginx)
+  # 4. React frontend
   frontend:
     build:
       context: ./frontend
@@ -50,7 +60,7 @@ services:
     networks:
       - scrumflow-network
 
-  # 5. AI System
+  # 5. AI service (FastAPI); healthy once /health answers (HEALTHCHECK in its Dockerfile)
   ai-system:
     build:
       context: "./Ai System"
@@ -60,9 +70,100 @@ services:
     networks:
       - scrumflow-network
 
+  # ---------------------------------------------------------------- Monitoring (optional)
+  # Started only with the "monitoring" profile:  docker compose --profile monitoring up -d
+  # Grafana: http://localhost:8080/grafana/ (admin / GRAFANA_ADMIN_PASSWORD), Prometheus: http://localhost:9090
+  prometheus:
+    profiles: [monitoring]
+    build:
+      context: ./monitoring/prometheus
+    image: scrumflow-prometheus
+    container_name: scrumflow-prometheus
+    volumes:
+      - prometheus_data:/prometheus
+    networks:
+      - scrumflow-network
+
+  grafana:
+    profiles: [monitoring]
+    build:
+      context: ./monitoring/grafana
+    image: scrumflow-grafana
+    container_name: scrumflow-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:?set GRAFANA_ROOT_URL in .env}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - scrumflow-network
+
+  node-exporter:
+    profiles: [monitoring]
+    image: prom/node-exporter:v1.12.1
+    container_name: scrumflow-node-exporter
+    pid: host
+    command:
+      - --path.rootfs=/host
+    # No ",rslave" here: Docker Desktop (Windows/macOS) refuses it; production on Linux keeps it
+    volumes:
+      - /:/host:ro
+    networks:
+      - scrumflow-network
+
+  cadvisor:
+    profiles: [monitoring]
+    image: ghcr.io/google/cadvisor:v0.60.6
+    container_name: scrumflow-cadvisor
+    privileged: true
+    devices:
+      - /dev/kmsg
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=30s
+      - --store_container_labels=false
+      - --disable_metrics=percpu,sched,tcp,udp,disk,diskIO,hugetlb,referenced_memory,cpu_topology,resctrl,advtcp,process,memory_numa,cpuset,oom_event
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - scrumflow-network
+
+  postgres-exporter:
+    profiles: [monitoring]
+    image: prometheuscommunity/postgres-exporter:v0.20.1
+    container_name: scrumflow-postgres-exporter
+    environment:
+      DATA_SOURCE_URI: db:5432/${DB_DATABASE:?set DB_DATABASE in .env}?sslmode=disable
+      DATA_SOURCE_USER: ${DB_USERNAME:?set DB_USERNAME in .env}
+      DATA_SOURCE_PASS: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - scrumflow-network
+
+  nginx-exporter:
+    profiles: [monitoring]
+    image: nginx/nginx-prometheus-exporter:1.5.3
+    container_name: scrumflow-nginx-exporter
+    command:
+      - --nginx.scrape-uri=http://nginx:8080/stub_status
+    depends_on:
+      - nginx
+    networks:
+      - scrumflow-network
+
 networks:
   scrumflow-network:
     driver: bridge
 
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:

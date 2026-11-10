@@ -1,0 +1,84 @@
+# Every setting comes from the environment, with no fallback here: backend/.env (or the production
+# backend.env) is the single place where values are defined, and a missing variable stops the
+# application at startup. See backend/.env.example for the full list.
+
+spring:
+  config:
+    # Running from backend/ (mvn spring-boot:run): read backend/.env. In Docker the same variables
+    # come from env_file, and real environment variables always win over this file.
+    import: optional:file:.env[.properties]
+  application:
+    name: scrumflow-backend
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_DATABASE}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+  flyway:
+    # An existing Laravel database is adopted as version 1 (see db/migration/V1__baseline_laravel_schema.sql).
+    baseline-on-migrate: true
+    baseline-version: 1
+  servlet:
+    multipart:
+      # The avatar endpoint enforces its own 2 MB limit with a validation message.
+      max-file-size: 20MB
+      max-request-size: 25MB
+  thymeleaf:
+    check-template-location: false
+
+server:
+  port: ${PORT}
+  error:
+    whitelabel:
+      enabled: false
+  # nginx forwards X-Forwarded-* headers; used for absolute URLs such as avatar_url.
+  forward-headers-strategy: framework
+
+app:
+  frontend-url: ${FRONTEND_URL}
+  cors-allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  storage-path: ${STORAGE_PATH}
+  cookie-secure: ${COOKIE_SECURE}
+  jwt-secret: ${JWT_SECRET}
+  firebase-project-id: ${FIREBASE_PROJECT_ID}
+  mail:
+    mailer: ${MAIL_MAILER}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    scheme: ${MAIL_SCHEME}
+    from-address: ${MAIL_FROM_ADDRESS}
+    from-name: ${MAIL_FROM_NAME}
+  seed:
+    enabled: ${SEED_DATABASE}
+    exit-after: ${SEED_EXIT}
+    admin-email: ${SEED_ADMIN_EMAIL}
+    admin-password: ${SEED_ADMIN_PASSWORD}
+
+# Metrics for Prometheus: /actuator/prometheus on a separate port that only the Docker network
+# reaches (nginx never proxies it). Scraped by monitoring/prometheus/prometheus.yml.
+management:
+  server:
+    port: ${MANAGEMENT_PORT}
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-details: never
+  metrics:
+    tags:
+      application: scrumflow-backend
+    distribution:
+      # Latency histograms, for the p50/p95/p99 panels of the Grafana dashboard
+      percentiles-histogram:
+        http.server.requests: true
+
+logging:
+  level:
+    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: error

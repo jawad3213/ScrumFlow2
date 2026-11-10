@@ -10,7 +10,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-19.2-blue?logo=react" alt="React">
-  <img src="https://img.shields.io/badge/Laravel-12-red?logo=laravel" alt="Laravel">
+  <img src="https://img.shields.io/badge/Spring_Boot-4.1-green?logo=springboot" alt="Spring Boot">
   <img src="https://img.shields.io/badge/Python-3.12-green?logo=python" alt="Python">
   <img src="https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql" alt="PostgreSQL">
   <img src="https://img.shields.io/badge/Docker-Compose-blue?logo=docker" alt="Docker">
@@ -36,6 +36,7 @@
 - [Démarrage Rapide](#-démarrage-rapide)
 - [Déploiement Docker](#-déploiement-docker)
 - [Déploiement AWS (Terraform + CI/CD)](#-déploiement-aws-terraform--cicd)
+- [Supervision (Prometheus + Grafana)](#-supervision-prometheus--grafana)
 - [Tests](#-tests)
 - [Variables d'Environnement](#-variables-denvironnement)
 - [Contribution](#-contribution)
@@ -206,12 +207,12 @@ GrowTrack suit une **architecture inspirée des microservices** avec trois servi
 ├────────────┬─────────────────────────┬────────────────────────┤
 │   /  (SPA) │    /api/* (API REST)    │    /ai/* (Moteur IA)   │
 │            │                         │                        │
-│  React App │   Backend Laravel       │   FastAPI (Python)     │
-│  (Statique)│   (PHP-FPM:9000)        │   (Uvicorn:8001)      │
+│  React App │   Backend Spring Boot   │   FastAPI (Python)     │
+│  (Statique)│   (Java 21, HTTP:8000)  │   (Uvicorn:8001)      │
 │            │                         │                        │
-│  Vite      │   Sanctum Auth          │   Google Gemini API    │
+│  Vite      │   Spring Security       │   Google Gemini API    │
 │ TailwindCSS│   PostgreSQL 15         │   Schémas Pydantic     │
-│  React 19  │   Eloquent ORM          │   PyMuPDF (Parse PDF)  │
+│  React 19  │   JPA / Hibernate       │   PyMuPDF (Parse PDF)  │
 └────────────┴──────────┬──────────────┴────────────────────────┘
                         │
                  ┌──────┴──────┐
@@ -227,7 +228,7 @@ GrowTrack suit une **architecture inspirée des microservices** avec trois servi
 |---------|:------------:|-----------|------|
 | **Gateway Nginx** | `80` | HTTP | Point d'entrée unique : route `/`, `/api` et `/ai` (config dans `frontend/nginx/`) |
 | **Frontend (Nginx)** | `80` | HTTP | Sert les fichiers statiques de la SPA React |
-| **Backend (PHP-FPM)** | `9000` | FastCGI | Traite les requêtes API REST depuis la gateway Nginx |
+| **Backend (Spring Boot)** | `8000` | HTTP | Traite les requêtes API REST (`/api`) et sert les fichiers uploadés (`/storage`) |
 | **Système IA (Uvicorn)** | `8001` | HTTP | Gère les requêtes d'analyse IA via proxy |
 | **Base de Données (PostgreSQL)** | `5432` | TCP | Stockage persistant des données |
 
@@ -261,13 +262,13 @@ GrowTrack suit une **architecture inspirée des microservices** avec trois servi
 ### Backend
 | Technologie | Version | Utilité |
 |-------------|---------|---------|
-| **Laravel** | 12.0 | Framework web PHP (API REST) |
-| **PHP** | 8.2+ | Runtime côté serveur |
-| **Laravel Sanctum** | 4.2 | Authentification par tokens avec cookies HttpOnly |
+| **Spring Boot** | 4.1 | Framework web Java (API REST) |
+| **Java** | 21 | Runtime côté serveur |
+| **Spring Security** | 7.1 | Filtre d'authentification par token Bearer, BCrypt, CORS |
 | **PostgreSQL** | 15 | Base de données relationnelle |
-| **Eloquent ORM** | — | Abstraction de la BDD avec relations et factories |
-| **PHPUnit** | 11.5 | Tests unitaires & fonctionnels |
-| **Faker** | 1.23 | Génération de données de test |
+| **Spring Data JPA / Hibernate** | 7.4 | Accès à la BDD |
+| **Flyway** | 12 | Migrations de schéma versionnées |
+| **JUnit 5 + AssertJ** | — | Tests unitaires & d'intégration (sur PostgreSQL) |
 
 ### Système IA
 | Technologie | Version | Utilité |
@@ -291,6 +292,7 @@ GrowTrack suit une **architecture inspirée des microservices** avec trois servi
 | **Terraform** | Infrastructure AWS as Code (`terraform/`) |
 | **Docker Hub** | Registre des images de production (`scrumflow-*`) |
 | **AWS** | EC2, Elastic IP, SSM Parameter Store, IAM (OIDC GitHub) |
+| **Prometheus + Grafana** | Supervision sur la même instance EC2 (`monitoring/`), tableau de bord « ScrumFlow Platform » |
 
 ---
 
@@ -302,7 +304,7 @@ growtrack/
 │   ├── 📁 nginx/                   # Gateway Nginx (image scrumflow-nginx)
 │   │   ├── Dockerfile              # Image de la gateway Nginx
 │   │   ├── default.conf            # Routage prod : / → frontend, /api → backend, /ai → IA
-│   │   └── dev.conf                # Routage dev (Vite 5173, artisan serve 8000, hot reload)
+│   │   └── dev.conf                # Routage dev (Vite 5173, Spring Boot 8000, hot reload)
 │   ├── 📁 public/                  # Assets statiques
 │   ├── 📁 src/
 │   │   ├── 📁 components/
@@ -338,44 +340,24 @@ growtrack/
 │   ├── vite.config.js
 │   └── vitest.config.js
 │
-├── 📁 backend/                     # API REST Laravel 12
-│   ├── 📁 app/
-│   │   ├── 📁 Http/Controllers/
-│   │   │   ├── AuthController.php          # Connexion, Déconnexion, Refresh, Reset
-│   │   │   ├── EmployeeController.php      # CRUD employés + opérations en masse
-│   │   │   ├── ProfileController.php       # Profil utilisateur & avatar
-│   │   │   ├── ProjectController.php       # CRUD projets + persistance données IA
-│   │   │   ├── ProjectTeamController.php   # Assignation/désassignation d'équipe
-│   │   │   └── SpecializationController.php # CRUD spécialisations
-│   │   ├── 📁 Models/
-│   │   │   ├── User.php                    # Modèle utilisateur (Chef de Projet)
-│   │   │   ├── Employee.php                # Modèle employé (ressource gérée)
-│   │   │   ├── Project.php                 # Modèle projet avec attributs IA
-│   │   │   ├── AssignedEngineer.php        # Assignation ingénieur-projet
-│   │   │   ├── ProjectEpic.php             # Modèle Epic Agile
-│   │   │   ├── ProjectStory.php            # Modèle User Story
-│   │   │   ├── ProjectBlueprintTask.php    # Modèle Tâche Technique
-│   │   │   ├── ProjectKpi.php              # Suivi des KPIs
-│   │   │   ├── ProjectRisk.php             # Évaluation des risques
-│   │   │   ├── EstimatedGain.php           # Projections de gains financiers
-│   │   │   ├── InfrastructureCost.php      # Suivi des coûts d'infrastructure
-│   │   │   ├── RoiProjection.php           # Projections ROI annuelles
-│   │   │   ├── Specialization.php          # Spécialisation employé
-│   │   │   └── RefreshToken.php            # Gestion du rafraîchissement de tokens
-│   │   ├── 📁 Services/
-│   │   │   └── ProjectSeederService.php    # Initialisation de données exemple
-│   │   └── 📁 Providers/
-│   ├── 📁 database/
-│   │   ├── 📁 factories/           # Factories pour les tests
-│   │   ├── 📁 migrations/          # 20 fichiers de migration
-│   │   └── 📁 seeders/             # Seeders (Users, Projects, Specializations)
-│   ├── 📁 routes/
-│   │   └── api.php                 # Définitions de routes API
-│   ├── 📁 tests/
-│   │   ├── 📁 Feature/             # Tests d'intégration (8 fichiers)
-│   │   └── 📁 Unit/                # Tests unitaires (6 fichiers)
-│   ├── Dockerfile                  # Multi-stage : Build Composer → Runtime PHP-FPM
-│   └── composer.json
+├── 📁 backend/                     # API REST Spring Boot 4 (Java 21)
+│   ├── 📁 src/main/java/com/scrumflow/backend/
+│   │   ├── 📁 web/                 # Contrôleurs REST : Auth, Employee, Profile, Project, ProjectTeam, Specialization
+│   │   ├── 📁 domain/              # Entités JPA (User, Employee, Project, AssignedEngineer, Epic/Story/Task, KPI, Risk…)
+│   │   ├── 📁 repository/          # Repositories Spring Data JPA
+│   │   ├── 📁 service/             # Blueprint IA, dashboard, rendu JSON, données de démo, e-mails
+│   │   ├── 📁 security/            # Tokens d'accès/refresh et filtre Spring Security
+│   │   ├── 📁 config/              # Spring Security, CORS, propriétés, MVC
+│   │   ├── 📁 support/             # Validation, normalisation des entrées, erreurs JSON
+│   │   └── 📁 seed/                # Seeder (spécialisations, admin, démo)
+│   ├── 📁 src/main/resources/
+│   │   ├── application.yml         # Configuration (mêmes variables d'environnement qu'avant)
+│   │   ├── 📁 db/migration/        # Migrations Flyway (V1 = schéma hérité de Laravel)
+│   │   ├── 📁 seed/                # Données de démonstration (JSON)
+│   │   └── 📁 templates/emails/    # Modèle d'e-mail de réinitialisation (Thymeleaf)
+│   ├── 📁 src/test/                # Tests JUnit (intégration sur PostgreSQL + unitaires)
+│   ├── Dockerfile                  # Multi-stage : Build Maven → Runtime JRE 21
+│   └── pom.xml
 │
 ├── 📁 Ai System/                   # Microservice IA Python
 │   ├── 📁 schemas/                 # Modèles de données Pydantic
@@ -391,21 +373,22 @@ growtrack/
 │   ├── requirements.txt            # Dépendances Python
 │   └── Dockerfile                  # Python 3.12-slim + Uvicorn
 │
-├── 📁 terraform/                  # Infrastructure AWS (Terraform)
-│   ├── 📁 deploy/
-│   │   └── deploy.sh               # Script exécuté sur l'EC2 à chaque déploiement (via SSM)
-│   ├── main.tf                     # EC2, Security Group, Elastic IP, rôle IAM de l'instance
+├── 📁 terraform/                  # Infrastructure AWS (Terraform), voir terraform/README.md
+│   ├── main.tf                     # Assemble les 4 modules
+│   ├── moved.tf                    # Anciennes adresses -> modules (aucune ressource recréée)
+│   ├── variables.tf · outputs.tf · versions.tf · providers.tf
+│   ├── 📁 modules/
+│   │   ├── network/                # VPC par défaut, Security Group (80/443, 22 optionnel)
+│   │   ├── compute/                # EC2, Elastic IP, rôle IAM de l'instance, user_data.sh
+│   │   ├── config/                 # .env -> SSM Parameter Store (SecureString)
+│   │   └── github-oidc/            # Rôle IAM assumé par GitHub Actions (OIDC)
+│   ├── 📁 scripts/
+│   │   └── deploy.sh               # Exécuté sur l'EC2 à chaque déploiement (via SSM)
 │   ├── 📁 env/                     # .env de production (ignorés par Git, *.example versionnés)
-│   ├── env.tf                      # Envoi des .env dans SSM Parameter Store
-│   ├── github_oidc.tf              # Fournisseur OIDC + rôle IAM pour GitHub Actions
-│   ├── variables.tf                # Variables (région, type d'instance, dépôt GitHub…)
-│   ├── outputs.tf                  # IP publique, ID d'instance, ARN du rôle, préfixe SSM
-│   ├── versions.tf                 # Versions de Terraform et du provider AWS
-│   ├── user_data.sh                # Bootstrap au premier démarrage (Docker, AWS CLI, swap)
 │   └── terraform.tfvars.example    # Exemple de configuration
 │
 ├── 📁 .github/workflows/
-│   ├── ci.yml                      # Tests backend / frontend / IA + build des images
+│   ├── ci.yml                      # Tests, vérification des .env / compose / nginx, build des images
 │   └── cd.yml                      # Build & push vers Docker Hub puis déploiement sur EC2
 ├── docker-compose.yml             # Configuration de base (5 services)
 ├── docker-compose.override.yml    # Surcharges de développement (appliquées par défaut)
@@ -526,7 +509,7 @@ GrowTrack utilise **PostgreSQL 15** avec **20 fichiers de migration** définissa
 
 ### Caractéristiques Clés de la BDD
 - **Table Employés séparée** — Les employés sont gérés indépendamment des comptes utilisateurs. Le Chef de Projet crée et gère son propre pool d'employés ; les employés ne possèdent pas de compte et ne se connectent pas.
-- **Champs auto-calculés** — `planned_end_date` est automatiquement calculée à partir de `start_date` + `estimated_duration_months` via les événements du modèle Eloquent
+- **Champs auto-calculés** — `planned_end_date` est automatiquement calculée à partir de `start_date` + `estimated_duration_months` à chaque enregistrement du projet (`Project.computePlannedEndDate()`)
 - **Colonnes JSON** — `stack_analysis_data`, `architecture_plan` et `recommended_stack` stockent les réponses complètes de l'IA en JSON
 - **Support Google OAuth** — Champ `google_id` sur les utilisateurs pour la connexion Google
 - **Suppression en cascade** — La suppression d'un projet supprime tous les enfants associés (ingénieurs, gains, KPIs, risques, epics)
@@ -684,7 +667,7 @@ GrowTrack implémente un **pattern d'authentification par double token** avec su
 
 ```
 ┌─────────────┐   Connexion   ┌────────────────┐
-│  Navigateur │───────────────▶│   API Laravel  │
+│  Navigateur │───────────────▶│   API Spring   │
 │             │◀───────────────│                │
 │  Stocke :   │   Réponse :    │  Génère :      │
 │  - Token    │   {            │  - Token       │
@@ -705,8 +688,8 @@ GrowTrack implémente un **pattern d'authentification par double token** avec su
 4. **File d'attente de requêtes** — Pendant le rafraîchissement, les requêtes 401 suivantes sont mises en file d'attente et rejouées après succès
 5. **Google OAuth** — Connexion Google stateless via Firebase comme alternative à l'email/mot de passe
 6. **Liste blanche CORS** — Le backend n'accepte que les requêtes des origines frontend configurées
-7. **Guard Sanctum** — Toutes les routes API (sauf connexion/inscription) sont protégées par le middleware `auth:sanctum`
-8. **Hachage des mots de passe** — Les mots de passe sont automatiquement hachés via le `HashedCast` de Laravel
+7. **Spring Security** — Toutes les routes `/api/**` (sauf connexion, inscription, Google, mot de passe oublié et refresh) exigent un token Bearer valide, vérifié par un filtre de la chaîne Spring Security
+8. **Hachage des mots de passe** — BCrypt (coût 12, format `$2y$`), compatible avec les mots de passe créés par l'ancien backend Laravel
 
 ---
 
@@ -800,8 +783,8 @@ features/
 ### Prérequis
 
 - **Node.js** ≥ 20.x
-- **PHP** ≥ 8.2
-- **Composer** ≥ 2.6
+- **Java** 21 (JDK)
+- **Maven** ≥ 3.9
 - **Python** ≥ 3.12
 - **PostgreSQL** ≥ 15
 - **Docker & Docker Compose** (pour le déploiement conteneurisé)
@@ -818,19 +801,14 @@ cd TaskFlow
 ```bash
 cd backend
 
-# Installer les dépendances
-composer install
-
-# Configurer l'environnement
-cp .env.example .env
-php artisan key:generate
-
 # Configurer la base de données (PostgreSQL doit être en cours d'exécution)
-php artisan migrate
-php artisan db:seed   # Optionnel : insérer des données exemple
+export DB_HOST=localhost DB_DATABASE=growtrack_db DB_USERNAME=postgres DB_PASSWORD=...
 
-# Démarrer le serveur de développement
-php artisan serve     # Accessible sur http://localhost:8000
+# Démarrer le serveur (les migrations Flyway s'appliquent au démarrage)
+mvn spring-boot:run   # Accessible sur http://localhost:8000
+
+# Optionnel : insérer les spécialisations, le compte admin et les données exemple
+SEED_DATABASE=true SEED_ADMIN_PASSWORD=... mvn spring-boot:run
 ```
 
 #### 3. Configuration du Frontend
@@ -917,22 +895,18 @@ docker-compose up --build -d
 
 Cela va : télécharger l'image PostgreSQL, construire les images Gateway Nginx, Backend, Frontend et Système IA, puis démarrer les 5 conteneurs en arrière-plan.
 
-> ℹ️ `docker-compose.override.yml` est appliqué automatiquement : il active le mode développement (Vite avec hot reload, `php artisan serve`, volumes montés) et utilise `frontend/nginx/dev.conf` comme configuration de la gateway.
+> ℹ️ `docker-compose.override.yml` est appliqué automatiquement : il active le mode développement (Vite avec hot reload, backend exposé sur le port 8000, volumes montés) et utilise `frontend/nginx/dev.conf` comme configuration de la gateway.
 
-#### Étape 5 : Initialiser le Backend Laravel
+#### Étape 5 : Initialiser le Backend
 
-Exécutez ces commandes **une seule fois** après la première construction :
+Les migrations de base de données (Flyway) s'exécutent automatiquement au démarrage du backend. Pour insérer les données de départ **une seule fois** (spécialisations, compte admin, projet et employés de démonstration), ajoutez dans `backend/.env` :
 
 ```bash
-# Générer la clé de l'application Laravel
-docker exec scrumflow-backend php artisan key:generate
-
-# Exécuter les migrations de base de données
-docker exec scrumflow-backend php artisan migrate
-
-# (Optionnel) Insérer des données exemple
-docker exec scrumflow-backend php artisan db:seed
+SEED_DATABASE=true
+SEED_ADMIN_PASSWORD=un_mot_de_passe_solide
 ```
+
+puis redémarrez le backend (`docker-compose up -d backend`) et remettez `SEED_DATABASE=false`.
 
 #### Étape 6 : Accéder à l'Application
 
@@ -957,7 +931,7 @@ Les fonctionnalités IA nécessitent une **clé API Google Gemini** :
 |---------|-----------------|-------|------|
 | Gateway Nginx | `scrumflow-nginx` | Custom (`frontend/nginx/`) | **8080** dev / **80** prod (exposé) |
 | Base de données | `scrumflow-db` | `postgres:15-alpine` | 5432 (exposé en dev) |
-| Backend | `scrumflow-backend` | Custom (PHP 8.2-FPM) | 9000 (interne) / 8000 en dev |
+| Backend | `scrumflow-backend` | Custom (Java 21, Spring Boot) | 8000 (interne, exposé en dev) |
 | Frontend | `scrumflow-frontend` | Custom (Nginx) | 80 (interne) / 5173 en dev |
 | Système IA | `scrumflow-ai` | Custom (Python 3.12) | 8001 (interne) |
 
@@ -984,10 +958,10 @@ docker-compose up --build -d
 
 Tous les services communiquent sur le réseau bridge Docker `scrumflow-network`. Le conteneur `scrumflow-nginx` sert de point d'entrée unique et route les requêtes selon `frontend/nginx/default.conf` (prod) :
 - `/` → conteneur frontend (fichiers statiques de la SPA React, `frontend:80`)
-- `/api/*` → Laravel (FastCGI vers `backend:9000`)
+- `/api/*` et `/storage/*` → Spring Boot (proxy HTTP vers `backend:8000`)
 - `/ai/*` → FastAPI (proxy HTTP vers `ai-system:8001`)
 
-En développement, `frontend/nginx/dev.conf` route vers le serveur Vite (`frontend:5173`, avec WebSocket pour le hot reload) et vers `php artisan serve` (`backend:8000`).
+En développement, `frontend/nginx/dev.conf` route vers le serveur Vite (`frontend:5173`, avec WebSocket pour le hot reload) et vers le backend Spring Boot (`backend:8000`).
 
 ---
 
@@ -1005,21 +979,21 @@ La production tourne sur une instance **EC2** unique qui exécute `docker-compos
                                     └─ 2. SSM send-command vers l'EC2
                                             │
                                             ▼
-                               /opt/scrumflow/deploy.sh (terraform/deploy/deploy.sh)
+                               /opt/scrumflow/deploy.sh (terraform/scripts/deploy.sh)
                                  ├─ récupère les .env depuis SSM Parameter Store
                                  ├─ docker compose pull (depuis Docker Hub) && up -d
-                                 ├─ php artisan migrate --force
+                                 ├─ attend /up (migrations Flyway au démarrage du backend)
                                  └─ nettoyage des anciennes images
 ```
 
 ### Ressources créées par Terraform
 
-| Fichier | Ressources |
-|---------|------------|
-| `main.tf` | Instance EC2 Ubuntu (`t3.small` par défaut), Elastic IP, Security Group (ports 80/443, 22 optionnel), rôle IAM de l'instance (SSM + lecture des paramètres) |
-| `env.tf` | Paramètres SSM chiffrés (`SecureString`) créés à partir des fichiers `terraform/env/*.env` + token Docker Hub optionnel |
-| `github_oidc.tf` | Fournisseur OIDC GitHub + rôle IAM assumé par GitHub Actions pour lancer le déploiement (**aucune clé AWS stockée dans GitHub**) |
-| `user_data.sh` | Installation de Docker, du plugin Compose, de l'AWS CLI et d'un swap de 2 Go au premier démarrage |
+| Module | Ressources |
+|--------|------------|
+| `modules/network` | Security Group (ports 80/443, 22 optionnel) dans le VPC par défaut |
+| `modules/compute` | Instance EC2 Ubuntu (`t3.small` par défaut), Elastic IP, rôle IAM de l'instance (SSM + lecture des paramètres) ; `user_data.sh` installe Docker, le plugin Compose, l'AWS CLI et un swap de 2 Go au premier démarrage |
+| `modules/config` | Paramètres SSM chiffrés (`SecureString`) créés à partir des fichiers `terraform/env/*.env` + token Docker Hub optionnel |
+| `modules/github-oidc` | Fournisseur OIDC GitHub + rôle IAM assumé par GitHub Actions pour lancer le déploiement (**aucune clé AWS stockée dans GitHub**) |
 
 ### Étape 1 : Préparer les fichiers .env de production
 
@@ -1028,7 +1002,7 @@ Les variables d'environnement de l'EC2 sont placées dans `terraform/env/` (doss
 ```bash
 cd terraform
 cp env/root.env.example     env/root.env       # DB_DATABASE, DB_USERNAME, DB_PASSWORD
-cp env/backend.env.example  env/backend.env    # configuration Laravel de production (APP_KEY, APP_URL…)
+cp env/backend.env.example  env/backend.env    # configuration Spring Boot de production (FRONTEND_URL, mail…)
 cp env/frontend.env.example env/frontend.env   # optionnel
 ```
 
@@ -1071,7 +1045,7 @@ Créez aussi un **environment** GitHub nommé `production`.
 
 ### Étape 4 : Déployer
 
-- **Automatique** : chaque push sur `main` lance la CI ; si elle réussit, le workflow CD construit les images, les pousse sur Docker Hub puis exécute `terraform/deploy/deploy.sh` sur l'EC2 via SSM.
+- **Automatique** : chaque push sur `main` lance la CI ; si elle réussit, le workflow CD construit les images, les pousse sur Docker Hub puis exécute `terraform/scripts/deploy.sh` sur l'EC2 via SSM.
 - **Manuel** : onglet **Actions → CD → Run workflow**.
 
 L'application est ensuite accessible sur `http://<public_ip>` (output `app_url`).
@@ -1087,6 +1061,30 @@ cd /opt/scrumflow
 docker compose -f docker-compose.prod.yml ps
 docker compose -f docker-compose.prod.yml logs -f backend
 ```
+
+---
+
+## 📈 Supervision (Prometheus + Grafana)
+
+Prometheus et Grafana tournent sur **la même instance EC2** que l'application, démarrés par `docker-compose.prod.yml`. Grafana s'ouvre sur le tableau de bord **ScrumFlow Platform**, qui regroupe tout l'essentiel :
+
+| Section | Contenu |
+|---------|---------|
+| Vue d'ensemble | État UP/DOWN de chaque composant, trafic, taux d'erreur et latence p95 de l'API, analyses IA en cours, CPU / mémoire / disque de l'EC2, alertes actives |
+| API Backend | Requêtes par statut, latences p50/p95/p99, endpoints les plus sollicités, les plus lents et en erreur, connexions, erreurs de log |
+| JVM & pool BDD | Heap, GC, CPU, threads, connexions HikariCP |
+| Service IA | Analyses par minute, durée par endpoint (appels Gemini), appels en cours |
+| Gateway nginx | Requêtes et connexions |
+| PostgreSQL | Connexions, transactions, lignes, taux de cache, taille, deadlocks |
+| Hôte EC2 | CPU, charge, mémoire, swap, disques, réseau |
+| Conteneurs | CPU, mémoire, réseau et uptime par conteneur |
+
+- **Accès** : `https://VOTRE_DOMAINE/grafana/` (ou `http://IP_ELASTIQUE/grafana/`), utilisateur `admin`, mot de passe `GRAFANA_ADMIN_PASSWORD` de `terraform/env/root.env`. Aucun port de supervision n'est exposé : Grafana passe par la gateway nginx (connexion limitée en débit), Prometheus n'est joignable que depuis Grafana.
+- **Alertes** : règles dans `monitoring/prometheus/alerts.yml` (composant arrêté, erreurs/lenteur API, heap JVM, pool BDD, CPU/mémoire/disque…), visibles dans le panneau « Firing alerts ».
+- **Ressources** : rétention de 15 jours (2 Go max), environ 1 Go de RAM au total pour la supervision. Une instance `t3.medium` est recommandée (`instance_type` dans `terraform/terraform.tfvars`).
+- **En local** : `docker compose --profile monitoring up -d`, puis `http://localhost:8080/grafana/`.
+
+Détails : [`monitoring/README.md`](monitoring/README.md).
 
 ---
 
@@ -1109,15 +1107,16 @@ npm test -- --watch   # Mode surveillance
 - ✅ Tests d'intégration des contextes (AuthContext, ProjectContext)
 - ✅ Tests d'intégration des layouts (Navbar, Sidebar, PrivateLayout)
 
-### Tests Backend (PHPUnit)
+### Tests Backend (JUnit)
 ```bash
 cd backend
-php artisan test      # Exécuter tous les tests
+# PostgreSQL requis : localhost:5432/growtrack_testing (postgres / 12345), défini dans src/test/resources/test.env
+mvn verify
 ```
 
 **Couverture des tests :**
-- ✅ Tests fonctionnels (8 fichiers) — Tests d'intégration des endpoints API
-- ✅ Tests unitaires (6 fichiers) — Tests des modèles et logique métier
+- ✅ Tests d'intégration HTTP (authentification, refresh/logout, reset de mot de passe, projets, équipe, employés) à travers Spring Security
+- ✅ Tests unitaires (validation, normalisation des entrées, calcul de date de fin)
 - ✅ Factories de modèles pour la génération de données de test
 - ✅ Base de données de test PostgreSQL dédiée (`growtrack_testing`)
 
@@ -1186,12 +1185,12 @@ En production, les fichiers `.env` ne sont **jamais** copiés à la main sur le 
 
 1. Ils sont écrits dans `terraform/env/` (`root.env`, `backend.env`, `frontend.env`) à partir des fichiers `*.example`.
 2. `terraform apply` les envoie chiffrés dans **SSM Parameter Store** sous `/scrumflow/prod/`.
-3. À chaque déploiement, `terraform/deploy/deploy.sh` les télécharge dans `/opt/scrumflow/` sur l'EC2.
+3. À chaque déploiement, `terraform/scripts/deploy.sh` les télécharge dans `/opt/scrumflow/` sur l'EC2.
 
 | Fichier | Contenu |
 |---------|---------|
-| `root.env` | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` (partagés par PostgreSQL et Laravel) |
-| `backend.env` | Configuration Laravel de production (`APP_KEY`, `APP_URL`, `APP_ENV=production`, mail…) |
+| `root.env` | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` (partagés par PostgreSQL et le backend) |
+| `backend.env` | Configuration Spring Boot de production (`FRONTEND_URL`, `CORS_ALLOWED_ORIGINS`, mail…) |
 | `frontend.env` | Optionnel (les variables `VITE_*` sont intégrées au moment du build) |
 
 Voir [Déploiement AWS](#-déploiement-aws-terraform--cicd) pour le détail.
@@ -1208,7 +1207,7 @@ Voir [Déploiement AWS](#-déploiement-aws-terraform--cicd) pour le détail.
 
 ### Style de Code
 - **Frontend** : ESLint + règles React Hooks
-- **Backend** : Laravel Pint (PSR-12)
+- **Backend** : conventions Java standard (Spring)
 - **Système IA** : PEP 8
 
 ---

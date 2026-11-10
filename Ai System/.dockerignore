@@ -4,3 +4,6 @@ __pycache__/
 .git/
 *.pdf
 temp_*.pdf
+# Local settings and test-only files never go into the image
+.env
+tests/

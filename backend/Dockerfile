@@ -1,40 +1,27 @@
-# Étape 1 : Build avec Composer (Multi-stage pour réduire la taille finale)
-FROM composer:2.6 as build
+# Stage 1: build the jar with Maven (dependencies are cached in their own layer)
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
-COPY . .
-# On installe les dépendances ici pour ne pas encombrer l'image finale
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+COPY pom.xml .
+RUN mvn -B -q dependency:go-offline
+COPY src ./src
+RUN mvn -B -q package -DskipTests
 
-# Étape 2 : Runtime léger et complet
-FROM php:8.2-fpm-alpine
+# Stage 2: slim runtime
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
 
-# Installation des dépendances système nécessaires (en une seule couche pour économiser)
-RUN apk add --no-cache \
-    libpq-dev \
-    libpng-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    oniguruma-dev \
-    libzip-dev
+RUN addgroup -S app && adduser -S app -G app \
+    && mkdir -p /app/storage && chown app:app /app/storage
 
-# Installation des extensions PHP indispensables pour Laravel et PostgreSQL
-RUN docker-php-ext-install \
-    pdo_pgsql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip
+COPY --from=build /app/target/scrumflow-backend.jar app.jar
 
-WORKDIR /var/www
+USER app
+# PORT and STORAGE_PATH come from the env file like every other setting (backend.env / backend/.env)
+EXPOSE 8000
+# Uploaded avatars; mount a volume here to keep them across deployments.
+VOLUME /app/storage
 
-# On récupère uniquement le code et les dépendances déjà installées
-COPY --from=build /app .
+HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 \
+    CMD wget -qO- http://localhost:8000/up >/dev/null || exit 1
 
-# Permissions pour Laravel (on ajoute bootstrap/cache qui manquait dans le nôtre)
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-
-EXPOSE 9000
-CMD ["php-fpm"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { isValidPassword } from '@/utils';
+import { setAccessToken } from '@/lib/axios';
 
 const UpdatePasswordForm = () => {
     const { user } = useAuth();
@@ -41,7 +42,13 @@ const UpdatePasswordForm = () => {
                 payload.current_password = passwordData.currentPassword;
             }
 
-            await updatePassword(payload);
+            const response = await updatePassword(payload);
+            // Changing the password ends every session; the response carries this browser's new one
+            // (the refresh cookie is set by the response itself).
+            if (response?.access_token) {
+                setAccessToken(response.access_token);
+                window.dispatchEvent(new CustomEvent('auth-token-refreshed', { detail: response.access_token }));
+            }
             setSuccess(true);
             setTimeout(() => setSuccess(false), 3000);
             setPasswordData({

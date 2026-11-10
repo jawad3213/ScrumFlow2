@@ -1,0 +1,172 @@
+[
+    {
+        "name": "Frontend Developer",
+        "level": "Intern",
+        "salary": 3000
+    },
+    {
+        "name": "Frontend Developer",
+        "level": "Junior",
+        "salary": 7000
+    },
+    {
+        "name": "Frontend Developer",
+        "level": "Mid-level",
+        "salary": 14000
+    },
+    {
+        "name": "Frontend Developer",
+        "level": "Senior",
+        "salary": 20000
+    },
+    {
+        "name": "Backend Developer",
+        "level": "Intern",
+        "salary": 3000
+    },
+    {
+        "name": "Backend Developer",
+        "level": "Junior",
+        "salary": 7000
+    },
+    {
+        "name": "Backend Developer",
+        "level": "Mid-level",
+        "salary": 14000
+    },
+    {
+        "name": "Backend Developer",
+        "level": "Senior",
+        "salary": 25000
+    },
+    {
+        "name": "Backend Developer",
+        "level": "Staff Engineer",
+        "salary": 34000
+    },
+    {
+        "name": "Backend Developer",
+        "level": "Software Architect",
+        "salary": 42500
+    },
+    {
+        "name": "Fullstack Developer",
+        "level": "Intern",
+        "salary": 3000
+    },
+    {
+        "name": "Fullstack Developer",
+        "level": "Junior",
+        "salary": 7000
+    },
+    {
+        "name": "Fullstack Developer",
+        "level": "Mid-level",
+        "salary": 14000
+    },
+    {
+        "name": "Fullstack Developer",
+        "level": "Senior",
+        "salary": 26000
+    },
+    {
+        "name": "Fullstack Developer",
+        "level": "Tech Lead",
+        "salary": 37500
+    },
+    {
+        "name": "UI/UX Designer",
+        "level": "Junior",
+        "salary": 5500
+    },
+    {
+        "name": "UI/UX Designer",
+        "level": "Mid-level",
+        "salary": 11000
+    },
+    {
+        "name": "UI/UX Designer",
+        "level": "Senior",
+        "salary": 20000
+    },
+    {
+        "name": "UI/UX Designer",
+        "level": "Lead Designer",
+        "salary": 28500
+    },
+    {
+        "name": "UI/UX Designer",
+        "level": "Design Principal",
+        "salary": 37500
+    },
+    {
+        "name": "DevOps Engineer",
+        "level": "Junior",
+        "salary": 8000
+    },
+    {
+        "name": "DevOps Engineer",
+        "level": "Mid-level",
+        "salary": 16000
+    },
+    {
+        "name": "DevOps Engineer",
+        "level": "Senior",
+        "salary": 28500
+    },
+    {
+        "name": "DevOps Engineer",
+        "level": "SRE",
+        "salary": 32500
+    },
+    {
+        "name": "DevOps Engineer",
+        "level": "Cloud Architect",
+        "salary": 45000
+    },
+    {
+        "name": "Project Manager",
+        "level": "Junior PM",
+        "salary": 7000
+    },
+    {
+        "name": "Project Manager",
+        "level": "Project Manager",
+        "salary": 14000
+    },
+    {
+        "name": "Project Manager",
+        "level": "Senior PM",
+        "salary": 23000
+    },
+    {
+        "name": "Project Manager",
+        "level": "Program Manager",
+        "salary": 32500
+    },
+    {
+        "name": "Project Manager",
+        "level": "Portfolio Manager",
+        "salary": 45000
+    },
+    {
+        "name": "QA Engineer",
+        "level": "Junior",
+        "salary": 5500
+    },
+    {
+        "name": "QA Engineer",
+        "level": "Mid-level",
+        "salary": 11000
+    },
+    {
+        "name": "QA Engineer",
+        "level": "Senior",
+        "salary": 18000
+    },
+    {
+        "name": "QA Engineer",
+        "level": "QA Lead",
+        "salary": 26000
+    }
+]
