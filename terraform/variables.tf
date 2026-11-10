@@ -49,7 +49,7 @@ variable "github_owner" {
 variable "github_repo" {
   description = "GitHub repository name."
   type        = string
-  default     = "ScrumFlow"
+  default     = "ScrumFlow2"
 }
 
 variable "github_deploy_branch" {
@@ -71,7 +71,7 @@ variable "create_github_oidc_provider" {
 }
 
 variable "env_files" {
-  description = "Local .env files uploaded to SSM Parameter Store (key = parameter name read by deploy/deploy.sh, value = path relative to this folder). Missing files are skipped."
+  description = "Local .env files uploaded to SSM Parameter Store (key = parameter name, value = path relative to this folder; read by scripts/deploy.sh). Missing files are skipped."
   type        = map(string)
   default = {
     "root.env"     = "env/root.env"

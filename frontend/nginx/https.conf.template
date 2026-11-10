@@ -1,0 +1,31 @@
+# HTTPS for ${TLS_DOMAIN}. Rendered by 40-scrumflow-tls.sh (only ${TLS_DOMAIN} is substituted).
+server {
+    listen 80;
+    server_name _;
+
+    # Renewals still use the HTTP-01 challenge
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://${TLS_DOMAIN}$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${TLS_DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${TLS_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${TLS_DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    include /etc/nginx/snippets/scrumflow-locations.conf;
+}

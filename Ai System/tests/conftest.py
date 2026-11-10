@@ -1,5 +1,10 @@
 import pytest
 import json
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Before main is imported by the tests: it reads its settings at import time
+load_dotenv(Path(__file__).parent / "test.env", override=True)
 
 @pytest.fixture
 def sample_employee_pool():

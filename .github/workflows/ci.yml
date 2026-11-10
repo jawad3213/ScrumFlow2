@@ -1,5 +1,8 @@
 name: CI
 
+# Tests every service, checks the configuration (env files, compose, nginx) and builds the images.
+# On main, a green CI triggers the CD workflow (cd.yml).
+
 on:
   push:
     branches: [main, dev]
@@ -15,9 +18,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ---------------------------------------------------------------- Configuration
+  # Nothing has a default value: settings live only in .env files. A variable read by the code but
+  # missing from an example or test file would only show up as a service refusing to start.
+  config:
+    name: Configuration (env files, compose)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Env files list every variable the code reads
+        run: bash .github/scripts/check-env-keys.sh
+
+      - name: docker compose (development) resolves with the example env files
+        run: |
+          cp .env.example .env
+          cp backend/.env.example backend/.env
+          cp "Ai System/.env.example" "Ai System/.env"
+          docker compose config --quiet
+
+      - name: docker-compose.prod.yml resolves with the production examples
+        run: |
+          cp terraform/env/backend.env.example backend.env
+          touch frontend.env
+          docker compose -f docker-compose.prod.yml --env-file terraform/env/root.env.example config --quiet
+
   # ---------------------------------------------------------------- Backend
   backend:
-    name: Backend (Laravel)
+    name: Backend (Spring Boot)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,7 +54,7 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_DB: growtrack_testing # matches backend/phpunit.xml
+          POSTGRES_DB: growtrack_testing # database of the backend tests (backend/src/test/resources/test.env)
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: "12345"
         ports: ["5432:5432"]
@@ -38,29 +66,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/setup-java@v4
         with:
-          php-version: "8.2"
-          extensions: mbstring, xml, ctype, iconv, intl, pdo_pgsql, bcmath, gd, zip
-          coverage: none
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
 
-      - name: Cache Composer
-        uses: actions/cache@v4
-        with:
-          path: ~/.composer/cache/files
-          key: composer-${{ hashFiles('backend/composer.lock') }}
-
-      - run: composer install --no-ansi --no-interaction --no-progress --prefer-dist
-
-      - name: Prepare .env
-        run: |
-          cp .env.example .env
-          php artisan key:generate
-
-      - name: Run tests (PHPUnit)
-        # TODO: remove once the test suite is green, so failing tests block the deploy.
-        continue-on-error: true
-        run: php artisan test
+      - name: Build & test (JUnit, against PostgreSQL)
+        run: mvn -B verify
 
   # ---------------------------------------------------------------- Frontend
   frontend:
@@ -81,11 +95,10 @@ jobs:
       - run: npm ci
 
       - name: Lint
-        continue-on-error: true # TODO: make blocking once lint errors are fixed
+        continue-on-error: true # TODO: make blocking once the existing lint errors are fixed
         run: npm run lint
 
       - name: Unit tests (Vitest)
-        continue-on-error: true # TODO: make blocking once tests are green
         run: npx vitest run
 
       - name: Build
@@ -107,17 +120,21 @@ jobs:
           cache: pip
           cache-dependency-path: Ai System/requirements.txt
 
-      - run: pip install -r requirements.txt
+      - run: pip install -r requirements.txt pip-audit
 
       - name: Tests (pytest)
-        continue-on-error: true # TODO: make blocking once tests are green
         run: python -m pytest -q
+
+      - name: Known vulnerabilities (pip-audit)
+        # diskcache (pulled in by instructor) has an advisory without a fixed release yet
+        continue-on-error: true
+        run: pip-audit -r requirements.txt
 
   # ---------------------------------------------------------------- Docker
   docker-build:
     name: Docker build (${{ matrix.image }})
     runs-on: ubuntu-latest
-    needs: [backend, frontend, ai-system]
+    needs: [config, backend, frontend, ai-system]
     strategy:
       fail-fast: false
       matrix:
@@ -131,17 +148,73 @@ jobs:
             context: ./Ai System
           - image: scrumflow-nginx
             context: ./frontend/nginx
+          - image: scrumflow-prometheus
+            context: ./monitoring/prometheus
+          - image: scrumflow-grafana
+            context: ./monitoring/grafana
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+
       - name: Build (no push)
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
           target: ${{ matrix.target }}
           push: false
+          # The gateway, the AI service and the monitoring images are also checked below
+          load: ${{ contains(fromJSON('["scrumflow-nginx", "scrumflow-ai", "scrumflow-prometheus", "scrumflow-grafana"]'), matrix.image) }}
+          tags: ${{ matrix.image }}:ci
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+      - name: nginx config is valid (HTTP, and HTTPS with a test certificate)
+        if: matrix.image == 'scrumflow-nginx'
+        run: |
+          # The upstream names must resolve for nginx -t
+          hosts="--add-host frontend:127.0.0.1 --add-host backend:127.0.0.1 --add-host ai-system:127.0.0.1"
+
+          docker run --rm $hosts scrumflow-nginx:ci nginx -t
+
+          domain=scrumflow.example
+          mkdir -p "le/live/$domain"
+          openssl req -x509 -nodes -newkey rsa:2048 -days 1 -subj "/CN=$domain" \
+            -keyout "le/live/$domain/privkey.pem" -out "le/live/$domain/fullchain.pem"
+          out=$(docker run --rm $hosts -e TLS_DOMAIN=$domain -v "$PWD/le:/etc/letsencrypt:ro" \
+            scrumflow-nginx:ci nginx -t 2>&1)
+          echo "$out"
+          grep -q "serving HTTPS for $domain" <<<"$out"
+          grep -q "test is successful" <<<"$out"
+
+      - name: Prometheus config and alert rules are valid
+        if: matrix.image == 'scrumflow-prometheus'
+        run: docker run --rm --entrypoint promtool scrumflow-prometheus:ci check config /etc/prometheus/prometheus.yml
+
+      - name: Grafana starts and provisions the datasource and the dashboard
+        if: matrix.image == 'scrumflow-grafana'
+        run: |
+          docker run -d --name grafana -p 3000:3000 -e GF_SECURITY_ADMIN_PASSWORD=ci-password             -e GF_SERVER_ROOT_URL=http://localhost:3000/grafana/ scrumflow-grafana:ci
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/grafana/api/health >/dev/null && break
+            sleep 2
+          done
+          docker logs grafana 2>&1 | grep -iE "error|provision" | tail -20 || true
+          curl -sf -u admin:ci-password http://localhost:3000/grafana/api/datasources/uid/prometheus | jq -e '.type == "prometheus"'
+          curl -sf -u admin:ci-password http://localhost:3000/grafana/api/dashboards/uid/scrumflow-platform             | jq -e '.dashboard.title == "ScrumFlow Platform" and (.dashboard.panels | length) > 40'
+
+      - name: AI service starts and reports healthy
+        if: matrix.image == 'scrumflow-ai'
+        run: |
+          docker run -d --name ai -e AI_CORS_ALLOWED_ORIGINS= scrumflow-ai:ci
+          for i in $(seq 1 30); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' ai)
+            [ "$status" = healthy ] && break
+            [ "$status" = unhealthy ] && break
+            sleep 2
+          done
+          docker logs ai
+          echo "health: $status"
+          [ "$status" = healthy ]
 
   # ---------------------------------------------------------------- Terraform
   terraform:

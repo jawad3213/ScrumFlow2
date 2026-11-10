@@ -1,0 +1,47 @@
+# Prometheus for the ScrumFlow stack (same EC2 instance / Docker network as the application).
+# Targets are the compose service names; none of these ports is published outside Docker.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    stack: scrumflow
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Spring Boot: MANAGEMENT_PORT of backend.env (8081), never proxied by nginx
+  - job_name: backend
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["backend:8081"]
+
+  # FastAPI: prometheus-fastapi-instrumentator (nginx refuses /ai/metrics from outside)
+  - job_name: ai-system
+    static_configs:
+      - targets: ["ai-system:8001"]
+
+  # nginx gateway, through nginx-prometheus-exporter (reads stub_status on nginx:8080)
+  - job_name: nginx
+    static_configs:
+      - targets: ["nginx-exporter:9113"]
+
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+
+  # The EC2 host: CPU, memory, disk, network
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # Per-container CPU, memory and network
+  - job_name: cadvisor
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["cadvisor:8080"]

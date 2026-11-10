@@ -1,0 +1,113 @@
+# Alert rules, shown in the "Firing alerts" panel of the Grafana dashboard and at Prometheus /alerts.
+# No Alertmanager is deployed: to be notified (e-mail, Slack...), add a contact point in Grafana.
+
+groups:
+  - name: availability
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} is not answering Prometheus"
+          description: "The {{ $labels.job }} target ({{ $labels.instance }}) has been unreachable for 2 minutes."
+
+  - name: backend
+    rules:
+      - alert: BackendHighErrorRate
+        expr: |
+          sum(rate(http_server_requests_seconds_count{application="scrumflow-backend", status=~"5.."}[5m]))
+            / sum(rate(http_server_requests_seconds_count{application="scrumflow-backend"}[5m])) > 0.05
+          and sum(rate(http_server_requests_seconds_count{application="scrumflow-backend"}[5m])) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "More than 5% of API requests fail with a 5xx error"
+
+      - alert: BackendSlowResponses
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(http_server_requests_seconds_bucket{application="scrumflow-backend", uri!~"/up|/actuator.*"}[5m]))
+          ) > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API p95 latency above 2 s for 10 minutes"
+
+      - alert: BackendHeapAlmostFull
+        expr: |
+          sum(jvm_memory_used_bytes{application="scrumflow-backend", area="heap"})
+            / sum(jvm_memory_max_bytes{application="scrumflow-backend", area="heap"} > 0) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backend JVM heap above 90% for 10 minutes"
+
+      - alert: DatabasePoolExhausted
+        expr: max(hikaricp_connections_pending{application="scrumflow-backend"}) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Requests are waiting for a database connection (HikariCP pool full)"
+
+  - name: ai-system
+    rules:
+      - alert: AiServiceHighErrorRate
+        expr: |
+          sum(rate(http_requests_total{job="ai-system", status="5xx"}[10m]))
+            / sum(rate(http_requests_total{job="ai-system"}[10m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 10% of AI analyses fail with a 5xx error"
+
+  - name: postgres
+    rules:
+      - alert: PostgresTooManyConnections
+        expr: sum(pg_stat_database_numbackends) / max(pg_settings_max_connections) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL uses more than 80% of max_connections"
+
+      - alert: PostgresDeadlocks
+        expr: sum(increase(pg_stat_database_deadlocks[10m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL reported deadlocks in the last 10 minutes"
+
+  - name: host
+    rules:
+      - alert: HostHighCpu
+        expr: 1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) > 0.9
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "EC2 CPU above 90% for 15 minutes"
+
+      - alert: HostLowMemory
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Less than 10% of the EC2 memory is available"
+
+      - alert: HostDiskAlmostFull
+        expr: |
+          1 - node_filesystem_avail_bytes{mountpoint="/", fstype!~"tmpfs|overlay"}
+            / node_filesystem_size_bytes{mountpoint="/", fstype!~"tmpfs|overlay"} > 0.85
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "The EC2 root disk is more than 85% full"

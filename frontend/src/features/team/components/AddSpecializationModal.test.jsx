@@ -71,5 +71,5 @@ describe('AddSpecializationModal', () => {
     expect(errorMessage).toBeInTheDocument();
     // Optionnel : vérifier qu'il a le style d'une erreur (si vous utilisez des classes spécifiques)
     expect(errorMessage).toHaveClass('text-danger-darker');
-  });
+  }, 15000); // userEvent typing is slow when the whole suite runs in parallel
 });

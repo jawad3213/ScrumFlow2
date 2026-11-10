@@ -1,59 +1,88 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ScrumFlow backend (Spring Boot)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API for ScrumFlow, served under `/api`. It replaces the former Laravel backend and keeps
+the same routes, request formats and JSON responses, so the React frontend works unchanged.
 
-## About Laravel
+- Java 21, Spring Boot 4.1, Spring Security 7, Spring Data JPA (Hibernate 7), Flyway
+- PostgreSQL only
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Run
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+```bash
+export DB_HOST=localhost DB_PORT=5432 DB_DATABASE=growtrack_db DB_USERNAME=postgres DB_PASSWORD=...
+mvn spring-boot:run          # http://localhost:8000
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Flyway applies the database migrations at startup. With Docker Compose the backend reads
+`backend/.env` (see `.env.example`).
 
-## Learning Laravel
+## Seed data
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+The equivalent of `php artisan db:seed` loads the specialization catalogue, creates the admin
+chef account and gives every chef the demo project and employees:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+SEED_DATABASE=true SEED_ADMIN_PASSWORD=... SEED_EXIT=true mvn spring-boot:run
+```
 
-## Laravel Sponsors
+The admin account is created only when `SEED_ADMIN_PASSWORD` is set.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Tests
 
-### Premium Partners
+The integration tests start the application and call it over HTTP against a real PostgreSQL database.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+# settings, database included, in src/test/resources/test.env:
+# localhost:5432/growtrack_testing, postgres / 12345 (the CI service)
+mvn verify
+```
 
-## Contributing
+## Configuration
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+All settings come from `backend/.env` (copy `.env.example`): `application.yml` has no fallback
+values, so every variable must be defined, and the backend refuses to start when one is missing.
+Spring reads `backend/.env` itself when started from `backend/`; in Docker the same keys come from
+`env_file`, and real environment variables always take precedence over the file. Values are written
+without quotes. The names are the ones the Laravel `.env` used; Laravel-only keys such as `APP_KEY`
+and `SESSION_*` are ignored.
 
-## Code of Conduct
+| Variable | Purpose |
+|----------|---------|
+| `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | PostgreSQL connection |
+| `PORT` | HTTP port |
+| `FRONTEND_URL` | Base of links in e-mails |
+| `CORS_ALLOWED_ORIGINS` | Allowed browser origins, comma separated (none are built in) |
+| `COOKIE_SECURE` | Marks the refresh cookie `Secure`; enable when serving over HTTPS |
+| `JWT_SECRET` | Signs the access JWTs (at least 32 characters; empty = random key per run) |
+| `FIREBASE_PROJECT_ID` | Firebase project whose Google sign-in tokens are accepted |
+| `STORAGE_PATH` | Directory for uploaded avatars, served at `/storage/...` |
+| `MAIL_MAILER` | `log` writes e-mails to the log, `smtp` sends them |
+| `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SCHEME` | SMTP settings (`MAIL_SCHEME=smtps` for port 465) |
+| `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | Sender |
+| `SEED_DATABASE`, `SEED_EXIT`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | Seeding, see above |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Migrating an existing Laravel database
 
-## Security Vulnerabilities
+No data migration is needed. Point the backend at the existing database and start it.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **Schema.** `V1__baseline_laravel_schema.sql` is the final schema of the Laravel migrations,
+  with the same table, column and constraint names. Flyway sees a non-empty database without its
+  history table, records it as version 1 and does not run V1. New changes go in `V2__...sql`.
+  The Laravel-only tables `migrations`, `sessions`, `cache` and `cache_locks` are left untouched.
+- **Passwords.** bcrypt hashes from Laravel (`$2y$`) verify as they are. New hashes use the same format.
+- **Sessions.** Access tokens use Sanctum's format and table (`personal_access_tokens`), and
+  refresh tokens use the same cookie and table. Users who are logged in stay logged in.
+- **Avatars.** Files from Laravel's `storage/app/public/avatars` must be copied into the
+  backend storage volume (`/app/storage/avatars` in Docker), because the stored paths are relative.
 
-## License
+## Package layout
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Package | Content |
+|---------|---------|
+| `web` | REST controllers and the JSON error handler |
+| `security` | Access and refresh tokens, the bearer-token filter |
+| `config` | Spring Security (filter chain, CORS, BCrypt), MVC, properties |
+| `domain`, `repository` | JPA entities and Spring Data repositories |
+| `service` | Blueprint import, dashboard, demo data, e-mail, response rendering (`Views`) |
+| `support` | Laravel-compatible input normalisation and validation messages |
+| `seed` | The database seeder |

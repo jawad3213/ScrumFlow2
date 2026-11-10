@@ -81,6 +81,19 @@ def test_analyze_stack_endpoint(mock_service, sample_backlog_json):
     assert response.status_code == 200
     assert response.json() == {"recommendations": "mocked"}
 
+def test_health():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+def test_metrics_exposed_for_prometheus():
+    client.post("/analyze-stack", data={})  # any recorded request
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    assert "http_requests_total" in response.text
+    assert 'handler="/analyze-stack"' in response.text
+    assert 'handler="/health"' not in response.text
+
 def test_analyze_staffing_no_api_key():
     files = {'file': ('test.pdf', io.BytesIO(b"content"), 'application/pdf')}
     data = {'pool_employes': '[]', 'api_key': ''}

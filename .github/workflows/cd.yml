@@ -1,8 +1,10 @@
 name: CD
 
 # After CI succeeds on main: builds the images, pushes them to Docker Hub,
-# then deploys them on the EC2 instance created by ./terraform.
+# then deploys them on the EC2 instance created by ./terraform (terraform/scripts/deploy.sh via SSM).
 # AWS auth: GitHub OIDC -> IAM role (no AWS access keys stored in GitHub).
+# App settings are NOT stored in GitHub: they are the env files in SSM (terraform/env/*.env, uploaded
+# by terraform apply), checked against terraform/env/*.env.example before anything is pulled.
 #
 # Repository secrets required (Settings > Secrets and variables > Actions > Secrets):
 #   DOCKERHUB_USERNAME, DOCKERHUB_TOKEN (Docker Hub access token, Read & Write)
@@ -50,6 +52,10 @@ jobs:
             context: ./Ai System
           - image: scrumflow-nginx
             context: ./frontend/nginx
+          - image: scrumflow-prometheus
+            context: ./monitoring/prometheus
+          - image: scrumflow-grafana
+            context: ./monitoring/grafana
     steps:
       - uses: actions/checkout@v4
         with:
@@ -100,17 +106,23 @@ jobs:
           INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
         run: |
           COMPOSE_B64=$(base64 -w0 docker-compose.prod.yml)
-          SCRIPT_B64=$(base64 -w0 terraform/deploy/deploy.sh)
+          SCRIPT_B64=$(base64 -w0 terraform/scripts/deploy.sh)
+          # The examples list every required key: deploy.sh refuses to deploy if the env files lack one
+          ROOT_EXAMPLE_B64=$(base64 -w0 terraform/env/root.env.example)
+          BACKEND_EXAMPLE_B64=$(base64 -w0 terraform/env/backend.env.example)
 
           jq -n \
             --arg compose "$COMPOSE_B64" --arg script "$SCRIPT_B64" \
+            --arg root_example "$ROOT_EXAMPLE_B64" --arg backend_example "$BACKEND_EXAMPLE_B64" \
             --arg namespace "$DOCKERHUB_NAMESPACE" --arg tag "$IMAGE_TAG" \
             --arg region "$AWS_REGION" --arg prefix "$PARAM_PREFIX" \
             '{commands: [
                 "set -e",
-                "mkdir -p /opt/scrumflow",
+                "mkdir -p /opt/scrumflow/examples",
                 "echo \($compose) | base64 -d > /opt/scrumflow/docker-compose.prod.yml",
                 "echo \($script) | base64 -d > /opt/scrumflow/deploy.sh",
+                "echo \($root_example) | base64 -d > /opt/scrumflow/examples/root.env.example",
+                "echo \($backend_example) | base64 -d > /opt/scrumflow/examples/backend.env.example",
                 "chmod +x /opt/scrumflow/deploy.sh",
                 "DOCKERHUB_NAMESPACE=\($namespace) IMAGE_TAG=\($tag) AWS_REGION=\($region) PARAM_PREFIX=\($prefix) /opt/scrumflow/deploy.sh"
               ]}' > params.json

@@ -33,7 +33,7 @@ describe('Validation Utilities', () => {
     });
 
     it('should return false if password lacks a letter', () => {
-      expect(isValidPassword('your_db_password6789')).toBe(false);
+      expect(isValidPassword('12345678')).toBe(false);
     });
   });
 

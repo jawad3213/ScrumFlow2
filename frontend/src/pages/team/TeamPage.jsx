@@ -10,9 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useEmployees } from '@/features/team/api/useEmployeesQuery';
 import { useSpecializations } from '@/features/team/api/useSpecializationsQuery';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 const TeamPage = () => {
     const { id } = useParams();
+    const { user } = useAuth();
+    // The specializations catalogue is shared: only admins may change it (enforced by the API).
+    const canEditSpecializations = !!user?.is_admin;
     const [activeTab, setActiveTab] = useState("employees");
     const [selectedCount, setSelectedCount] = useState(0);
 
@@ -42,7 +46,7 @@ const TeamPage = () => {
                 <div className="flex-shrink-0">
                     {activeTab === 'employees' ? (
                         <AddEmployeeModal onEmployeeAdded={handleEmployeeAdded} variant="default" />
-                    ) : (
+                    ) : canEditSpecializations && (
                         <AddSpecializationModal onSpecializationAdded={handleSpecializationAdded} variant="default" />
                     )}
                 </div>
@@ -101,6 +105,7 @@ const TeamPage = () => {
                             <SpecializationTable
                                 ref={specializationTableRef}
                                 data={specializations}
+                                readOnly={!canEditSpecializations}
                                 onRefresh={refetchSpecializations}
                                 onSelectionChange={handleSelectionChange}
                             />

@@ -8,7 +8,11 @@ import ConfirmDeleteModal from '@/components/shared/ConfirmDeleteModal';
 import BulkDeleteModal from '@/components/shared/BulkDeleteModal';
 import { bulkDeleteSpecializations, deleteSpecialization } from '@/features/team/api/specializations';
 
-const SpecializationTable = forwardRef(({ data, onRefresh, onSelectionChange }, ref) => {
+const SpecializationTable = forwardRef(({ data, readOnly = false, onRefresh, onSelectionChange }, ref) => {
+    // Read-only viewers get no selection checkboxes and no edit/delete actions.
+    const columns = useMemo(() => readOnly
+        ? specializationColumns.filter(c => c.id !== 'select' && c.id !== 'actions')
+        : specializationColumns, [readOnly]);
     const [editingSpec, setEditingSpec] = useState(null);
     const [deletingSpec, setDeletingSpec] = useState(null);
     const [selectedRowsForBulk, setSelectedRowsForBulk] = useState([]);
@@ -137,7 +141,7 @@ const SpecializationTable = forwardRef(({ data, onRefresh, onSelectionChange }, 
                 </div>
 
                 <DataTable
-                    columns={specializationColumns}
+                    columns={columns}
                     data={filteredData}
                     onSelectionChange={handleTableSelectionChange}
                     meta={tableMeta}
